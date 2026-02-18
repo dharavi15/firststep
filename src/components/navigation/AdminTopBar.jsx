@@ -1,13 +1,15 @@
 import { Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { signOut } from "firebase/auth";
+import { auth } from "../../firebase/firebase";
 
 export default function AdminTopBar({ title = "Dashboard", userName = "Miss ABC" }) {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // Later this will be Firebase signOut()
-    navigate("/");
-  };
+  const handleLogout = async () => {
+  await signOut(auth);
+  navigate("/");
+};
 
   return (
     <header className="adminTopBar">
