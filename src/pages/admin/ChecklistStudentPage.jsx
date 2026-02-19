@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+// mock detail data for each student
+// can change to DB or API later
 const STUDENT_DETAIL = {
   "s-ethan": {
     name: "Ethan Parker",
@@ -30,21 +32,37 @@ const STUDENT_DETAIL = {
   },
 };
 
+// create simple avatar using emoji
+// this avoids using real image for now
 function AvatarEmoji({ name }) {
+
+  // choose emoji based on name
+  // same name will always get same emoji
   const emoji = useMemo(() => {
     const pool = ["👧", "👦", "🧒", "👩‍🎓", "👨‍🎓"];
     let sum = 0;
-    for (let i = 0; i < name.length; i++) sum += name.charCodeAt(i);
+
+    for (let i = 0; i < name.length; i++) {
+      sum += name.charCodeAt(i);
+    }
+
     return pool[sum % pool.length];
   }, [name]);
 
-  return <span className="detailAvatar" aria-hidden="true">{emoji}</span>;
+  return <span className="detailAvatar">{emoji}</span>;
 }
 
 export default function ChecklistStudentPage() {
+
+  // get studentId from URL
+  // example: /admin/checklist/s-ethan
   const { studentId } = useParams();
+
+  // useNavigate allows us to go back to list page
   const navigate = useNavigate();
 
+  // find student detail using studentId
+  // if not found, use default fallback data
   const data = STUDENT_DETAIL[studentId] || {
     name: "Unknown Student",
     overall: "Pending",
@@ -61,7 +79,10 @@ export default function ChecklistStudentPage() {
 
   return (
     <div className="detailWrap">
+
+      {/* Top section with avatar and overall status */}
       <div className="detailTop">
+
         <div className="detailLeft">
           <AvatarEmoji name={data.name} />
           <div className="detailName">{data.name}</div>
@@ -71,30 +92,49 @@ export default function ChecklistStudentPage() {
           <div className="detailStatusLabel">Status:</div>
           <div className="detailStatusValue">{data.overall}</div>
         </div>
+
       </div>
 
+      {/* Step list section */}
       <div className="detailList">
+
         {data.steps.map((s) => (
           <div key={s.n} className="detailRow">
+
+            {/* Step number */}
             <div className="stepNo">{s.n}</div>
+
+            {/* Step name */}
             <div className="stepLabel">{s.label}</div>
+
+            {/* Step result */}
             <div className="stepValue">{s.value}</div>
+
           </div>
         ))}
+
       </div>
 
+      {/* Footer section */}
       <div className="detailFooter">
+
         <div className="detailFooterLeft">
           <div className="detailStepOf">{data.stepOf}</div>
           <div className="detailNext">Next: {data.next}</div>
         </div>
 
         <div className="detailFooterRight">
-          <button type="button" className="linkBtn" onClick={() => navigate("/admin/checklist")}>
+          <button
+            type="button"
+            className="linkBtn"
+            onClick={() => navigate("/admin/checklist")}
+          >
             Back to list
           </button>
         </div>
+
       </div>
+
     </div>
   );
 }
