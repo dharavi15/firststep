@@ -1002,3 +1002,587 @@ body {
     align-items: flex-start;
   }
 }
+
+/* Calendar action button style */
+.btnOutlinePrimary {
+  border: 1.5px solid var(--color-primary-solid);
+  background: #fff;
+  color: var(--color-primary-solid);
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btnOutlinePrimary:hover {
+  background: rgba(74, 144, 226, 0.08);
+}
+
+/* button with icon */
+.btnWithIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* make icon blue */
+.btnWithIcon svg {
+  color: var(--color-primary-solid);
+}
+
+/* action buttons group */
+.calendarActionGroup {
+  display: flex;
+  gap: 8px;
+}
+
+/* Profile page layout */
+.profileWrap {
+  max-width: 980px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.profileHeaderRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 2px;
+}
+
+.profileTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 900;
+  color: #111;
+}
+
+.profileHint {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-text-secondary);
+}
+
+.profileError {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(235, 87, 87, 0.10);
+  color: #111;
+  font-weight: 700;
+}
+
+.profileList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.profileListRow {
+  width: 100%;
+  border: none;
+  background: var(--color-surface);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+  padding: 14px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+}
+
+.profileListRow:hover {
+  filter: brightness(0.99);
+}
+
+.profileListLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profileAvatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.06);
+  display: grid;
+  place-items: center;
+}
+
+.profileListText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profileStudentName {
+  font-weight: 900;
+  color: #111;
+}
+
+.profileSubText {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-text-secondary);
+}
+
+.profileEmpty {
+  padding: 12px 4px;
+  color: var(--color-text-secondary);
+  font-weight: 700;
+}
+
+.profileTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.profileCard {
+  background: var(--color-surface);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+  padding: 16px;
+}
+
+.profileCardTop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 12px;
+}
+
+.profileAvatarBig {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.06);
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+}
+
+.profileCardTopText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profileNameLine {
+  font-size: 18px;
+  font-weight: 900;
+  color: #111;
+}
+
+.profileEmailLine {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--color-text-secondary);
+}
+
+.profileMetaLine {
+  font-size: 12px;
+  font-weight: 800;
+  color: #111;
+  opacity: 0.85;
+}
+
+.profileInfoList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.profileInfoRow {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profileInfoLabel {
+  font-weight: 900;
+  color: #111;
+}
+
+.profileInfoValue {
+  font-weight: 800;
+  color: #111;
+  opacity: 0.9;
+  text-align: right;
+}
+
+/* Make upcoming rows clickable in Profile */
+.upcomingRowBtn {
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.upcomingRowBtn:hover {
+  filter: brightness(0.99);
+}
+
+/* Modal base styles (used by Calendar and Profile) */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.35);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  z-index: 1200;
+}
+
+.modalCard {
+  width: min(560px, 100%);
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  padding: 16px;
+}
+
+.modalTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.modalTitle {
+  font-size: 16px;
+  font-weight: 900;
+  color: #111;
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modalLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 800;
+  color: #111;
+  font-size: 12px;
+}
+
+.modalInput {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+}
+
+.modalInput:focus {
+  border-color: rgba(74, 144, 226, 0.7);
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+/* Event detail inside modal */
+.eventDetailBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.eventDetailTitle {
+  font-size: 18px;
+  font-weight: 900;
+  color: #111;
+}
+
+.eventDetailDate {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-text-secondary);
+}
+
+.eventDetailNote {
+  font-weight: 900;
+  color: #111;
+}
+
+.eventDetailDesc {
+  margin-top: 6px;
+  color: var(--color-text-secondary);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* Profile page layout */
+.profileWrap {
+  max-width: 980px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 16px;
+}
+
+/* Left student list card */
+.profileListCard {
+  background: var(--color-surface);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+  padding: 14px;
+}
+
+.profileListTitle {
+  font-weight: 900;
+  font-size: 14px;
+  margin-bottom: 10px;
+  color: #111;
+}
+
+/* Student row button */
+.profileRowBtn {
+  width: 100%;
+  border: none;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
+.profileRowBtn:hover {
+  background: rgba(74, 144, 226, 0.06);
+}
+
+.profileRowBtn.active {
+  outline: 2px solid rgba(74, 144, 226, 0.25);
+  background: rgba(74, 144, 226, 0.10);
+}
+
+.profileRowName {
+  flex: 1;
+  font-weight: 800;
+  color: #111;
+}
+
+/* Avatar */
+.profileAvatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: rgba(74, 144, 226, 0.12);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  color: #111;
+}
+
+/* Right detail card */
+.profileDetailCard {
+  background: var(--color-surface);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+  padding: 14px;
+}
+
+/* Header */
+.profileHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 4px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  margin-bottom: 12px;
+}
+
+.profileHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profileHeaderText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profileHeaderName {
+  font-weight: 900;
+  font-size: 16px;
+  color: #111;
+}
+
+.profileHeaderEmail {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.profileHeaderRight {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: rgba(74, 144, 226, 0.10);
+}
+
+/* Info rows */
+.profileInfoRow {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.profileInfoLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+}
+
+.profileInfoIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 2px solid #111;
+  display: grid;
+  place-items: center;
+}
+
+.profileInfoLabel {
+  font-weight: 800;
+  color: #111;
+}
+
+.profileInfoValue {
+  font-weight: 800;
+  color: #111;
+  text-align: right;
+}
+
+/* Upcoming events block inside profile */
+.profileUpcoming {
+  margin-top: 14px;
+  background: var(--color-surface);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+  padding: 14px;
+}
+
+.profileUpcomingTitle {
+  margin: 0 0 10px;
+  font-size: 22px;
+  font-weight: 900;
+  color: #111;
+}
+
+/* Modal (reuse style for Calendar too) */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.25);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  z-index: 2000;
+}
+
+.modalCard {
+  width: min(560px, 100%);
+  background: var(--color-surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  padding: 16px;
+}
+
+.modalTitle {
+  margin: 0 0 10px;
+  font-size: 18px;
+  font-weight: 900;
+  color: #111;
+}
+
+.modalError {
+  background: rgba(235, 87, 87, 0.10);
+  border: 1px solid rgba(235, 87, 87, 0.25);
+  color: #111;
+  font-weight: 800;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modalLabel {
+  font-size: 12px;
+  font-weight: 800;
+  color: #111;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modalInput {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+}
+
+.modalInput:focus {
+  border-color: rgba(74, 144, 226, 0.7);
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+/* Responsive */
+@media (max-width: 820px) {
+  .profileWrap {
+    grid-template-columns: 1fr;
+  }
+}

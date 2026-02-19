@@ -1,14 +1,74 @@
-import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Bell, CheckCircle2 } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Bell,
+  CheckCircle2,
+  Plus,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 
-// make number always 2 digits
-// example: 5 -> "05"
+// storage key for localStorage
+// later you can replace this with Firebase collection
+const STORAGE_KEY = "firststep_calendar_events";
+
+// create random id for new event
+function makeId() {
+  return "e-" + Math.random().toString(16).slice(2) + "-" + Date.now();
+}
+
+// get events from localStorage
+// later replace with Firebase getDocs()
+function getEventsFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+
+    if (!raw) {
+      // default demo data
+      return [
+        {
+          id: "e1",
+          date: "2026-02-10",
+          title: "Health Form Due",
+          note: "2 days left",
+        },
+        {
+          id: "e2",
+          date: "2026-02-20",
+          title: "Orientation",
+          note: "Parent meeting",
+        },
+        {
+          id: "e3",
+          date: "2026-02-05",
+          title: "Pay Tuition & Fees",
+          note: "Pending",
+        },
+      ];
+    }
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed;
+  } catch {
+    return [];
+  }
+}
+
+// save events to localStorage
+// later replace with Firebase setDoc()
+function saveEventsToStorage(events) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+}
+
+// convert number to 2 digits
 function pad2(n) {
   return String(n).padStart(2, "0");
 }
 
-// convert Date object to string format "YYYY-MM-DD"
-// example: 2026-02-05
+// convert Date to YYYY-MM-DD
 function toKey(dateObj) {
   const y = dateObj.getFullYear();
   const m = pad2(dateObj.getMonth() + 1);
@@ -16,7 +76,7 @@ function toKey(dateObj) {
   return `${y}-${m}-${d}`;
 }
 
-// create month title like "February 2026"
+// create month title like February 2026
 function monthLabel(dateObj) {
   const m = dateObj.toLocaleString("en-US", { month: "long" });
   const y = dateObj.getFullYear();
@@ -24,51 +84,21 @@ function monthLabel(dateObj) {
 }
 
 // get first day of month
-// example: Feb 2026 -> 2026-02-01
 function startOfMonth(dateObj) {
   return new Date(dateObj.getFullYear(), dateObj.getMonth(), 1);
 }
 
-// get total number of days in month
-// example: Feb 2026 -> 28
+// get total days in month
 function daysInMonth(dateObj) {
   return new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0).getDate();
 }
 
-// get weekday index
-// Sunday = 0, Monday = 1 ... Saturday = 6
+// Sunday = 0
 function weekdayIndexSun0(dateObj) {
   return dateObj.getDay();
 }
 
-// mock up code (can change to be DB later)
-const MOCK_EVENTS = [
-  {
-    id: "e1",
-    date: "2026-02-10",
-    title: "Health Form Due",
-    note: "2 days left",
-    type: "deadline",
-  },
-  {
-    id: "e2",
-    date: "2026-02-20",
-    title: "Orientation",
-    note: "Parent meeting",
-    type: "meeting",
-  },
-  {
-    id: "e3",
-    date: "2026-02-05",
-    title: "Pay Tuition & Fees",
-    note: "Pending",
-    type: "deadline",
-  },
-];
-
-// convert event list to Map
-// key = date string
-// value = array of events on that date
+// build map from date to events
 function buildEventMap(events) {
   const map = new Map();
 
@@ -82,8 +112,7 @@ function buildEventMap(events) {
   return map;
 }
 
-// count how many events are inside the month that user is viewing
-// this is used for notification badge
+// count events inside current month
 function countEventsInMonth(events, viewDate) {
   const y = viewDate.getFullYear();
   const m = viewDate.getMonth();
@@ -91,32 +120,61 @@ function countEventsInMonth(events, viewDate) {
   return events.filter((e) => {
     const [yy, mm, dd] = e.date.split("-").map(Number);
     const dt = new Date(yy, mm - 1, dd);
-
     return dt.getFullYear() === y && dt.getMonth() === m;
   }).length;
 }
 
 export default function CalendarPage() {
-  // default month is Feb 2026 (for demo)
+  // month user is viewing
   const [viewDate, setViewDate] = useState(new Date(2026, 1, 1));
 
   // selected date
   const [selected, setSelected] = useState("2026-02-05");
 
-  // create map of events by date
-  const eventMap = useMemo(() => buildEventMap(MOCK_EVENTS), []);
+  // events list
+  const [events, setEvents] = useState([]);
 
-  // get events of selected date
+  // loading state
+  const [loading, setLoading] = useState(true);
+
+  // error message
+  const [error, setError] = useState("");
+
+  // modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // if not empty = editing mode
+  const [editId, setEditId] = useState("");
+
+  // form fields
+  const [formDate, setFormDate] = useState("");
+  const [formTitle, setFormTitle] = useState("");
+  const [formNote, setFormNote] = useState("");
+
+  // load events on first render
+  useEffect(() => {
+    try {
+      setLoading(true);
+      const list = getEventsFromStorage();
+      setEvents(list);
+      setError("");
+    } catch {
+      setError("Cannot load events.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const eventMap = useMemo(() => buildEventMap(events), [events]);
+
   const selectedEvents = useMemo(() => {
     return eventMap.get(selected) || [];
   }, [eventMap, selected]);
 
-  // count events in current viewing month
   const notifCount = useMemo(() => {
-    return countEventsInMonth(MOCK_EVENTS, viewDate);
-  }, [viewDate]);
+    return countEventsInMonth(events, viewDate);
+  }, [events, viewDate]);
 
-  // build calendar grid (6 rows x 7 columns)
   const grid = useMemo(() => {
     const first = startOfMonth(viewDate);
     const total = daysInMonth(viewDate);
@@ -130,35 +188,101 @@ export default function CalendarPage() {
       if (dayNum < 1 || dayNum > total) {
         cells.push(null);
       } else {
-        const dt = new Date(
-          viewDate.getFullYear(),
-          viewDate.getMonth(),
-          dayNum
+        cells.push(
+          new Date(viewDate.getFullYear(), viewDate.getMonth(), dayNum)
         );
-        cells.push(dt);
       }
     }
 
     return cells;
   }, [viewDate]);
 
-  // go to previous month
   function prevMonth() {
     setViewDate((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
   }
 
-  // go to next month
   function nextMonth() {
     setViewDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
   }
 
-  // when user clicks a date
   function onPickDate(dt) {
-    const key = toKey(dt);
-    setSelected(key);
+    setSelected(toKey(dt));
   }
 
-  // create readable label for selected date
+  function openAddModal() {
+    setEditId("");
+    setFormDate(selected);
+    setFormTitle("");
+    setFormNote("");
+    setError("");
+    setIsModalOpen(true);
+  }
+
+  function openEditModal(ev) {
+    setEditId(ev.id);
+    setFormDate(ev.date);
+    setFormTitle(ev.title);
+    setFormNote(ev.note || "");
+    setError("");
+    setIsModalOpen(true);
+  }
+
+  function closeModal() {
+    setIsModalOpen(false);
+    setEditId("");
+    setError("");
+  }
+
+  function onSubmitEvent(e) {
+    e.preventDefault();
+
+    if (!formDate || !formTitle.trim()) {
+      setError("Date and Title are required.");
+      return;
+    }
+
+    try {
+      let next;
+
+      if (editId) {
+        next = events.map((ev) =>
+          ev.id === editId
+            ? { ...ev, date: formDate, title: formTitle, note: formNote }
+            : ev
+        );
+      } else {
+        next = [
+          ...events,
+          {
+            id: makeId(),
+            date: formDate,
+            title: formTitle,
+            note: formNote,
+          },
+        ];
+      }
+
+      setEvents(next);
+      saveEventsToStorage(next);
+
+      setSelected(formDate);
+      setIsModalOpen(false);
+      setEditId("");
+    } catch {
+      setError("Cannot save event.");
+    }
+  }
+
+  function onDeleteEvent(eventId) {
+    try {
+      const next = events.filter((e) => e.id !== eventId);
+      setEvents(next);
+      saveEventsToStorage(next);
+    } catch {
+      setError("Cannot delete event.");
+    }
+  }
+
   const selectedLabel = useMemo(() => {
     if (!selected) return "";
 
@@ -189,37 +313,18 @@ export default function CalendarPage() {
           </div>
 
           <div className="calendarNav">
-            <button
-              className="iconBtn calNavBtn"
-              type="button"
-              onClick={prevMonth}
-            >
+            <button className="iconBtn" onClick={prevMonth}>
               <ChevronLeft size={20} />
             </button>
-
-            <button
-              className="iconBtn calNavBtn"
-              type="button"
-              onClick={nextMonth}
-            >
+            <button className="iconBtn" onClick={nextMonth}>
               <ChevronRight size={20} />
             </button>
           </div>
         </div>
 
-        <div className="calendarWeekdays">
-          {["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"].map((w) => (
-            <div key={w} className="weekdayCell">
-              {w}
-            </div>
-          ))}
-        </div>
-
         <div className="calendarGrid">
           {grid.map((dt, idx) => {
-            if (!dt) {
-              return <div key={idx} className="calCell isEmpty" />;
-            }
+            if (!dt) return <div key={idx} className="calCell" />;
 
             const key = toKey(dt);
             const isSelected = key === selected;
@@ -228,17 +333,11 @@ export default function CalendarPage() {
             return (
               <button
                 key={key}
-                type="button"
                 className={`calCell ${isSelected ? "isSelected" : ""}`}
                 onClick={() => onPickDate(dt)}
               >
-                <div className="calDayNum">{dt.getDate()}</div>
-
-                {hasEvents && (
-                  <div className="calDotRow">
-                    <span className="calDot" />
-                  </div>
-                )}
+                <div>{dt.getDate()}</div>
+                {hasEvents && <span className="calDot" />}
               </button>
             );
           })}
@@ -247,34 +346,93 @@ export default function CalendarPage() {
 
       <div className="upcomingBlock">
         <div className="upcomingHeader">
-          <h3 className="upcomingTitle">Up Coming Event</h3>
-          <div className="upcomingDate">{selectedLabel}</div>
+          <h3>Up Coming Event</h3>
+          <div>{selectedLabel}</div>
+
+          <button
+            type="button"
+            className="btnOutlinePrimary btnWithIcon"
+            onClick={openAddModal}
+          >
+            <Plus size={16} />
+            Add Event
+          </button>
         </div>
 
-        <div className="upcomingList">
-          {selectedEvents.length === 0 ? (
-            <div className="upcomingEmpty">
-              No events on this date.
-            </div>
-          ) : (
-            selectedEvents.map((e) => (
-              <div key={e.id} className="upcomingRow">
-                <div className="upcomingLeft">
-                  <span className="upcomingIcon">
-                    <CheckCircle2 size={18} />
-                  </span>
-                  <span className="upcomingText">
-                    {e.title}
-                  </span>
-                </div>
-                <div className="upcomingRight">
-                  {e.note}
-                </div>
+        {loading && <div>Loading...</div>}
+
+        {!loading &&
+          selectedEvents.map((ev) => (
+            <div key={ev.id} className="upcomingRow">
+              <div className="upcomingLeft">
+                <CheckCircle2 size={16} />
+                <span>{ev.title}</span>
               </div>
-            ))
-          )}
-        </div>
+
+              <div>{ev.note}</div>
+
+              <div className="calendarActionGroup">
+                <button
+                  type="button"
+                  className="btnOutlinePrimary btnWithIcon"
+                  onClick={() => openEditModal(ev)}
+                >
+                  <Pencil size={14} />
+                  Edit
+                </button>
+
+                <button
+                  type="button"
+                  className="btnOutlinePrimary btnWithIcon"
+                  onClick={() => onDeleteEvent(ev.id)}
+                >
+                  <Trash2 size={14} />
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+
+        {error && <div>{error}</div>}
       </div>
+
+      {isModalOpen && (
+        <div className="modalOverlay">
+          <div className="modalCard">
+            <button
+              type="button"
+              className="btnOutlinePrimary"
+              onClick={closeModal}
+            >
+              Close
+            </button>
+
+            <form onSubmit={onSubmitEvent}>
+              <input
+                type="date"
+                value={formDate}
+                onChange={(e) => setFormDate(e.target.value)}
+              />
+
+              <input
+                value={formTitle}
+                onChange={(e) => setFormTitle(e.target.value)}
+                placeholder="Title"
+              />
+
+              <input
+                value={formNote}
+                onChange={(e) => setFormNote(e.target.value)}
+                placeholder="Note"
+              />
+
+              <button type="submit" className="btnOutlinePrimary">
+                Save
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
