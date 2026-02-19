@@ -9,7 +9,8 @@ import {
   Check,
 } from "lucide-react";
 
-function WideCard({ icon: Icon, title }) {
+function WideCard({ icon, title }) {
+  const Icon = icon;
   return (
     <button type="button" className="wideCard">
       <div className="wideCardIcon">
@@ -20,7 +21,8 @@ function WideCard({ icon: Icon, title }) {
   );
 }
 
-function QuickCard({ icon: Icon, title }) {
+function QuickCard({ icon, title }) {
+  const Icon = icon;
   return (
     <button type="button" className="quickCard">
       <Icon size={32} />
@@ -52,7 +54,6 @@ export default function DashboardPage() {
       </div>
 
       <div className="dashMainGrid">
-        {/* Left: checklist card */}
         <section className="panel">
           <h3 className="sectionTitle">Onboarding Checklist</h3>
 
@@ -76,7 +77,6 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* Right: quick actions */}
         <section className="panel">
           <h3 className="sectionTitle">Quick Actions</h3>
 
