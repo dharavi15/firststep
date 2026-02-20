@@ -1,25 +1,17 @@
 // src/pages/admin/ProfilePage.jsx
-import { useMemo, useState } from "react";
-import {
-  Bell,
-  CheckCircle2,
-  ChevronRight,
-  Mail,
-  MapPin,
-  Phone,
-  User,
-} from "lucide-react";
+import { useMemo, useRef, useState, useEffect } from "react";
+import { CheckCircle2, ChevronRight, Mail, MapPin, Phone, User } from "lucide-react";
 
-// localStorage key for student profiles
-// later you can replace with Firebase collection
+/* localStorage key */
 const PROFILE_KEY = "firststep_profiles";
 
-// localStorage key for calendar events
-// later you can replace with Firebase collection
+/* localStorage key */
 const EVENT_KEY = "firststep_calendar_events";
 
-// default mock students
-// later you can replace this with database data
+/* emoji options */
+const EMOJI_OPTIONS = ["👧", "👦", "🧒", "👩‍🎓", "👨‍🎓"];
+
+/* mock students */
 const DEFAULT_STUDENTS = [
   {
     id: "s-1",
@@ -29,7 +21,8 @@ const DEFAULT_STUDENTS = [
     address: "123 Maple St, Hometown, CA 91001",
     parentName: "Daniel Parker",
     parentEmail: "daniel@gmail.com",
-    classYear: "Year 1",
+    classYear: "Admin",
+    avatarEmoji: "👩‍🎓",
   },
   {
     id: "s-2",
@@ -40,43 +33,48 @@ const DEFAULT_STUDENTS = [
     parentName: "Lucas Reed",
     parentEmail: "lucas.parent@gmail.com",
     classYear: "Year 2",
+    avatarEmoji: "👨‍🎓",
   },
 ];
 
-// read students from localStorage
-// later replace with Firebase getDocs()
+/* ensure emoji exists */
+function normalizeStudents(list) {
+  return list.map((s, idx) => {
+    const fallback = EMOJI_OPTIONS[idx % EMOJI_OPTIONS.length];
+    return { ...s, avatarEmoji: s.avatarEmoji || fallback };
+  });
+}
+
+/* load students */
 function loadStudents() {
   try {
     const raw = localStorage.getItem(PROFILE_KEY);
-    if (!raw) return DEFAULT_STUDENTS;
+    if (!raw) return normalizeStudents(DEFAULT_STUDENTS);
 
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return DEFAULT_STUDENTS;
+    if (!Array.isArray(parsed)) return normalizeStudents(DEFAULT_STUDENTS);
 
-    return parsed;
+    return normalizeStudents(parsed);
   } catch {
-    return DEFAULT_STUDENTS;
+    return normalizeStudents(DEFAULT_STUDENTS);
   }
 }
 
-// save students to localStorage
-// later replace with Firebase setDoc()
+/* save students */
 function saveStudents(list) {
   localStorage.setItem(PROFILE_KEY, JSON.stringify(list));
 }
 
-// read events from localStorage
-// later replace with Firebase getDocs()
+/* load events */
 function loadEvents() {
   try {
     const raw = localStorage.getItem(EVENT_KEY);
 
     if (!raw) {
-      // default mock events
       return [
         {
           id: "e1",
-          title: "Health Form Due",
+          title: "Open house",
           note: "2 days left",
           date: "2026-02-10",
           studentId: "s-1",
@@ -86,6 +84,12 @@ function loadEvents() {
           title: "Orientation",
           note: "Parent meeting",
           date: "2026-02-20",
+        },
+        {
+          id: "e3",
+          title: "Reminder",
+          note: "Note",
+          date: "2026-02-28",
         },
       ];
     }
@@ -99,7 +103,7 @@ function loadEvents() {
   }
 }
 
-// format date to readable text
+/* pretty date */
 function prettyDate(dateStr) {
   const dt = new Date(dateStr);
   if (Number.isNaN(dt.getTime())) return dateStr;
@@ -111,19 +115,21 @@ function prettyDate(dateStr) {
   });
 }
 
-// sort events by date ascending
+/* sort events */
 function sortByDateAsc(list) {
   return [...list].sort((a, b) => new Date(a.date) - new Date(b.date));
 }
 
-// simple avatar using first letter
-function AvatarCircle({ name }) {
-  const first = (name || "?").trim().slice(0, 1).toUpperCase();
-  return <div className="profileAvatar" aria-hidden="true">{first}</div>;
+/* avatar */
+function AvatarCircle({ emoji }) {
+  return (
+    <div className="profileAvatar" aria-hidden="true">
+      {emoji || "🧒"}
+    </div>
+  );
 }
 
-// info row component
-// we pass icon as JSX to avoid ESLint "unused" issues
+/* info row */
 function InfoRow({ icon, label, value }) {
   return (
     <div className="profileInfoRow">
@@ -137,22 +143,23 @@ function InfoRow({ icon, label, value }) {
 }
 
 export default function ProfilePage() {
-  // load students once on first render
+  /* students state */
   const [students, setStudents] = useState(() => loadStudents());
 
-  // selected student id
+  /* selected student */
   const [selectedId, setSelectedId] = useState(() => {
     const list = loadStudents();
     return list[0]?.id || "";
   });
 
-  // load events once on first render
+  /* events state */
   const [events] = useState(() => loadEvents());
 
-  // edit modal open/close
+  /* edit mode */
   const [isEditOpen, setIsEditOpen] = useState(false);
 
-  // form fields for edit profile
+  /* form fields */
+  const [formEmoji, setFormEmoji] = useState(EMOJI_OPTIONS[0]);
   const [formName, setFormName] = useState("");
   const [formEmail, setFormEmail] = useState("");
   const [formPhone, setFormPhone] = useState("");
@@ -161,15 +168,18 @@ export default function ProfilePage() {
   const [formParentEmail, setFormParentEmail] = useState("");
   const [formClassYear, setFormClassYear] = useState("");
 
-  // form error message
+  /* form error */
   const [formError, setFormError] = useState("");
 
-  // find selected student object
+  /* scroll target */
+  const editRef = useRef(null);
+
+  /* selected student object */
   const selectedStudent = useMemo(() => {
     return students.find((s) => s.id === selectedId) || null;
   }, [students, selectedId]);
 
-  // events for selected student + global events
+  /* upcoming events */
   const upcomingEvents = useMemo(() => {
     if (!selectedStudent) return [];
 
@@ -180,35 +190,51 @@ export default function ProfilePage() {
     return sortByDateAsc(filtered);
   }, [events, selectedStudent]);
 
-  // open edit modal and fill form with selected student data
+  /* fill form */
+  function fillFormFromStudent(stu) {
+    setFormEmoji(stu?.avatarEmoji || EMOJI_OPTIONS[0]);
+    setFormName(stu?.name || "");
+    setFormEmail(stu?.email || "");
+    setFormPhone(stu?.phone || "");
+    setFormAddress(stu?.address || "");
+    setFormParentName(stu?.parentName || "");
+    setFormParentEmail(stu?.parentEmail || "");
+    setFormClassYear(stu?.classYear || "");
+  }
+
+  /* select student */
+  function onSelectStudent(id) {
+    setSelectedId(id);
+    setFormError("");
+
+    if (isEditOpen) {
+      const nextStudent = students.find((s) => s.id === id) || null;
+      fillFormFromStudent(nextStudent);
+    } else {
+      setIsEditOpen(false);
+    }
+  }
+
+  /* open edit section */
   function openEdit() {
     if (!selectedStudent) return;
-
-    setFormName(selectedStudent.name || "");
-    setFormEmail(selectedStudent.email || "");
-    setFormPhone(selectedStudent.phone || "");
-    setFormAddress(selectedStudent.address || "");
-    setFormParentName(selectedStudent.parentName || "");
-    setFormParentEmail(selectedStudent.parentEmail || "");
-    setFormClassYear(selectedStudent.classYear || "");
-
+    fillFormFromStudent(selectedStudent);
     setFormError("");
     setIsEditOpen(true);
   }
 
-  // close edit modal
+  /* cancel edit */
   function closeEdit() {
     setIsEditOpen(false);
     setFormError("");
+    fillFormFromStudent(selectedStudent);
   }
 
-  // save edited profile to state + localStorage
+  /* save profile */
   function onSaveProfile(e) {
     e.preventDefault();
-
     if (!selectedStudent) return;
 
-    // basic validation
     if (!formName.trim() || !formEmail.trim()) {
       setFormError("Name and Email are required.");
       return;
@@ -219,6 +245,7 @@ export default function ProfilePage() {
 
       return {
         ...s,
+        avatarEmoji: formEmoji,
         name: formName.trim(),
         email: formEmail.trim(),
         phone: formPhone.trim(),
@@ -229,15 +256,19 @@ export default function ProfilePage() {
       };
     });
 
-    // update UI
     setStudents(next);
-
-    // persist to localStorage
     saveStudents(next);
 
-    // close modal
     setIsEditOpen(false);
+    setFormError("");
   }
+
+  /* scroll to edit section when open */
+  useEffect(() => {
+    if (!isEditOpen) return;
+    if (!editRef.current) return;
+    editRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [isEditOpen]);
 
   return (
     <div className="profileWrap">
@@ -250,9 +281,9 @@ export default function ProfilePage() {
             key={s.id}
             type="button"
             className={`profileRowBtn ${s.id === selectedId ? "active" : ""}`}
-            onClick={() => setSelectedId(s.id)}
+            onClick={() => onSelectStudent(s.id)}
           >
-            <AvatarCircle name={s.name} />
+            <AvatarCircle emoji={s.avatarEmoji} />
             <span className="profileRowName">{s.name}</span>
             <ChevronRight size={16} />
           </button>
@@ -264,55 +295,102 @@ export default function ProfilePage() {
         <div className="profileDetailCard">
           <div className="profileHeader">
             <div className="profileHeaderLeft">
-              <AvatarCircle name={selectedStudent.name} />
+              <AvatarCircle emoji={selectedStudent.avatarEmoji} />
               <div className="profileHeaderText">
                 <div className="profileHeaderName">{selectedStudent.name}</div>
                 <div className="profileHeaderEmail">{selectedStudent.email}</div>
               </div>
             </div>
-
-            <div className="profileHeaderRight">
-              <Bell size={18} />
-            </div>
           </div>
 
-          <InfoRow
-            icon={<Phone size={16} />}
-            label="Phone Number"
-            value={selectedStudent.phone}
-          />
+          <InfoRow icon={<Phone size={16} />} label="Phone" value={selectedStudent.phone} />
+          <InfoRow icon={<MapPin size={16} />} label="Address" value={selectedStudent.address} />
+          <InfoRow icon={<User size={16} />} label="Parent" value={selectedStudent.parentName} />
+          <InfoRow icon={<Mail size={16} />} label="Parent Email" value={selectedStudent.parentEmail} />
+          <InfoRow icon={<CheckCircle2 size={16} />} label="Class" value={selectedStudent.classYear} />
 
-          <InfoRow
-            icon={<MapPin size={16} />}
-            label="Home Address"
-            value={selectedStudent.address}
-          />
+          {/* edit button */}
+          {!isEditOpen && (
+            <button type="button" className="btnOutlinePrimary" onClick={openEdit}>
+              Edit Profile
+            </button>
+          )}
 
-          <InfoRow
-            icon={<User size={16} />}
-            label="Parent Name"
-            value={selectedStudent.parentName}
-          />
+          {/* inline edit section */}
+          {isEditOpen && (
+            <div ref={editRef} className="profileEditCard">
+              <div className="profileEditTopRow">
+                <h3 className="modalTitle">Edit Profile</h3>
+              </div>
 
-          <InfoRow
-            icon={<Mail size={16} />}
-            label="Parent Email"
-            value={selectedStudent.parentEmail}
-          />
+              {formError && <div className="modalError">{formError}</div>}
 
-          <InfoRow
-            icon={<CheckCircle2 size={16} />}
-            label="Class"
-            value={selectedStudent.classYear}
-          />
+              <form className="modalForm" onSubmit={onSaveProfile}>
+                <label className="modalLabel">
+                  Profile Emoji
+                  <select
+                    className="modalInput profileEmojiSelect"
+                    value={formEmoji}
+                    onChange={(e) => setFormEmoji(e.target.value)}
+                  >
+                    {EMOJI_OPTIONS.map((em) => (
+                      <option key={em} value={em}>
+                        {em}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
-          <button type="button" className="btnOutlinePrimary" onClick={openEdit}>
-            Edit Profile
-          </button>
+                <label className="modalLabel">
+                  Name
+                  <input className="modalInput" value={formName} onChange={(e) => setFormName(e.target.value)} />
+                </label>
+
+                <label className="modalLabel">
+                  Email
+                  <input className="modalInput" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} />
+                </label>
+
+                <label className="modalLabel">
+                  Phone
+                  <input className="modalInput" value={formPhone} onChange={(e) => setFormPhone(e.target.value)} />
+                </label>
+
+                <label className="modalLabel">
+                  Address
+                  <input className="modalInput" value={formAddress} onChange={(e) => setFormAddress(e.target.value)} />
+                </label>
+
+                <label className="modalLabel">
+                  Parent Name
+                  <input className="modalInput" value={formParentName} onChange={(e) => setFormParentName(e.target.value)} />
+                </label>
+
+                <label className="modalLabel">
+                  Parent Email
+                  <input className="modalInput" value={formParentEmail} onChange={(e) => setFormParentEmail(e.target.value)} />
+                </label>
+
+                <label className="modalLabel">
+                  Class
+                  <input className="modalInput" value={formClassYear} onChange={(e) => setFormClassYear(e.target.value)} />
+                </label>
+
+                <div className="modalActions">
+                  <button type="button" className="btnOutlinePrimary" onClick={closeEdit}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btnOutlinePrimary">
+                    Save
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
 
           {/* upcoming events */}
           <div className="profileUpcoming">
-            <h3 className="profileUpcomingTitle">Up Coming Event</h3>
+            <h3 className="profileUpcomingTitle">Upcoming</h3>
 
             {upcomingEvents.length === 0 ? (
               <div className="upcomingEmpty">No upcoming events.</div>
@@ -327,91 +405,6 @@ export default function ProfilePage() {
                 </div>
               ))
             )}
-          </div>
-        </div>
-      )}
-
-      {/* edit modal */}
-      {isEditOpen && (
-        <div className="modalOverlay" role="dialog" aria-modal="true">
-          <div className="modalCard">
-            <h3 className="modalTitle">Edit Profile</h3>
-
-            {formError && <div className="modalError">{formError}</div>}
-
-            <form className="modalForm" onSubmit={onSaveProfile}>
-              <label className="modalLabel">
-                Name
-                <input
-                  className="modalInput"
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                />
-              </label>
-
-              <label className="modalLabel">
-                Email
-                <input
-                  className="modalInput"
-                  value={formEmail}
-                  onChange={(e) => setFormEmail(e.target.value)}
-                />
-              </label>
-
-              <label className="modalLabel">
-                Phone
-                <input
-                  className="modalInput"
-                  value={formPhone}
-                  onChange={(e) => setFormPhone(e.target.value)}
-                />
-              </label>
-
-              <label className="modalLabel">
-                Address
-                <input
-                  className="modalInput"
-                  value={formAddress}
-                  onChange={(e) => setFormAddress(e.target.value)}
-                />
-              </label>
-
-              <label className="modalLabel">
-                Parent Name
-                <input
-                  className="modalInput"
-                  value={formParentName}
-                  onChange={(e) => setFormParentName(e.target.value)}
-                />
-              </label>
-
-              <label className="modalLabel">
-                Parent Email
-                <input
-                  className="modalInput"
-                  value={formParentEmail}
-                  onChange={(e) => setFormParentEmail(e.target.value)}
-                />
-              </label>
-
-              <label className="modalLabel">
-                Class
-                <input
-                  className="modalInput"
-                  value={formClassYear}
-                  onChange={(e) => setFormClassYear(e.target.value)}
-                />
-              </label>
-
-              <div className="modalActions">
-                <button type="button" className="btnOutlinePrimary" onClick={closeEdit}>
-                  Cancel
-                </button>
-                <button type="submit" className="btnOutlinePrimary">
-                  Save
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}
