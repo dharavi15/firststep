@@ -1476,3 +1476,59 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* Make checklistRow button */
+.checklistRow {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 12px;
+}
+
+.checklistRow:hover {
+  background: rgba(74, 144, 226, 0.06);
+}
+
+/* keyboard users */
+.checklistRow:focus-visible {
+  outline: 2px solid rgba(74, 144, 226, 0.35);
+  outline-offset: 2px;
+}
+
+/* ensure icon doesn't shrink weirdly */
+.checkCircle svg {
+  display: block;
+}
+
+/* Back Button  */
+.viewBackBtn {
+  border: none;
+  background: rgba(74, 144, 226, 0.12);
+  color: var(--color-primary-solid);
+  border-radius: 12px;
+  padding: 8px 14px;
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  transition: all 0.15s ease;
+}
+
+.viewBackBtn:hover {
+  background: rgba(74, 144, 226, 0.18);
+}
+
+.viewBackBtn:active {
+  transform: translateY(1px);
+}
+
+.viewBackBtn svg {
+  color: var(--color-primary-solid);
+}
