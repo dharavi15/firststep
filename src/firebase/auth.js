@@ -1,19 +1,23 @@
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
 import { app } from "./firestore";
 
-// This file provides Firebase Auth functions
-// Services and pages can import these functions to login and logout
+// Create Firebase Auth instance from Firebase app
+// This is used by the whole system to check login state
+export const auth = getAuth(app);
 
-const auth = getAuth(app);
-
+// This function returns the auth instance
 export function getFirebaseAuth() {
-  // Returns the auth instance
   return auth;
 }
 
+// This function logs in user with email and password
+// It returns a simple object with uid and email
 export async function loginWithEmailPassword(email, password) {
-  // Logs in with email and password
-  // Returns a simple user object for the app
   const result = await signInWithEmailAndPassword(auth, email, password);
   const user = result.user;
 
@@ -23,14 +27,14 @@ export async function loginWithEmailPassword(email, password) {
   };
 }
 
+// This function logs out current user
 export async function logout() {
-  // Logs out the current user
   await signOut(auth);
 }
 
+// This function listens to login state changes
+// It calls onChange with user data or null
 export function watchAuthState(onChange) {
-  // Listens to login state changes
-  // Calls onChange with a user object or null
   const unsubscribe = onAuthStateChanged(auth, (user) => {
     if (!user) {
       onChange(null);

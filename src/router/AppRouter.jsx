@@ -1,11 +1,13 @@
-// src/router/AppRouter.jsx
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // auth page
 import LoginPage from "../pages/auth/LoginPage";
 
-// shared layout (used for both admin and parent)
+// layout shared by admin and parent
 import AdminLayout from "../layouts/AdminLayout";
+
+// route protection
+import ProtectedRoute from "./ProtectedRoute";
 
 // admin pages
 import DashboardPage from "../pages/admin/DashboardPage";
@@ -25,35 +27,34 @@ export default function AppRouter() {
         // public login page
         <Route path="/" element={<LoginPage />} />
 
-        // admin routes use AdminLayout
-        <Route path="/admin" element={<AdminLayout />}>
-          // redirect /admin to dashboard
+        // admin routes
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
-
-          // admin dashboard
           <Route path="dashboard" element={<DashboardPage />} />
-
-          // admin checklist pages
           <Route path="checklist" element={<ChecklistPage />} />
           <Route path="checklist/:studentId" element={<ChecklistStudentPage />} />
-
-          // admin calendar
           <Route path="calendar" element={<CalendarPage />} />
-
-          // admin profile
           <Route path="profile" element={<ProfilePage />} />
         </Route>
 
-        // parent routes now also use AdminLayout
-        // this makes parent use same blue header and bottom nav
-        <Route path="/parent" element={<AdminLayout />}>
-          // redirect /parent to dashboard
+        // parent routes
+        <Route
+          path="/parent"
+          element={
+            <ProtectedRoute requiredRole="parent">
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Navigate to="/parent/dashboard" replace />} />
-
-          // parent dashboard
           <Route path="dashboard" element={<ParentDashboard />} />
-
-          // parent checklist
           <Route path="checklist" element={<ParentChecklist />} />
         </Route>
 
