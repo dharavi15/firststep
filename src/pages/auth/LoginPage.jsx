@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Lock } from "lucide-react";
-import { signInWithEmailAndPassword } from "firebase/auth";
 
-import { auth } from "../../firebase/firebase";
+import { loginWithEmailPassword } from "../../firebase/auth";
 import { getUserProfile } from "../../firebase/userProfile";
+import useAuthStore from "../../store/useAuthStore";
 
 import Logo from "../../components/ui/Logo";
 import Card from "../../components/ui/Card";
@@ -15,54 +14,69 @@ import TextLink from "../../components/ui/TextLink";
 export default function LoginPage() {
   const navigate = useNavigate();
 
-  const [identifier, setIdentifier] = useState("");
+  // Local form state
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  // Auth store actions
+  const setUser = useAuthStore((s) => s.setUser);
+  const setLoading = useAuthStore((s) => s.setLoading);
+  const setStoreError = useAuthStore((s) => s.setError);
+
+  // This function runs when the form is submitted
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setStoreError("");
 
-    const id = identifier.trim();
-    const pass = password.trim();
+    const cleanEmail = email.trim();
+    const cleanPassword = password.trim();
 
-    // check the empty fields
-    if (!id || !pass) {
-      setError("Please enter email and password.");
+    // Check empty fields
+    if (!cleanEmail || !cleanPassword) {
+      setError("Please enter email and password");
       return;
     }
 
-    //   firebase needs email so check email format
-    const looksLikeEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id);
-    if (!looksLikeEmail) {
-      setError("For now, please sign in using your email (not username).");
+    // Check email format
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail);
+    if (!isEmail) {
+      setError("Please use a valid email address");
       return;
     }
 
     try {
-      //sign in firebase 
-      const cred = await signInWithEmailAndPassword(auth, id, pass);
-      const uid = cred.user.uid;
+      // Start loading state
+      setLoading(true);
 
-      // to get user role from firestore
-      const profile = await getUserProfile(uid);
+      // Login with Firebase Auth
+      const user = await loginWithEmailPassword(cleanEmail, cleanPassword);
+
+      // Save user to global auth store
+      setUser(user);
+
+      // Read user profile from Firestore
+      const profile = await getUserProfile(user.uid);
 
       if (!profile) {
-        setError("User profile not found in Firestore (users collection).");
+        setError("User profile not found");
         return;
       }
 
-      // redirest based on role
+      // Redirect based on role
       if (profile.role === "admin") {
         navigate("/admin/dashboard");
       } else {
         navigate("/parent/dashboard");
       }
-    } catch (err) {
-      // shows error
-      console.log("FIREBASE LOGIN ERROR:", err.code, err.message);
-
-      setError(`${err.code} — ${err.message}`);
+    } catch (error) {
+      // Show simple error message
+      setError(error?.message || "Login failed");
+      setStoreError(error?.message || "Login failed");
+    } finally {
+      // Stop loading state
+      setLoading(false);
     }
   };
 
@@ -84,15 +98,13 @@ export default function LoginPage() {
 
           <form className="form" onSubmit={handleSubmit}>
             <InputField
-              icon={User}
-              type="text"
-              placeholder="Email or Username"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
 
             <InputField
-              icon={Lock}
               type="password"
               placeholder="Password"
               value={password}
@@ -101,7 +113,7 @@ export default function LoginPage() {
 
             <div className="rowRight">
               <TextLink
-                text="Forgot password?"
+                text="Forgot password"
                 onClick={(e) => e.preventDefault()}
               />
             </div>
@@ -109,7 +121,7 @@ export default function LoginPage() {
             <Button text="Login" type="submit" />
 
             <p className="centerText" style={{ marginTop: 10 }}>
-              Don&apos;t have an account?{" "}
+              Do not have an account{" "}
               <TextLink text="Sign up" onClick={(e) => e.preventDefault()} />
             </p>
           </form>
