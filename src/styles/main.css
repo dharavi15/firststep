@@ -1647,3 +1647,30 @@ body {
   font-size: 14px;
   font-weight: 600;
 }
+
+/* Parent Pages style */
+
+/* parent bottom nav fixes */
+.navItem {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-family: inherit;
+}
+
+.navItem:focus-visible {
+  outline: 2px solid rgba(74, 144, 226, 0.35);
+  outline-offset: 2px;
+}
+
+.navItemIcon {
+  width: 28px;
+  height: 28px;
+}
+
+@media (max-width: 520px) {
+  .navItemIcon {
+    width: 26px;
+    height: 26px;
+  }
+}
