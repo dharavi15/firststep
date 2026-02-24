@@ -1,13 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-// auth page
+// auth
 import LoginPage from "../pages/auth/LoginPage";
 
-// layout shared by admin and parent
+// layout
 import AdminLayout from "../layouts/AdminLayout";
-
-// route protection
-import ProtectedRoute from "./ProtectedRoute";
+import ParentLayout from "../layouts/ParentLayout";
 
 // admin pages
 import DashboardPage from "../pages/admin/DashboardPage";
@@ -19,23 +17,16 @@ import ProfilePage from "../pages/admin/ProfilePage";
 // parent pages
 import ParentDashboard from "../pages/parent/Dashboard";
 import ParentChecklist from "../pages/parent/Checklist";
+import ParentCalendar from "../pages/parent/Calendar";
+import ParentProfile from "../pages/parent/Profile";
 
 export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        // public login page
         <Route path="/" element={<LoginPage />} />
 
-        // admin routes
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
+        <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="checklist" element={<ChecklistPage />} />
@@ -44,21 +35,14 @@ export default function AppRouter() {
           <Route path="profile" element={<ProfilePage />} />
         </Route>
 
-        // parent routes
-        <Route
-          path="/parent"
-          element={
-            <ProtectedRoute requiredRole="parent">
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
+        <Route path="/parent" element={<ParentLayout title="Dashboard" userName="Mock Parent" />}>
           <Route index element={<Navigate to="/parent/dashboard" replace />} />
           <Route path="dashboard" element={<ParentDashboard />} />
           <Route path="checklist" element={<ParentChecklist />} />
+          <Route path="calendar" element={<ParentCalendar />} />
+          <Route path="profile" element={<ParentProfile />} />
         </Route>
 
-        // fallback route
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
