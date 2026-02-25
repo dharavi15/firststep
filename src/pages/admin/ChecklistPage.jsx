@@ -1,114 +1,26 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
+import { collection, deleteDoc, doc, getDocs } from "firebase/firestore";
+import { db } from "../../firebase/firebase";
+import { useNavigate } from "react-router-dom";
 
-// mock up student data
-// can change to DB or API later
-const STUDENTS = [
-  {
-    id: "s-ethan",
-    name: "Ethan Parker",
-    parent: "Daniel Parker",
-    email: "daniel@gmail.com",
-    classYear: "Year 1",
-    status: "Pending (2 days left)",
-    statusTone: "warn",
-  },
-  {
-    id: "s-lucas",
-    name: "Lucas Reed",
-    parent: "Lucas Reed",
-    email: "lucas@gmail.com",
-    classYear: "Year 2",
-    status: "Completed",
-    statusTone: "ok",
-  },
-  {
-    id: "s-mia",
-    name: "Mia Thompson",
-    parent: "Sarah Thompson",
-    email: "sarah@gmail.com",
-    classYear: "Year 3",
-    status: "Pending (7 days left)",
-    statusTone: "warn",
-  },
-  {
-    id: "s-ava",
-    name: "Ava Collins",
-    parent: "Emily Collins",
-    email: "emily@gmail.com",
-    classYear: "Year 4",
-    status: "Pending",
-    statusTone: "neutral",
-  },
-  {
-    id: "s-sophia",
-    name: "Sophia Martinez",
-    parent: "Laura Martinez",
-    email: "laura@gmail.com",
-    classYear: "Year 5",
-    status: "Completed",
-    statusTone: "ok",
-  },
-];
-
-// mock up steps for tracking page
-// statusTone uses your existing StatusPill CSS: ok / warn / neutral
+// mock up steps for tracking page (keep for now)
 const STEPS = [
-  {
-    no: 1,
-    title: "Awaiting Payment",
-    status: "Completed",
-    statusTone: "ok",
-    dueLeft: "Due 25 Feb",
-    dueRight: "25 Feb",
-  },
-  {
-    no: 2,
-    title: "Fill Health Form",
-    status: "Completed",
-    statusTone: "ok",
-    dueLeft: "Due 25 Feb",
-    dueRight: "25 Feb",
-  },
-  {
-    no: 3,
-    title: "Pay Tuition & Fees",
-    status: "Pending (2 days left)",
-    statusTone: "warn",
-    dueLeft: "Due 25 Feb",
-    dueRight: "25 Feb",
-  },
-  {
-    no: 4,
-    title: "Attend Orientation",
-    status: "Upcoming",
-    statusTone: "neutral",
-    dueLeft: "April 30",
-    dueRight: "April 30",
-  },
-  {
-    no: 5,
-    title: "Upload Proof of Payment",
-    status: "Upcoming",
-    statusTone: "neutral",
-    dueLeft: "Upcoming",
-    dueRight: "Upcoming",
-  },
+  { no: 1, title: "Awaiting Payment", status: "Completed", statusTone: "ok", dueLeft: "Due 25 Feb", dueRight: "25 Feb" },
+  { no: 2, title: "Fill Health Form", status: "Completed", statusTone: "ok", dueLeft: "Due 25 Feb", dueRight: "25 Feb" },
+  { no: 3, title: "Pay Tuition & Fees", status: "Pending (2 days left)", statusTone: "warn", dueLeft: "Due 25 Feb", dueRight: "25 Feb" },
+  { no: 4, title: "Attend Orientation", status: "Upcoming", statusTone: "neutral", dueLeft: "April 30", dueRight: "April 30" },
+  { no: 5, title: "Upload Proof of Payment", status: "Upcoming", statusTone: "neutral", dueLeft: "Upcoming", dueRight: "Upcoming" },
 ];
 
 // create simple avatar using emoji
-// this avoids using real image for now
 function AvatarEmoji({ name, className = "studentAvatar" }) {
-  // choose emoji based on name
-  // same name will always get same emoji
   const emoji = useMemo(() => {
-    const pool = ["👧", "👦", "🧒", "👩‍🎓", "👨‍🎓"];
+    const pool = ["👧", "👦", "🧒"]; // keep consistent look
+    const safe = (name || "").trim();
+    if (!safe) return "🧒";
     let sum = 0;
-
-    for (let i = 0; i < name.length; i++) {
-      sum += name.charCodeAt(i);
-    }
-
+    for (let i = 0; i < safe.length; i++) sum += safe.charCodeAt(i);
     return pool[sum % pool.length];
   }, [name]);
 
@@ -116,7 +28,6 @@ function AvatarEmoji({ name, className = "studentAvatar" }) {
 }
 
 // show status with different color style
-// tone controls which CSS class is used
 function StatusPill({ tone = "neutral", text }) {
   const cls =
     tone === "ok"
@@ -129,90 +40,140 @@ function StatusPill({ tone = "neutral", text }) {
 }
 
 export default function ChecklistPage() {
-  // q = search text for list page
-  const [q, setQ] = useState("");
+  const navigate = useNavigate();
 
-  // page = current page number for list page
+  const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
 
-  // selectedStudentId controls which view we show
-  // null means list page
-  // not null means tracking page
+  // keep your tracking view logic (still inside same page)
   const [selectedStudentId, setSelectedStudentId] = useState(null);
 
-  // how many students per page
+  const [students, setStudents] = useState([]);
+  const [loadingStudents, setLoadingStudents] = useState(true);
+
   const pageSize = 8;
 
-  // filter students based on search text
-  // useMemo makes it recalculate only when q changes
+  async function loadStudents() {
+    try {
+      setLoadingStudents(true);
+
+      const targetSchoolId = "demo-school";
+
+      const snap = await getDocs(collection(db, "students"));
+
+      const all = snap.docs.map((docSnap) => {
+        const d = docSnap.data() || {};
+        return {
+          id: docSnap.id,
+          schoolIdRaw: d.schoolId,
+          name: d.studentName ?? "",
+          parent: d.parentName ?? "",
+          email: d.parentEmail ?? "",
+          year: d.year ?? null,
+          enrollmentId: d.enrollmentId ?? null,
+
+          // TEMP until enrollments connected
+          status: "Pending",
+          statusTone: "neutral",
+        };
+      });
+
+      // Filter safely (trim + lowercase)
+      const filteredBySchool = all.filter((s) => {
+        const sid = String(s.schoolIdRaw ?? "").trim().toLowerCase();
+        return sid === String(targetSchoolId).trim().toLowerCase();
+      });
+
+      const finalStudents = filteredBySchool.map((s) => ({
+        id: s.id,
+        name: s.name || "Unknown student",
+        parent: s.parent || "Unknown parent",
+        email: s.email || "",
+        classYear: s.year ? `Year ${s.year}` : "Year ?",
+        enrollmentId: s.enrollmentId,
+        status: s.status,
+        statusTone: s.statusTone,
+      }));
+
+      setStudents(finalStudents);
+    } catch (err) {
+      console.error("Failed to load students:", err);
+      setStudents([]);
+    } finally {
+      setLoadingStudents(false);
+    }
+  }
+
+  useEffect(() => {
+    loadStudents();
+  }, []);
+
   const filtered = useMemo(() => {
-    const query = q.trim().toLowerCase();
+    const queryText = q.trim().toLowerCase();
+    if (!queryText) return students;
 
-    if (!query) return STUDENTS;
-
-    return STUDENTS.filter((s) => {
+    return students.filter((s) => {
       return (
-        s.name.toLowerCase().includes(query) ||
-        s.parent.toLowerCase().includes(query) ||
-        s.classYear.toLowerCase().includes(query) ||
-        s.status.toLowerCase().includes(query)
+        (s.name || "").toLowerCase().includes(queryText) ||
+        (s.parent || "").toLowerCase().includes(queryText) ||
+        (s.classYear || "").toLowerCase().includes(queryText) ||
+        (s.status || "").toLowerCase().includes(queryText)
       );
     });
-  }, [q]);
+  }, [q, students]);
 
-  // calculate how many pages we need
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-
-  // make sure current page does not go over total pages
   const safePage = Math.min(page, pageCount);
 
-  // get only students for current page
   const rows = useMemo(() => {
     const start = (safePage - 1) * pageSize;
     return filtered.slice(start, start + pageSize);
   }, [filtered, safePage]);
 
-  // go to previous page
   function goPrev() {
     setPage((p) => Math.max(1, p - 1));
   }
 
-  // go to next page
   function goNext() {
     setPage((p) => Math.min(pageCount, p + 1));
   }
 
-  // open tracking page for the selected student
   function onOpenStudent(studentId) {
     setSelectedStudentId(studentId);
   }
 
-  // go back to list page
   function onBackToList() {
     setSelectedStudentId(null);
   }
 
-  // find selected student info
   const selectedStudent = useMemo(() => {
     if (!selectedStudentId) return null;
-    return STUDENTS.find((s) => s.id === selectedStudentId) || null;
-  }, [selectedStudentId]);
+    return students.find((s) => s.id === selectedStudentId) || null;
+  }, [selectedStudentId, students]);
 
-  // download pdf (mock)
   function onDownloadPdf() {
     console.log("Download Current Step PDF:", selectedStudentId);
   }
 
-  // show tracking page if we have selected student
-  if (selectedStudent) {
-    // calculate progress from steps
-    const completedCount = STEPS.filter((s) => s.statusTone === "ok").length;
-    const totalCount = STEPS.length;
-    const percentDone = totalCount
-      ? Math.round((completedCount / totalCount) * 100)
-      : 0;
+  async function onDeleteStudent(studentId, studentName) {
+    const ok = window.confirm(`Delete "${studentName}"?\nThis cannot be undone.`);
+    if (!ok) return;
 
-    // next deadline mock text
+    try {
+      await deleteDoc(doc(db, "students", studentId));
+      // refresh list
+      await loadStudents();
+    } catch (e) {
+      console.error("Delete failed:", e);
+      alert("Delete failed. Check console + Firestore rules.");
+    }
+  }
+
+  // tracking page
+  if (selectedStudent) {
+    const completedCount = STEPS.filter((step) => step.statusTone === "ok").length;
+    const totalCount = STEPS.length;
+    const percentDone = totalCount ? Math.round((completedCount / totalCount) * 100) : 0;
     const nextDeadlineText = "25 February 2026";
 
     return (
@@ -278,38 +239,36 @@ export default function ChecklistPage() {
           </div>
 
           <div className="ckDTableBody">
-            {STEPS.map((s) => (
+            {STEPS.map((step) => (
               <div
-                key={s.no}
-                className={`ckDRow ${
-                  s.statusTone === "warn" ? "ckDRowWarn" : ""
-                }`}
+                key={step.no}
+                className={`ckDRow ${step.statusTone === "warn" ? "ckDRowWarn" : ""}`}
               >
                 <div className="ckDTd ckDTdNo">
                   <span
                     className={
-                      s.statusTone === "ok"
+                      step.statusTone === "ok"
                         ? "ckDDot ckDDotOk"
-                        : s.statusTone === "warn"
+                        : step.statusTone === "warn"
                         ? "ckDDot ckDDotWarn"
                         : "ckDDot ckDDotUp"
                     }
                   />
-                  <span className="ckDNoText">{s.no}.</span>
+                  <span className="ckDNoText">{step.no}.</span>
                 </div>
 
                 <div className="ckDTd ckDTdStep">
-                  <b>{s.title}</b>
+                  <b>{step.title}</b>
                 </div>
 
                 <div className="ckDTd">
-                  <StatusPill tone={s.statusTone} text={s.status} />
+                  <StatusPill tone={step.statusTone} text={step.status} />
                 </div>
 
-                <div className="ckDTd ckDTdDueLeft">{s.dueLeft}</div>
+                <div className="ckDTd ckDTdDueLeft">{step.dueLeft}</div>
 
                 <div className="ckDTd ckDTdDueRight">
-                  <b>{s.dueRight}</b>
+                  <b>{step.dueRight}</b>
                 </div>
               </div>
             ))}
@@ -332,11 +291,7 @@ export default function ChecklistPage() {
               </span>
             </div>
 
-            <button
-              type="button"
-              className="ckDDownloadBtn"
-              onClick={onDownloadPdf}
-            >
+            <button type="button" className="ckDDownloadBtn" onClick={onDownloadPdf}>
               Download Current Step PDF
             </button>
           </div>
@@ -345,9 +300,26 @@ export default function ChecklistPage() {
     );
   }
 
-  // list page (default view)
+  // list page
   return (
     <div className="checklistWrap">
+      {/* Add Student Button */}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+        <button
+          type="button"
+          onClick={() => navigate("/admin/students/new")}
+          style={{
+            padding: "8px 14px",
+            borderRadius: 8,
+            border: "1px solid #ddd",
+            cursor: "pointer",
+            background: "white",
+          }}
+        >
+          + Add Student
+        </button>
+      </div>
+
       <div className="searchCard">
         <Search className="searchIcon" size={20} />
         <input
@@ -362,42 +334,109 @@ export default function ChecklistPage() {
       </div>
 
       <div className="tableCard">
-        <div className="tableHeader">
+        <div
+          className="tableHeader"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "40px 1.5fr 1.5fr 1fr 1fr auto",
+            alignItems: "center",
+          }}
+        >
           <div className="th thCheck" />
           <div className="th thName">Name</div>
           <div className="th">Parent</div>
           <div className="th">Class</div>
           <div className="th thStatus">Status</div>
+          <div className="th" style={{ textAlign: "right", paddingRight: 12 }}>
+            Actions
+          </div>
         </div>
 
         <div className="tableBody">
-          {rows.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              className="tableRow"
-              onClick={() => onOpenStudent(s.id)}
-            >
-              <div className="td tdCheck">
-                <input type="checkbox" onClick={(e) => e.stopPropagation()} />
-              </div>
+          {loadingStudents && <div className="emptyState">Loading students...</div>}
 
-              <div className="td tdName">
-                <AvatarEmoji name={s.name} />
-                <span className="studentName">{s.name}</span>
-              </div>
+          {!loadingStudents &&
+  rows.map((row) => (
+    <div
+      key={row.id}
+      role="button"
+      tabIndex={0}
+      className="tableRow"
+      onClick={() => onOpenStudent(row.id)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onOpenStudent(row.id);
+      }}
+      style={{
+        display: "grid",
+        gridTemplateColumns: "40px 1.5fr 1.5fr 1fr 1fr auto",
+        alignItems: "center",
+        cursor: "pointer",
+      }}
+    >
+      {/* Checkbox */}
+      <div className="td tdCheck">
+        <input type="checkbox" onClick={(e) => e.stopPropagation()} />
+      </div>
 
-              <div className="td">{s.parent}</div>
+      {/* Name */}
+      <div className="td tdName" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <AvatarEmoji name={row.name} />
+        <span className="studentName">{row.name}</span>
+      </div>
 
-              <div className="td">{s.classYear}</div>
+      {/* Parent */}
+      <div className="td">{row.parent}</div>
 
-              <div className="td tdStatus">
-                <StatusPill tone={s.statusTone} text={s.status} />
-              </div>
-            </button>
-          ))}
+      {/* Class */}
+      <div className="td">{row.classYear}</div>
 
-          {rows.length === 0 && <div className="emptyState">No students found.</div>}
+      {/* Status */}
+      <div className="td tdStatus">
+        <StatusPill tone={row.statusTone} text={row.status} />
+      </div>
+
+      {/* Actions */}
+      <div
+        className="td"
+        style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={() => navigate(`/admin/students/${row.id}/edit`)}
+          style={{
+            padding: "6px 10px",
+            borderRadius: 8,
+            border: "1px solid #d0d5dd",
+            background: "white",
+            cursor: "pointer",
+            fontSize: 13,
+          }}
+        >
+          ✏️ Edit
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onDeleteStudent(row.id, row.name)}
+          style={{
+            padding: "6px 10px",
+            borderRadius: 8,
+            border: "1px solid #f2b8b5",
+            background: "#fff5f5",
+            cursor: "pointer",
+            fontSize: 13,
+          }}
+        >
+          🗑 Delete
+        </button>
+      </div>
+    </div>
+  ))}
+
+          {!loadingStudents && rows.length === 0 && (
+            <div className="emptyState">No students found.</div>
+          )}
         </div>
 
         <div className="tableFooter">
@@ -406,21 +445,11 @@ export default function ChecklistPage() {
           </div>
 
           <div className="pageBtns">
-            <button
-              type="button"
-              className="pageBtn"
-              onClick={goPrev}
-              disabled={safePage <= 1}
-            >
+            <button type="button" className="pageBtn" onClick={goPrev} disabled={safePage <= 1}>
               ‹
             </button>
 
-            <button
-              type="button"
-              className="pageBtn"
-              onClick={goNext}
-              disabled={safePage >= pageCount}
-            >
+            <button type="button" className="pageBtn" onClick={goNext} disabled={safePage >= pageCount}>
               ›
             </button>
           </div>

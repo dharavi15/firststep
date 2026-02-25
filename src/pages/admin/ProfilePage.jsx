@@ -23,7 +23,7 @@ const EVENT_KEY = "firststep_calendar_events";
 const DEFAULT_STUDENTS = [
   {
     id: "s-1",
-    name: "Miss ABC",
+    name: "Linus Mathew",
     email: "abc@gmail.com",
     phone: "(123) 456-7890",
     address: "123 Maple St, Hometown, CA 91001",
