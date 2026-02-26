@@ -1,17 +1,20 @@
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "./firestore";
+import { collection, getDocs, limit, query, where } from "firebase/firestore";
+import { db } from "./firebase";
 
-// This function reads user profile from Firestore
-// It finds a document in users collection using uid
-// It returns null when the profile does not exist
+export async function getUserProfile(email) {
+  if (!email) return null;
 
-export async function getUserProfile(uid) {
-  if (!uid) return null;
+  const cleanEmail = String(email).trim().toLowerCase();
 
-  const ref = doc(db, "users", uid);
-  const snap = await getDoc(ref);
+  const q = query(
+    collection(db, "users"),
+    where("email", "==", cleanEmail),
+    limit(1)
+  );
 
-  if (!snap.exists()) return null;
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
 
-  return snap.data();
+  const doc = snap.docs[0];
+  return { id: doc.id, ...doc.data() };
 }

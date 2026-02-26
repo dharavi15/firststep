@@ -3,6 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 // auth
 import LoginPage from "../pages/auth/LoginPage";
 
+// route guard
+import ProtectedRoute from "./ProtectedRoute";
+
 // layout
 import AdminLayout from "../layouts/AdminLayout";
 import ParentLayout from "../layouts/ParentLayout";
@@ -26,7 +29,14 @@ export default function AppRouter() {
       <Routes>
         <Route path="/" element={<LoginPage />} />
 
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowRole="admin">
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="checklist" element={<ChecklistPage />} />
@@ -35,7 +45,14 @@ export default function AppRouter() {
           <Route path="profile" element={<ProfilePage />} />
         </Route>
 
-        <Route path="/parent" element={<ParentLayout title="Dashboard" userName="Mock Parent" />}>
+        <Route
+          path="/parent"
+          element={
+            <ProtectedRoute allowRole="parent">
+              <ParentLayout title="Dashboard" userName="Parent" />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Navigate to="/parent/dashboard" replace />} />
           <Route path="dashboard" element={<ParentDashboard />} />
           <Route path="checklist" element={<ParentChecklist />} />

@@ -1,37 +1,35 @@
-import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
-import { db } from "../firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "../firebase/firebaseConfig";
 
-// This function loads all students from Firestore
-// It returns an array of student objects
-// Each object includes id from the document id
+// Convert Firestore doc -> UI shape
+function mapStudentDoc(docSnap) {
+  const data = docSnap.data() || {};
 
-export async function getStudents() {
-  const col = collection(db, "students");
+  return {
+    id: docSnap.id,
+    schoolId: data.schoolId || "",
+    enrollmentId: data.enrollmentId || "",
+    parentName: data.parentName || "",
+    parentEmail: data.parentEmail || "",
 
-  // Order by createdAt if the field exists in your documents
-  // If your documents do not have createdAt, remove orderBy line
-  const q = query(col, orderBy("createdAt", "desc"));
-
-  const snap = await getDocs(q);
-
-  return snap.docs.map((d) => {
-    return { id: d.id, ...d.data() };
-  });
+    // UI fields
+    studentName: data.studentName || data.name || "",
+    year: typeof data.year === "number" ? data.year : null,
+    overallStatus: data.overallStatus || data.status || "pending",
+  };
 }
 
-// This function loads students for one parent email
-// It filters by parentEmail field in students collection
+// Admin: get all students in school
+export async function getStudentsForAdmin({ schoolId } = {}) {
+  if (!schoolId) return [];
 
-export async function getStudentsByParentEmail(parentEmail) {
-  const email = (parentEmail || "").trim();
-  if (!email) return [];
-
-  const col = collection(db, "students");
-  const q = query(col, where("parentEmail", "==", email));
+  const colRef = collection(db, "students");
+  const q = query(colRef, where("schoolId", "==", schoolId));
 
   const snap = await getDocs(q);
+  return snap.docs.map(mapStudentDoc);
+}
 
-  return snap.docs.map((d) => {
-    return { id: d.id, ...d.data() };
-  });
+export async function getStudents({ schoolId } = {}) {
+  return getStudentsForAdmin({ schoolId });
 }
