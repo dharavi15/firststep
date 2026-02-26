@@ -1,4 +1,4 @@
-// src/pages/auth/LoginPage.jsx
+/*// src/pages/auth/LoginPage.jsx
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Lock } from "lucide-react";
@@ -41,7 +41,6 @@ export default function LoginPage() {
     setError("");
     setFieldErrors({ email: "", password: "" });
 
-    // ✅ Zod validation
     const result = loginSchema.safeParse({ email, password });
     if (!result.success) {
       const errs = result.error.flatten().fieldErrors;
@@ -74,7 +73,6 @@ export default function LoginPage() {
         return;
       }
 
-      // If you don't have parent routes yet, keep this as "/" or create parent routes
       if (profile.role === "parent") {
         navigate("/parent/dashboard");
         return;
@@ -127,18 +125,14 @@ export default function LoginPage() {
             <InputField
               icon={User}
               type="email"
+              name="email"
+              autoComplete="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
             {fieldErrors.email && (
-              <p
-                style={{
-                  color: "var(--color-error)",
-                  marginTop: -10,
-                  marginBottom: 10,
-                }}
-              >
+              <p style={{ color: "var(--color-error)", marginTop: -10, marginBottom: 10 }}>
                 {fieldErrors.email}
               </p>
             )}
@@ -146,18 +140,14 @@ export default function LoginPage() {
             <InputField
               icon={Lock}
               type="password"
+              name="password"
+              autoComplete="current-password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
             {fieldErrors.password && (
-              <p
-                style={{
-                  color: "var(--color-error)",
-                  marginTop: -10,
-                  marginBottom: 10,
-                }}
-              >
+              <p style={{ color: "var(--color-error)", marginTop: -10, marginBottom: 10 }}>
                 {fieldErrors.password}
               </p>
             )}
@@ -187,6 +177,99 @@ export default function LoginPage() {
                   navigate("/signup");
                 }}
               />
+            </p>
+          </form>
+        </Card>
+      </div>
+    </div>
+  );
+}*/
+
+
+
+
+// src/pages/auth/LoginPage.jsx
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Mail, Lock } from "lucide-react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../firebase/firebase";
+
+import Logo from "../../components/ui/Logo";
+import Card from "../../components/ui/Card";
+import InputField from "../../components/ui/InputField";
+import Button from "../../components/ui/Button";
+import TextLink from "../../components/ui/TextLink";
+
+export default function LoginPage() {
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function onSubmit(e) {
+    e.preventDefault();
+    setError("");
+
+    try {
+      setLoading(true);
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      navigate("/admin/dashboard");
+    } catch (err) {
+      console.error("LOGIN ERROR:", err);
+      setError("Login failed. Please check email & password.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="pageCenter authPage">
+      <div className="authStack">
+        <Logo />
+
+        <Card className="authCard">
+          <h1 className="authTitle">Login</h1>
+
+          {error ? <div className="authError">{error}</div> : null}
+
+          <form className="authForm" onSubmit={onSubmit}>
+            <InputField
+              icon={Mail}
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+            />
+
+            <InputField
+              icon={Lock}
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+            />
+
+            <div className="authRowRight">
+              <TextLink onClick={() => navigate("/forgot-password")}>
+                Forgot password?
+              </TextLink>
+            </div>
+
+            <Button type="submit" disabled={loading}>
+              {loading ? "Logging in..." : "Login"}
+            </Button>
+
+            <p className="authFooterText">
+              Don&apos;t have an admin account?{" "}
+              <TextLink onClick={() => navigate("/signup")}>Sign up</TextLink>
             </p>
           </form>
         </Card>

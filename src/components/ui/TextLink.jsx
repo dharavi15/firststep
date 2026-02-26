@@ -1,7 +1,22 @@
-export default function TextLink({ text, onClick, href = "#" }) {
+// src/components/ui/TextLink.jsx
+export default function TextLink({
+  children,
+  text,
+  onClick,
+  href = "#",
+  className = "",
+}) {
   return (
-    <a className="link" href={href} onClick={onClick}>
-      {text}
+    <a
+      className={`textLink ${className}`}
+      href={href}
+      onClick={(e) => {
+        // prevent page jump when using onClick navigation
+        if (onClick) e.preventDefault();
+        onClick?.(e);
+      }}
+    >
+      {children ?? text}
     </a>
   );
 }
