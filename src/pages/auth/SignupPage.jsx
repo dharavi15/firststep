@@ -37,7 +37,13 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
 
   const canSubmit = useMemo(() => {
-    return fullName.trim() && email.trim() && password && confirmPassword && !loading;
+    return (
+      fullName.trim().length > 0 &&
+      email.trim().length > 0 &&
+      password.length > 0 &&
+      confirmPassword.length > 0 &&
+      !loading
+    );
   }, [fullName, email, password, confirmPassword, loading]);
 
   const onSubmit = async (e) => {
@@ -62,7 +68,7 @@ export default function SignupPage() {
 
       navigate("/admin/dashboard");
     } catch (err) {
-      console.log("SIGNUP ERROR:", err.code, err.message);
+      console.log("SIGNUP ERROR:", err?.code, err?.message);
 
       const code = err?.code || "";
       if (code === "auth/email-already-in-use") setError("This email is already in use.");
@@ -75,7 +81,7 @@ export default function SignupPage() {
   };
 
   return (
-   <div className="pageCenter authPage">
+    <div className="pageCenter authPage">
       <div className="stack">
         <Logo />
 
@@ -143,11 +149,9 @@ export default function SignupPage() {
               </p>
             )}
 
-            <Button
-              text={loading ? "Creating..." : "Create Admin Account"}
-              type="submit"
-              disabled={!canSubmit}
-            />
+            <Button type="submit" disabled={!canSubmit}>
+              {loading ? "Creating..." : "Create Admin Account"}
+            </Button>
 
             <p className="centerText" style={{ marginTop: 10 }}>
               Already have an account?{" "}

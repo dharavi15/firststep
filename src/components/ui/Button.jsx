@@ -1,5 +1,6 @@
 export default function Button({
   children,
+  text, // support old usage: <Button text="Login" />
   onClick,
   type = "button",
   className = "",
@@ -12,7 +13,7 @@ export default function Button({
       disabled={disabled}
       className={`btnPrimary ${className}`}
     >
-      {children}
+      {children ?? text}
     </button>
   );
 }
