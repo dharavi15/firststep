@@ -1,0 +1,415 @@
+/* =========================
+   BASE
+========================= */
+.landing {
+  min-height: 100vh;
+  background: #ffffff;
+  color: #1f2937;
+  display: flex;
+  flex-direction: column;
+}
+
+.landingMain {
+  flex: 1;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+}
+
+/* =========================
+   NAVBAR
+========================= */
+.landingNav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.landingNavInner {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.brandText {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.brandLogo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.landingLinks {
+  display: flex;
+  gap: 18px;
+}
+
+.landingLinks a {
+  font-weight: 600;
+  color: #374151;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.landingLinks a:hover {
+  background: rgba(74, 144, 226, 0.12);
+}
+
+.landingActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+.btnPrimary,
+.btnGhost,
+.btnGreen {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btnPrimary {
+  background: #4a90e2;
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(74, 144, 226, 0.25);
+}
+
+.btnPrimary:hover {
+  transform: translateY(-2px);
+}
+
+.btnGhost {
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+}
+
+.btnGreen {
+  background: #2e9b4f;
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(46, 155, 79, 0.25);
+}
+
+.btnGreen.big {
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 16px;
+}
+
+/* =========================
+   HERO
+========================= */
+.hero {
+  padding: 32px 0 10px;
+}
+
+.heroInner {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 32px;
+  align-items: center;
+}
+
+.heroLeft h1 {
+  font-size: 46px;
+  line-height: 1.08;
+  margin: 0 0 14px;
+  font-weight: 900;
+  color: #1f3a6d;
+}
+
+.heroLeft p {
+  margin: 0 0 18px;
+  color: #4b5563;
+  font-size: 16px;
+  max-width: 520px;
+}
+
+.heroBtns {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.heroRight {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ✅ SIMPLE BLANK HERO BOX (like Image 1) */
+.heroImageBox {
+  width: 100%;
+  max-width: 520px;
+  height: 240px;
+  border-radius: 22px;
+  background: rgba(74, 144, 226, 0.07);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 800;
+  color: #1f3a6d;
+  font-size: 18px;
+}
+
+/* =========================
+   FEATURE STRIP
+========================= */
+.featureStrip {
+  margin-top: 30px;
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.featureCard {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+}
+
+.featureIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(74, 144, 226, 0.12);
+  font-size: 20px;
+}
+
+.featureCard h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.featureCard p {
+  margin: 2px 0 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/* =========================
+   HOW IT WORKS
+========================= */
+.how {
+  margin-top: 40px;
+}
+
+.how h2 {
+  text-align: center;
+  font-size: 30px;
+  margin: 0 0 24px;
+  color: #1f3a6d;
+}
+
+.howGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.howItem {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+  text-align: center;
+}
+
+.howItem h4 {
+  margin: 0 0 14px;
+  color: #1f3a6d;
+}
+
+.howPlaceholder {
+  height: 120px;
+  border-radius: 16px;
+  background: rgba(74, 144, 226, 0.07);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.howItem p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* =========================
+   FOR SECTION
+========================= */
+.for {
+  margin-top: 36px;
+}
+
+.forGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.forCard {
+  background: radial-gradient(circle at 20% 20%, #eef5ff, #ffffff 55%);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+}
+
+.forCard h3 {
+  margin: 0 0 12px;
+  color: #1f3a6d;
+}
+
+.forCard ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #374151;
+}
+
+/* =========================
+   CTA
+========================= */
+.cta {
+  margin-top: 40px;
+  text-align: center;
+  padding: 30px 16px;
+  border-radius: 18px;
+  background: rgba(74, 144, 226, 0.07);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.cta h2 {
+  margin: 0 0 18px;
+  color: #1f3a6d;
+}
+
+/* =========================
+   FOOTER
+========================= */
+.landingFooter {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+}
+
+.landingFooterInner {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.footerDot {
+  opacity: 0.5;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 900px) {
+  .heroInner {
+    grid-template-columns: 1fr;
+  }
+
+  .heroRight {
+    justify-content: center;
+  }
+
+  .featureGrid,
+  .howGrid,
+  .forGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .landingLinks {
+    display: none;
+  }
+
+  .heroLeft h1 {
+    font-size: 36px;
+  }
+
+  .heroImageBox {
+    height: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  .landingNavInner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .landingActions {
+    width: 100%;
+  }
+
+  .landingActions button {
+    width: 100%;
+  }
+
+  .heroBtns {
+    flex-direction: column;
+  }
+
+  .heroBtns button {
+    width: 100%;
+  }
+
+  .heroLeft h1 {
+    font-size: 30px;
+  }
+
+  .cta h2 {
+    font-size: 20px;
+  }
+
+  .heroImageBox {
+    height: 200px;
+    font-size: 16px;
+  }
+}
