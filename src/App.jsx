@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import AppRouter from "./router/AppRouter";
-import { Toaster } from "sonner";
 import useAuthStore from "./store/useAuthStore";
 
 function App() {
@@ -10,12 +9,7 @@ function App() {
     startAuthListener();
   }, [startAuthListener]);
 
-  return (
-    <>
-      <AppRouter />
-      <Toaster position="top-right" richColors />
-    </>
-  );
+  return <AppRouter />;
 }
 
 export default App;

@@ -53,7 +53,9 @@ export default function LoginPage() {
 
       const authUser = await loginWithEmailPassword(cleanEmail, cleanPassword);
 
-      const profile = await getUserProfile(authUser.email);
+      // users docId = UID
+      const profile = await getUserProfile(authUser.uid);
+
       if (!profile) {
         setLocalError("User profile not found in Firestore (users).");
         return;
