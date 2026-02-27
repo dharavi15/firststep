@@ -301,7 +301,7 @@ export default function TuitionFees() {
 
             <div className="feesLine">
               Please contact our finance department at{" "}
-              <span className="feesPhone">095 305 4505</span> for details.
+              <span className="feesPhone">123 305 4505</span> for details.
             </div>
           </div>
         </div>

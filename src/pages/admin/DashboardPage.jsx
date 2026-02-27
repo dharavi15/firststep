@@ -3,8 +3,9 @@ import EnrollmentOverview from "./EnrollmentOverview";
 import Contact from "./Contact";
 import TuitionFees from "./TuitionFees";
 import Documents from "./Documents";
+import NewsEvents from "./NewsEvents";
 
-//button for the top shortcuts
+// This button is used for the top shortcuts
 function WideCard({ title, onClick }) {
   return (
     <button type="button" className="wideCard" onClick={onClick}>
@@ -22,7 +23,7 @@ function QuickCard({ title, onClick }) {
   );
 }
 
-// Text only row
+// Text only row  
 function ChecklistTextRow({ text }) {
   return (
     <div className="checklistTextRow">
@@ -53,13 +54,13 @@ export default function DashboardPage() {
     if (view === "completed") return "Completed Onboarding";
     if (view === "tuition") return "Tuition Fees";
     if (view === "documents") return "Documents";
-    if (view === "manage") return "Manage Student";
     if (view === "contact") return "Contact";
     if (view === "checklist") return "Onboarding Checklist";
+    if (view === "news") return "News & Events";
     return "Dashboard";
   }, [view]);
 
-  // data : text only
+  // Admin checklist  
   const onboardingSteps = useMemo(
     () => [
       "Step 1: Providing Information to Prospective Parents",
@@ -90,31 +91,6 @@ export default function DashboardPage() {
     </div>
   );
 
-  const renderManage = () => (
-    <div className="pagePad">
-      <div className="eventDetailBlock">
-        <div className="eventDetailTitle">Manage Student</div>
-        <div className="eventDetailDesc">Use Enrollment Overview for Add/Edit/Delete</div>
-        <div className="emptyState">Go to Enrollment Overview</div>
-
-        <div className="modalActions">
-          <button type="button" className="btnOutlinePrimary" onClick={goBack}>
-            Back
-          </button>
-
-          <button
-            type="button"
-            className="btnPrimary btnPrimaryAuto"
-            onClick={() => openView("enrollment")}
-          >
-            Open Enrollment Overview
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Checklist view
   const renderChecklist = () => (
     <div className="pagePad">
       <div className="eventDetailBlock">
@@ -132,15 +108,14 @@ export default function DashboardPage() {
     </div>
   );
 
-  // This decides which screen to render
   const renderActiveView = () => {
     if (view === "enrollment") return renderEnrollment();
     if (view === "completed") return renderCompleted();
     if (view === "tuition") return <TuitionFees />;
     if (view === "documents") return <Documents />;
-    if (view === "manage") return renderManage();
     if (view === "contact") return <Contact />;
     if (view === "checklist") return renderChecklist();
+    if (view === "news") return <NewsEvents />;
     return null;
   };
 
@@ -173,7 +148,7 @@ export default function DashboardPage() {
             <QuickCard title="Contact" onClick={() => openView("contact")} />
             <QuickCard title="Tuition Fees" onClick={() => openView("tuition")} />
             <QuickCard title="Documents" onClick={() => openView("documents")} />
-            <QuickCard title="Manage Student" onClick={() => openView("manage")} />
+            <QuickCard title="News & Events" onClick={() => openView("news")} />
           </div>
         </section>
       </div>
