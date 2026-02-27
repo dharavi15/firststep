@@ -2,8 +2,9 @@ import { useMemo, useState } from "react";
 import EnrollmentOverview from "./EnrollmentOverview";
 import Contact from "./Contact";
 import TuitionFees from "./TuitionFees";
+import Documents from "./Documents";
 
-// This button is used for the top shortcuts
+//button for the top shortcuts
 function WideCard({ title, onClick }) {
   return (
     <button type="button" className="wideCard" onClick={onClick}>
@@ -21,7 +22,7 @@ function QuickCard({ title, onClick }) {
   );
 }
 
-// Text only row (no click, no link)
+// Text only row
 function ChecklistTextRow({ text }) {
   return (
     <div className="checklistTextRow">
@@ -58,7 +59,7 @@ export default function DashboardPage() {
     return "Dashboard";
   }, [view]);
 
-  // Use the data from your image 2 (admin view: text only)
+  // data : text only
   const onboardingSteps = useMemo(
     () => [
       "Step 1: Providing Information to Prospective Parents",
@@ -84,16 +85,6 @@ export default function DashboardPage() {
       <div className="eventDetailBlock">
         <div className="eventDetailTitle">Completed Onboarding</div>
         <div className="eventDetailDesc">Connect a completed collection later</div>
-        <div className="emptyState">No data yet</div>
-      </div>
-    </div>
-  );
-
-  const renderDocuments = () => (
-    <div className="pagePad">
-      <div className="eventDetailBlock">
-        <div className="eventDetailTitle">Documents</div>
-        <div className="eventDetailDesc">Connect a documents collection later</div>
         <div className="emptyState">No data yet</div>
       </div>
     </div>
@@ -146,7 +137,7 @@ export default function DashboardPage() {
     if (view === "enrollment") return renderEnrollment();
     if (view === "completed") return renderCompleted();
     if (view === "tuition") return <TuitionFees />;
-    if (view === "documents") return renderDocuments();
+    if (view === "documents") return <Documents />;
     if (view === "manage") return renderManage();
     if (view === "contact") return <Contact />;
     if (view === "checklist") return renderChecklist();

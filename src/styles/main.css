@@ -2174,3 +2174,165 @@ body {
 .feesTable tbody tr:nth-child(even) td {
   background: rgba(0, 0, 0, 0.02);
 }
+
+/* Documents page */
+.docsWrap {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.docsList {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.docBtn {
+  width: 100%;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 14px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+}
+
+.docBtn:hover {
+  border-color: rgba(74, 144, 226, 0.35);
+}
+
+.docBtnLeft {
+  display: grid;
+  gap: 4px;
+}
+
+.docBtnStep {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.docBtnTitle {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-text-primary, #333333);
+}
+
+.docBtnMeta {
+  font-size: 12px;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.docBtnRight {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-primary-solid, #4a90e2);
+}
+
+/* Document detail */
+.docsTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.docPaper {
+  background: var(--color-surface, #ffffff);
+  border-radius: 16px;
+  padding: 18px 18px;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+}
+
+.docHeader {
+  margin-bottom: 12px;
+}
+
+.docTitle {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--color-text-primary, #333333);
+  margin-bottom: 6px;
+}
+
+.docMeta {
+  font-size: 12px;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.docBox {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-top: 10px;
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.docSectionTitle {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-text-primary, #333333);
+  margin-bottom: 8px;
+}
+
+.docText {
+  font-size: 13px;
+  color: var(--color-text-primary, #333333);
+  line-height: 1.55;
+}
+
+.docList {
+  margin: 8px 0 0 18px;
+  padding: 0;
+  font-size: 13px;
+  color: var(--color-text-primary, #333333);
+  line-height: 1.55;
+}
+
+.docGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.docField {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 10px;
+  background: #fff;
+  min-height: 56px;
+}
+
+.docFieldLabel {
+  font-size: 12px;
+  color: var(--color-text-secondary, #6b7280);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.docFieldLine {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.35);
+  height: 18px;
+}
+
+.docSmallNote {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+@media (max-width: 640px) {
+  .docsTop {
+    flex-direction: column;
+  }
+
+  .docGrid {
+    grid-template-columns: 1fr;
+  }
+}
