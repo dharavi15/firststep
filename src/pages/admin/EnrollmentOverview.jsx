@@ -485,7 +485,7 @@ export default function EnrollmentOverview() {
       >
         <div>
           <div className="eventDetailTitle">Students Overview</div>
-          <div className="eventDetailDesc">This list is loaded from Firestore</div>
+          <div className="eventDetailDesc">List of enrolled students</div>
         </div>
 
         {isAdmin ? (

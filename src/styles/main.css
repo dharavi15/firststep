@@ -1999,3 +1999,90 @@ body {
   font-size: 28px;
   font-weight: 800;
 }
+
+/* Admin Contact page */
+.contactWrap {
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.contactHeroCard {
+  background: var(--color-surface, #ffffff);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  padding: 28px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+}
+
+.contactLogo {
+  width: 84px;
+  height: 84px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.contactHeroText {
+  max-width: 520px;
+}
+
+.contactHeroTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary, #333333);
+  margin-bottom: 8px;
+}
+
+.contactHeroDesc {
+  font-size: 16px;
+  color: var(--color-text-secondary, #6b7280);
+  line-height: 1.5;
+}
+
+.contactList {
+  margin-top: 28px;
+  display: grid;
+  gap: 22px;
+}
+
+.contactRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding-left: 8px;
+}
+
+.contactIcon {
+  font-size: 44px;
+  line-height: 1;
+  width: 56px;
+  display: flex;
+  justify-content: center;
+  color: var(--color-text-primary, #333333);
+}
+
+.contactValue {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--color-text-primary, #333333);
+  line-height: 1.35;
+}
+
+@media (max-width: 560px) {
+  .contactHeroCard {
+    flex-direction: column;
+  }
+
+  .contactValue {
+    font-size: 18px;
+  }
+
+  .contactIcon {
+    font-size: 38px;
+    width: 44px;
+  }
+}
+

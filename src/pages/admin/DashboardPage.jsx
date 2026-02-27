@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import EnrollmentOverview from "./EnrollmentOverview";
+import Contact from "./Contact";
 
 // This button is used for the top shortcuts
 function WideCard({ title, onClick }) {
@@ -131,52 +132,7 @@ export default function DashboardPage() {
     </div>
   );
 
-  const renderContact = () => (
-    <div className="pagePad">
-      <div className="eventDetailBlock">
-        <div className="eventDetailTitle">Contact</div>
-        <div className="eventDetailDesc">Connect a real contact feature later</div>
-
-        <div className="modalForm modalFormSpaced">
-          <label className="modalLabel">
-            Subject
-            <input className="modalInput" placeholder="Subject" />
-          </label>
-
-          <label className="modalLabel">
-            Name
-            <input className="modalInput" placeholder="Name" />
-          </label>
-
-          <label className="modalLabel">
-            Email
-            <input className="modalInput" placeholder="Email" />
-          </label>
-
-          <label className="modalLabel">
-            Message
-            <textarea className="modalInput" placeholder="Message" rows={4} />
-          </label>
-
-          <div className="modalActions">
-            <button type="button" className="btnOutlinePrimary" onClick={goBack}>
-              Cancel
-            </button>
-
-            <button
-              type="button"
-              className="btnPrimary btnPrimaryAuto"
-              onClick={() => alert("Send later")}
-            >
-              Send
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Checklist view 
+  // Checklist view
   const renderChecklist = () => (
     <div className="pagePad">
       <div className="eventDetailBlock">
@@ -201,7 +157,7 @@ export default function DashboardPage() {
     if (view === "tuition") return renderTuition();
     if (view === "documents") return renderDocuments();
     if (view === "manage") return renderManage();
-    if (view === "contact") return renderContact();
+    if (view === "contact") return <Contact />;
     if (view === "checklist") return renderChecklist();
     return null;
   };
@@ -209,8 +165,14 @@ export default function DashboardPage() {
   const renderDashboardHome = () => (
     <div className="dashWrap">
       <div className="dashTopGrid">
-        <WideCard title="Enrollment Overview" onClick={() => openView("enrollment")} />
-        <WideCard title="Completed Onboarding" onClick={() => openView("completed")} />
+        <WideCard
+          title="Enrollment Overview"
+          onClick={() => openView("enrollment")}
+        />
+        <WideCard
+          title="Completed Onboarding"
+          onClick={() => openView("completed")}
+        />
       </div>
 
       <div className="dashMainGrid">
