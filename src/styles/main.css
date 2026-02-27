@@ -2475,3 +2475,241 @@ body {
     height: 220px;
   }
 }
+
+
+/* Payments Overview (admin) */
+
+.payments-wide {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.payments-card {
+  padding: 18px;
+}
+
+.payments-table-head {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.2fr;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(74, 144, 226, 0.08);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 10px;
+}
+
+.payments-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.2fr;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 14px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  margin-bottom: 10px;
+}
+
+.payments-student-link {
+  border: none;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  color: var(--color-primary-solid);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.payments-student-link:hover {
+  text-decoration: underline;
+}
+
+.payments-year,
+.payments-status,
+.payments-outstanding {
+  color: var(--color-text-primary);
+}
+
+.payments-outstanding {
+  font-weight: 700;
+}
+
+.empty-state {
+  padding: 16px 10px;
+  color: var(--color-text-secondary);
+}
+
+.payments-detail-card {
+  padding: 18px;
+  margin-top: 16px;
+}
+
+.payments-detail-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.detail-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.detail-sub {
+  margin-top: 4px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.payments-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.detail-box {
+  border-radius: 12px;
+  background: rgba(74, 144, 226, 0.06);
+  padding: 12px;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+}
+
+.detail-value {
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.payments-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+  margin-bottom: 14px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.text-input {
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 10px 12px;
+  outline: none;
+  background: #ffffff;
+}
+
+.text-input:disabled {
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--color-text-secondary);
+}
+
+.btn-secondary {
+  border: 1px solid rgba(74, 144, 226, 0.35);
+  background: #ffffff;
+  color: var(--color-primary-solid);
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-secondary:hover {
+  background: rgba(74, 144, 226, 0.06);
+}
+
+.btn-danger {
+  border: 1px solid rgba(235, 87, 87, 0.35);
+  background: #ffffff;
+  color: var(--color-error, #eb5757);
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-danger:hover {
+  background: rgba(235, 87, 87, 0.06);
+}
+
+/* Mobile */
+@media (max-width: 720px) {
+  .payments-table-head {
+    display: none;
+  }
+
+  .payments-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .payments-detail-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .payments-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Button Row */
+.button-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+/* Primary Button (Edit / Save) */
+.primary-btn {
+  background-color: var(--color-primary-solid);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.primary-btn:hover {
+  background-color: #357bd8;
+  transform: translateY(-1px);
+}
+
+/* Button (Delete) */
+.btn-danger {
+  background-color: rgba(235, 87, 87, 0.08);
+  color: #eb5757;
+  border: 1px solid rgba(235, 87, 87, 0.3);
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn-danger:hover {
+  background-color: rgba(235, 87, 87, 0.15);
+  transform: translateY(-1px);
+}

@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
+
 import EnrollmentOverview from "./EnrollmentOverview";
-import Contact from "./Contact";
+import PaymentsOverview from "./PaymentsOverview";
 import TuitionFees from "./TuitionFees";
 import Documents from "./Documents";
 import NewsEvents from "./NewsEvents";
+import Contact from "./Contact";
 
 // This button is used for the top shortcuts
 function WideCard({ title, onClick }) {
@@ -23,7 +25,7 @@ function QuickCard({ title, onClick }) {
   );
 }
 
-// Text only row  
+// Text only row (no click, no link)
 function ChecklistTextRow({ text }) {
   return (
     <div className="checklistTextRow">
@@ -51,16 +53,16 @@ export default function DashboardPage() {
   // Title for each view
   const viewTitle = useMemo(() => {
     if (view === "enrollment") return "Enrollment Overview";
-    if (view === "completed") return "Completed Onboarding";
+    if (view === "payments") return "Payments Overview";
     if (view === "tuition") return "Tuition Fees";
     if (view === "documents") return "Documents";
+    if (view === "news") return "News & Events";
     if (view === "contact") return "Contact";
     if (view === "checklist") return "Onboarding Checklist";
-    if (view === "news") return "News & Events";
     return "Dashboard";
   }, [view]);
 
-  // Admin checklist  
+  // Admin view (text only)
   const onboardingSteps = useMemo(
     () => [
       "Step 1: Providing Information to Prospective Parents",
@@ -81,13 +83,33 @@ export default function DashboardPage() {
     </div>
   );
 
-  const renderCompleted = () => (
+  const renderPayments = () => (
     <div className="pagePad">
-      <div className="eventDetailBlock">
-        <div className="eventDetailTitle">Completed Onboarding</div>
-        <div className="eventDetailDesc">Connect a completed collection later</div>
-        <div className="emptyState">No data yet</div>
-      </div>
+      <PaymentsOverview />
+    </div>
+  );
+
+  const renderTuition = () => (
+    <div className="pagePad">
+      <TuitionFees />
+    </div>
+  );
+
+  const renderDocuments = () => (
+    <div className="pagePad">
+      <Documents />
+    </div>
+  );
+
+  const renderNews = () => (
+    <div className="pagePad">
+      <NewsEvents />
+    </div>
+  );
+
+  const renderContact = () => (
+    <div className="pagePad">
+      <Contact />
     </div>
   );
 
@@ -108,22 +130,24 @@ export default function DashboardPage() {
     </div>
   );
 
+  // This decides which screen to render
   const renderActiveView = () => {
     if (view === "enrollment") return renderEnrollment();
-    if (view === "completed") return renderCompleted();
-    if (view === "tuition") return <TuitionFees />;
-    if (view === "documents") return <Documents />;
-    if (view === "contact") return <Contact />;
+    if (view === "payments") return renderPayments();
+    if (view === "tuition") return renderTuition();
+    if (view === "documents") return renderDocuments();
+    if (view === "news") return renderNews();
+    if (view === "contact") return renderContact();
     if (view === "checklist") return renderChecklist();
-    if (view === "news") return <NewsEvents />;
     return null;
   };
 
+  // Dashboard home (Quick Actions must stay the same)
   const renderDashboardHome = () => (
     <div className="dashWrap">
       <div className="dashTopGrid">
         <WideCard title="Enrollment Overview" onClick={() => openView("enrollment")} />
-        <WideCard title="Completed Onboarding" onClick={() => openView("completed")} />
+        <WideCard title="Payments Overview" onClick={() => openView("payments")} />
       </div>
 
       <div className="dashMainGrid">
