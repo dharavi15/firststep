@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import EnrollmentOverview from "./EnrollmentOverview";
 import Contact from "./Contact";
+import TuitionFees from "./TuitionFees";
 
 // This button is used for the top shortcuts
 function WideCard({ title, onClick }) {
@@ -88,16 +89,6 @@ export default function DashboardPage() {
     </div>
   );
 
-  const renderTuition = () => (
-    <div className="pagePad">
-      <div className="eventDetailBlock">
-        <div className="eventDetailTitle">Tuition Fees</div>
-        <div className="eventDetailDesc">Connect a payments collection later</div>
-        <div className="emptyState">No data yet</div>
-      </div>
-    </div>
-  );
-
   const renderDocuments = () => (
     <div className="pagePad">
       <div className="eventDetailBlock">
@@ -154,7 +145,7 @@ export default function DashboardPage() {
   const renderActiveView = () => {
     if (view === "enrollment") return renderEnrollment();
     if (view === "completed") return renderCompleted();
-    if (view === "tuition") return renderTuition();
+    if (view === "tuition") return <TuitionFees />;
     if (view === "documents") return renderDocuments();
     if (view === "manage") return renderManage();
     if (view === "contact") return <Contact />;
@@ -165,14 +156,8 @@ export default function DashboardPage() {
   const renderDashboardHome = () => (
     <div className="dashWrap">
       <div className="dashTopGrid">
-        <WideCard
-          title="Enrollment Overview"
-          onClick={() => openView("enrollment")}
-        />
-        <WideCard
-          title="Completed Onboarding"
-          onClick={() => openView("completed")}
-        />
+        <WideCard title="Enrollment Overview" onClick={() => openView("enrollment")} />
+        <WideCard title="Completed Onboarding" onClick={() => openView("completed")} />
       </div>
 
       <div className="dashMainGrid">

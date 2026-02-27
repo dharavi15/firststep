@@ -2086,3 +2086,91 @@ body {
   }
 }
 
+/* Tuition Fees page */
+.feesWrap {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.feesHeader {
+  margin-bottom: 16px;
+}
+
+.feesTitle {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-text-primary, #333333);
+}
+
+.feesSubTitle {
+  margin-top: 6px;
+  color: var(--color-text-secondary, #6b7280);
+  font-size: 14px;
+}
+
+.feesSection {
+  margin-top: 18px;
+}
+
+.feesSectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary, #333333);
+  margin-bottom: 10px;
+}
+
+.feesTextBlock {
+  background: var(--color-surface, #ffffff);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+}
+
+.feesLine {
+  color: var(--color-text-primary, #333333);
+  line-height: 1.55;
+  font-size: 14px;
+  margin: 6px 0;
+}
+
+.feesBold {
+  font-weight: 700;
+}
+
+.feesPhone {
+  font-weight: 700;
+  color: var(--color-error, #eb5757);
+}
+
+/* Table */
+.feesTableWrap {
+  overflow-x: auto;
+  background: var(--color-surface, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+}
+
+.feesTable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 920px;
+}
+
+.feesTable th,
+.feesTable td {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 10px 10px;
+  text-align: left;
+  vertical-align: top;
+  font-size: 13px;
+}
+
+.feesTable thead th {
+  background: rgba(74, 144, 226, 0.12);
+  font-weight: 800;
+  color: var(--color-text-primary, #333333);
+}
+
+.feesTable tbody tr:nth-child(even) td {
+  background: rgba(0, 0, 0, 0.02);
+}
