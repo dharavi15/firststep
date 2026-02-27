@@ -19,15 +19,14 @@ function QuickCard({ title, onClick }) {
   );
 }
 
-// This row is used for checklist items
-function ChecklistRow({ text, onClick }) {
+// Text only row (no click, no link)
+function ChecklistTextRow({ text }) {
   return (
-    <button type="button" className="checklistRow" onClick={onClick}>
-      <div className="checklistLeft">
+    <div className="checklistTextRow">
+      <div className="checklistTextLeft">
         <span>{text}</span>
       </div>
-      <span>Open</span>
-    </button>
+    </div>
   );
 }
 
@@ -35,25 +34,14 @@ export default function DashboardPage() {
   // view controls which screen is visible
   const [view, setView] = useState("dashboard");
 
-  // selectedTaskTitle is used for the task details screen
-  const [selectedTaskTitle, setSelectedTaskTitle] = useState("");
-
   // Go back to main dashboard
   const goBack = () => {
     setView("dashboard");
-    setSelectedTaskTitle("");
   };
 
   // Open a normal view
   const openView = (nextView) => {
-    setSelectedTaskTitle("");
     setView(nextView);
-  };
-
-  // Open task details view
-  const openTaskDetails = (title) => {
-    setSelectedTaskTitle(title);
-    setView("taskDetails");
   };
 
   // Title for each view
@@ -65,9 +53,23 @@ export default function DashboardPage() {
     if (view === "manage") return "Manage Student";
     if (view === "contact") return "Contact";
     if (view === "checklist") return "Onboarding Checklist";
-    if (view === "taskDetails") return selectedTaskTitle || "Task Details";
     return "Dashboard";
-  }, [view, selectedTaskTitle]);
+  }, [view]);
+
+  // Use the data from your image 2 (admin view: text only)
+  const onboardingSteps = useMemo(
+    () => [
+      "Step 1: Providing Information to Prospective Parents",
+      "Step 2: Making Your Application",
+      "Step 3: Submission of application and time frame",
+      "Step 4: Admission Interview",
+      "Step 5: Offer of Entry and Acceptance",
+      "Step 6: Registration",
+      "Step 7: Information to registered students and parents",
+      "Step 8: Orientation",
+    ],
+    []
+  );
 
   const renderEnrollment = () => (
     <div className="pagePad">
@@ -174,79 +176,19 @@ export default function DashboardPage() {
     </div>
   );
 
+  // Checklist view 
   const renderChecklist = () => (
     <div className="pagePad">
       <div className="eventDetailBlock">
         <div className="eventDetailTitle">Onboarding Checklist</div>
-        <div className="eventDetailDesc">Click a task to view details</div>
+        <div className="eventDetailDesc">Admin view (text only)</div>
 
         <div className="tableBody tableBodySpaced">
-          <button
-            type="button"
-            className="profileRowBtn"
-            onClick={() => openTaskDetails("Pending Tasks")}
-          >
-            <span className="profileRowName">Pending Tasks</span>
-          </button>
-
-          <button
-            type="button"
-            className="profileRowBtn"
-            onClick={() => openTaskDetails("Awaiting Payments")}
-          >
-            <span className="profileRowName">Awaiting Payments</span>
-          </button>
-
-          <button
-            type="button"
-            className="profileRowBtn"
-            onClick={() => openTaskDetails("Fill Health Form")}
-          >
-            <span className="profileRowName">Fill Health Form</span>
-          </button>
-
-          <button
-            type="button"
-            className="profileRowBtn"
-            onClick={() => openTaskDetails("Pay Tuition and Fees")}
-          >
-            <span className="profileRowName">Pay Tuition and Fees</span>
-          </button>
-
-          <button
-            type="button"
-            className="profileRowBtn"
-            onClick={() => openTaskDetails("Attend Orientation")}
-          >
-            <span className="profileRowName">Attend Orientation</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderTaskDetails = () => (
-    <div className="pagePad">
-      <div className="eventDetailBlock">
-        <div className="eventDetailTitle">
-          {selectedTaskTitle || "Task Details"}
-        </div>
-        <div className="eventDetailDesc">
-          This screen can show real task data later
-        </div>
-
-        <div className="modalActions">
-          <button
-            type="button"
-            className="btnOutlinePrimary"
-            onClick={() => openView("checklist")}
-          >
-            Back to Checklist
-          </button>
-
-          <button type="button" className="btnPrimary" onClick={goBack}>
-            Back to Dashboard
-          </button>
+          {onboardingSteps.map((step) => (
+            <div key={step} className="profileRowBtn profileRowBtnStatic">
+              <span className="profileRowName">{step}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -261,21 +203,14 @@ export default function DashboardPage() {
     if (view === "manage") return renderManage();
     if (view === "contact") return renderContact();
     if (view === "checklist") return renderChecklist();
-    if (view === "taskDetails") return renderTaskDetails();
     return null;
   };
 
   const renderDashboardHome = () => (
     <div className="dashWrap">
       <div className="dashTopGrid">
-        <WideCard
-          title="Enrollment Overview"
-          onClick={() => openView("enrollment")}
-        />
-        <WideCard
-          title="Completed Onboarding"
-          onClick={() => openView("completed")}
-        />
+        <WideCard title="Enrollment Overview" onClick={() => openView("enrollment")} />
+        <WideCard title="Completed Onboarding" onClick={() => openView("completed")} />
       </div>
 
       <div className="dashMainGrid">
@@ -286,37 +221,9 @@ export default function DashboardPage() {
             <div className="panelTitle">Pending Tasks</div>
 
             <div className="checklistList">
-              <ChecklistRow
-                text="Pending Tasks"
-                onClick={() => openTaskDetails("Pending Tasks")}
-              />
-              <ChecklistRow
-                text="Awaiting Payments"
-                onClick={() => openTaskDetails("Awaiting Payments")}
-              />
-              <ChecklistRow
-                text="Fill Health Form"
-                onClick={() => openTaskDetails("Fill Health Form")}
-              />
-              <ChecklistRow
-                text="Pay Tuition and Fees"
-                onClick={() => openTaskDetails("Pay Tuition and Fees")}
-              />
-              <ChecklistRow
-                text="Attend Orientation"
-                onClick={() => openTaskDetails("Attend Orientation")}
-              />
-            </div>
-
-            <div className="panelFooter">
-              <span className="mutedLink">Step 2 of 5</span>
-              <button
-                className="linkBtn"
-                type="button"
-                onClick={() => openView("checklist")}
-              >
-                View Checklist
-              </button>
+              {onboardingSteps.map((step) => (
+                <ChecklistTextRow key={step} text={step} />
+              ))}
             </div>
           </div>
         </section>
@@ -327,10 +234,7 @@ export default function DashboardPage() {
           <div className="quickGrid">
             <QuickCard title="Contact" onClick={() => openView("contact")} />
             <QuickCard title="Tuition Fees" onClick={() => openView("tuition")} />
-            <QuickCard
-              title="Documents"
-              onClick={() => openView("documents")}
-            />
+            <QuickCard title="Documents" onClick={() => openView("documents")} />
             <QuickCard title="Manage Student" onClick={() => openView("manage")} />
           </div>
         </section>
