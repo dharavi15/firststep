@@ -1,12 +1,10 @@
-/*// src/pages/auth/LoginPage.jsx
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Lock } from "lucide-react";
-import { signInWithEmailAndPassword } from "firebase/auth";
 import { z } from "zod";
 
-import { auth } from "../../firebase/firebase";
+import { loginWithEmailPassword } from "../../firebase/auth";
 import { getUserProfile } from "../../firebase/userProfile";
+import useAuthStore from "../../store/useAuthStore";
 
 import Logo from "../../components/ui/Logo";
 import Card from "../../components/ui/Card";
@@ -16,10 +14,7 @@ import TextLink from "../../components/ui/TextLink";
 
 const loginSchema = z.object({
   email: z.string().trim().min(1, "Email is required").email("Enter a valid email"),
-  password: z
-    .string()
-    .min(1, "Password is required")
-    .min(6, "Password must be at least 6 characters"),
+  password: z.string().min(1, "Password is required").min(6, "Password must be at least 6 characters"),
 });
 
 export default function LoginPage() {
@@ -27,253 +22,130 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [localError, setLocalError] = useState("");
+  const [loading, setLoadingLocal] = useState(false);
 
-  const [fieldErrors, setFieldErrors] = useState({ email: "", password: "" });
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const canSubmit = useMemo(() => {
-    return email.trim().length > 0 && password.length > 0 && !loading;
-  }, [email, password, loading]);
+  const setUser = useAuthStore((s) => s.setUser);
+  const setStoreLoading = useAuthStore((s) => s.setLoading);
+  const setStoreError = useAuthStore((s) => s.setError);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setFieldErrors({ email: "", password: "" });
+    setLocalError("");
+    setStoreError("");
 
-    const result = loginSchema.safeParse({ email, password });
-    if (!result.success) {
-      const errs = result.error.flatten().fieldErrors;
-      setFieldErrors({
-        email: errs.email?.[0] ?? "",
-        password: errs.password?.[0] ?? "",
-      });
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    const parsed = loginSchema.safeParse({ email: cleanEmail, password: cleanPassword });
+    if (!parsed.success) {
+      const firstError =
+        parsed.error?.flatten()?.fieldErrors?.email?.[0] ||
+        parsed.error?.flatten()?.fieldErrors?.password?.[0] ||
+        "Please check your input";
+      setLocalError(firstError);
       return;
     }
 
     try {
-      setLoading(true);
+      setLoadingLocal(true);
+      setStoreLoading(true);
 
-      const cred = await signInWithEmailAndPassword(
-        auth,
-        result.data.email,
-        result.data.password
-      );
+      const authUser = await loginWithEmailPassword(cleanEmail, cleanPassword);
 
-      const uid = cred.user.uid;
-      const profile = await getUserProfile(uid);
-
+      const profile = await getUserProfile(authUser.email);
       if (!profile) {
-        setError("User profile not found in Firestore (users collection).");
+        setLocalError("User profile not found in Firestore (users).");
         return;
       }
 
-      if (profile.role === "admin") {
+      if (profile.isActive === false) {
+        setLocalError("This account is inactive.");
+        return;
+      }
+
+      const role = profile.role;
+      if (role !== "admin" && role !== "parent") {
+        setLocalError("Invalid role in user profile.");
+        return;
+      }
+
+      setUser({
+        uid: authUser.uid,
+        email: authUser.email,
+        role,
+        fullName: profile.fullName || "",
+        schoolId: profile.schoolId || "",
+      });
+
+      if (role === "admin") {
         navigate("/admin/dashboard");
         return;
       }
 
-      if (profile.role === "parent") {
-        navigate("/parent/dashboard");
-        return;
-      }
-
-      setError("Your account role is missing. Please contact admin.");
+      navigate("/parent/dashboard");
     } catch (err) {
-      console.log("FIREBASE LOGIN ERROR:", err.code, err.message);
+      console.log("FIREBASE LOGIN ERROR:", err?.code, err?.message);
 
       const code = err?.code || "";
+      let msg = err?.message || "Login failed. Please try again.";
+
       if (code === "auth/invalid-credential" || code === "auth/wrong-password") {
-        setError("Incorrect email or password.");
+        msg = "Incorrect email or password.";
       } else if (code === "auth/user-not-found") {
-        setError("No account found with this email.");
+        msg = "No account found with this email.";
       } else if (code === "auth/too-many-requests") {
-        setError("Too many attempts. Try again later.");
+        msg = "Too many attempts. Try again later.";
       } else if (code === "auth/network-request-failed") {
-        setError("Network error. Check your internet and try again.");
-      } else {
-        setError(err?.message || "Login failed. Please try again.");
+        msg = "Network error. Check your internet and try again.";
       }
+
+      setLocalError(msg);
+      setStoreError(msg);
     } finally {
-      setLoading(false);
+      setLoadingLocal(false);
+      setStoreLoading(false);
     }
   };
 
   return (
-    <div className="pageCenter authPage">
-      <div className="stack">
-        <Logo />
+    <div className="pageCenter">
+      <Card>
+        <div className="logoWrap">
+          <Logo />
+        </div>
 
-        <Card>
-          <h2 className="centerText" style={{ marginBottom: 14 }}>
-            Login
-          </h2>
+        <h2 className="authTitle">Login</h2>
 
-          {error && (
-            <p
-              style={{
-                color: "var(--color-error)",
-                marginTop: 0,
-                marginBottom: 12,
-              }}
-            >
-              {error}
-            </p>
-          )}
+        {localError && <p className="centerText">{localError}</p>}
 
-          <form className="form" onSubmit={handleSubmit}>
-            <InputField
-              icon={User}
-              type="email"
-              name="email"
-              autoComplete="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            {fieldErrors.email && (
-              <p style={{ color: "var(--color-error)", marginTop: -10, marginBottom: 10 }}>
-                {fieldErrors.email}
-              </p>
-            )}
+        <form className="form" onSubmit={handleSubmit}>
+          <InputField
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-            <InputField
-              icon={Lock}
-              type="password"
-              name="password"
-              autoComplete="current-password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            {fieldErrors.password && (
-              <p style={{ color: "var(--color-error)", marginTop: -10, marginBottom: 10 }}>
-                {fieldErrors.password}
-              </p>
-            )}
+          <InputField
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-            <div className="rowRight">
-              <TextLink
-                text="Forgot password?"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate("/forgot-password");
-                }}
-              />
-            </div>
+          <div className="rowCenter">
+            <TextLink text="Forgot password?" onClick={(e) => e.preventDefault()} />
+          </div>
 
-            <Button
-              text={loading ? "Logging in..." : "Login"}
-              type="submit"
-              disabled={!canSubmit}
-            />
+          <Button text={loading ? "Logging in..." : "Login"} type="submit" disabled={loading} />
 
-            <p className="centerText" style={{ marginTop: 10 }}>
-              Don&apos;t have an admin account?{" "}
-              <TextLink
-                text="Sign up"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate("/signup");
-                }}
-              />
-            </p>
-          </form>
-        </Card>
-      </div>
-    </div>
-  );
-}*/
-
-
-
-
-// src/pages/auth/LoginPage.jsx
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Mail, Lock } from "lucide-react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase/firebase";
-
-import Logo from "../../components/ui/Logo";
-import Card from "../../components/ui/Card";
-import InputField from "../../components/ui/InputField";
-import Button from "../../components/ui/Button";
-import TextLink from "../../components/ui/TextLink";
-
-export default function LoginPage() {
-  const navigate = useNavigate();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function onSubmit(e) {
-    e.preventDefault();
-    setError("");
-
-    try {
-      setLoading(true);
-      await signInWithEmailAndPassword(auth, email.trim(), password);
-      navigate("/admin/dashboard");
-    } catch (err) {
-      console.error("LOGIN ERROR:", err);
-      setError("Login failed. Please check email & password.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div className="pageCenter authPage">
-      <div className="authStack">
-        <Logo />
-
-        <Card className="authCard">
-          <h1 className="authTitle">Login</h1>
-
-          {error ? <div className="authError">{error}</div> : null}
-
-          <form className="authForm" onSubmit={onSubmit}>
-            <InputField
-              icon={Mail}
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-            />
-
-            <InputField
-              icon={Lock}
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-            />
-
-            <div className="authRowRight">
-              <TextLink onClick={() => navigate("/forgot-password")}>
-                Forgot password?
-              </TextLink>
-            </div>
-
-            <Button type="submit" disabled={loading}>
-              {loading ? "Logging in..." : "Login"}
-            </Button>
-
-            <p className="authFooterText">
-              Don&apos;t have an admin account?{" "}
-              <TextLink onClick={() => navigate("/signup")}>Sign up</TextLink>
-            </p>
-          </form>
-        </Card>
-      </div>
+          <p className="centerText">
+            Do not have an account{" "}
+            <TextLink text="Sign up" onClick={(e) => e.preventDefault()} />
+          </p>
+        </form>
+      </Card>
     </div>
   );
 }
