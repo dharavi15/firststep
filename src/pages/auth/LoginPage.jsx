@@ -44,10 +44,9 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
-      // 1) Firebase Auth
       const authUser = await loginWithEmailPassword(cleanEmail, cleanPassword);
 
-      // 2) Firestore Profile (users) by email
+      // This must be allowed by Firestore Rules
       const profile = await getUserProfile(authUser.email);
 
       if (!profile) {
@@ -67,7 +66,6 @@ export default function LoginPage() {
         return;
       }
 
-      // 3) Save to store
       setUser({
         uid: authUser.uid,
         email: authUser.email,
@@ -76,7 +74,6 @@ export default function LoginPage() {
         schoolId: profile.schoolId || "",
       });
 
-      // 4) Redirect by role
       if (role === "admin") {
         navigate("/admin/dashboard");
       } else {
@@ -84,12 +81,14 @@ export default function LoginPage() {
       }
     } catch (err) {
       const msg = err?.message || "Login failed";
+      const lower = String(msg).toLowerCase();
 
-      // Friendly hint for permission error
-      if (String(msg).toLowerCase().includes("permission")) {
+      if (lower.includes("permission") || lower.includes("insufficient")) {
         setLocalError(
           "Missing or insufficient permissions. Please update Firestore Rules."
         );
+      } else if (lower.includes("auth/invalid-credential")) {
+        setLocalError("Wrong email or password");
       } else {
         setLocalError(msg);
       }
@@ -101,52 +100,53 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="pageCenter">
-      <div className="stack">
-        <Logo />
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        paddingTop: 48,
+        paddingLeft: 16,
+        paddingRight: 16,
+      }}
+    >
+      <Card>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+          <Logo />
+        </div>
 
-        <Card>
-          <h2 className="centerText" style={{ marginBottom: 16 }}>
-            Login
-          </h2>
+        <h2>Login</h2>
 
-          {localError && (
-            <p style={{ color: "var(--color-error)", marginTop: 0 }}>
-              {localError}
-            </p>
-          )}
+        {localError && <p>{localError}</p>}
 
-          <form className="form" onSubmit={handleSubmit}>
-            <InputField
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+        <form onSubmit={handleSubmit}>
+          <InputField
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-            <InputField
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+          <InputField
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-            <div className="rowRight">
-              <TextLink
-                text="Forgot password"
-                onClick={(e) => e.preventDefault()}
-              />
-            </div>
+          <div>
+            <TextLink text="Forgot password" onClick={(e) => e.preventDefault()} />
+          </div>
 
-            <Button text="Login" type="submit" />
+          <Button text="Login" type="submit" />
 
-            <p className="centerText" style={{ marginTop: 10 }}>
-              Do not have an account{" "}
-              <TextLink text="Sign up" onClick={(e) => e.preventDefault()} />
-            </p>
-          </form>
-        </Card>
-      </div>
+          <p>
+            Do not have an account{" "}
+            <TextLink text="Sign up" onClick={(e) => e.preventDefault()} />
+          </p>
+        </form>
+      </Card>
     </div>
   );
 }

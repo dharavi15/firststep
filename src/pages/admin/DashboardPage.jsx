@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import useAuthStore from "../../store/useAuthStore";
-import { getStudentsForAdmin } from "../../services/studentService";
+import { useMemo, useState } from "react";
+import EnrollmentOverview from "./EnrollmentOverview";
 
 // This button is used for the top shortcuts
 function WideCard({ title, onClick }) {
@@ -33,75 +32,11 @@ function ChecklistRow({ text, onClick }) {
 }
 
 export default function DashboardPage() {
-  const user = useAuthStore((s) => s.user);
-
   // view controls which screen is visible
   const [view, setView] = useState("dashboard");
 
   // selectedTaskTitle is used for the task details screen
   const [selectedTaskTitle, setSelectedTaskTitle] = useState("");
-
-  // students is loaded from Firestore
-  const [students, setStudents] = useState([]);
-  const [loadingStudents, setLoadingStudents] = useState(false);
-  const [studentsError, setStudentsError] = useState("");
-
-  useEffect(() => {
-    let alive = true;
-
-    const schoolId = user?.schoolId;
-
-    // Do not load until we have schoolId
-    if (!schoolId) {
-      setStudents([]);
-      setStudentsError("");
-      setLoadingStudents(false);
-
-      return () => {
-        alive = false;
-      };
-    }
-
-    const loadStudents = async () => {
-      setLoadingStudents(true);
-      setStudentsError("");
-
-      try {
-        const rows = await getStudentsForAdmin({ schoolId });
-
-        // Debug logs (keep for now)
-        console.log("DashboardPage: schoolId used =", schoolId);
-        console.log(
-          "DashboardPage: students count =",
-          Array.isArray(rows) ? rows.length : 0
-        );
-        console.log(
-          "DashboardPage: first =",
-          Array.isArray(rows) ? rows[0] : null
-        );
-
-        if (alive) {
-          setStudents(Array.isArray(rows) ? rows : []);
-        }
-      } catch (error) {
-        if (alive) {
-          setStudents([]);
-          setStudentsError(error?.message || "Cannot load students");
-        }
-      } finally {
-        // Do not return inside finally (eslint no-unsafe-finally)
-        if (alive) {
-          setLoadingStudents(false);
-        }
-      }
-    };
-
-    loadStudents();
-
-    return () => {
-      alive = false;
-    };
-  }, [user?.schoolId]);
 
   // Go back to main dashboard
   const goBack = () => {
@@ -134,64 +69,9 @@ export default function DashboardPage() {
     return "Dashboard";
   }, [view, selectedTaskTitle]);
 
-  // Render a list of students from Firestore
-  const renderStudentsList = () => {
-    if (!user?.schoolId) {
-      return <div className="emptyState">No schoolId found for this user</div>;
-    }
-
-    if (loadingStudents) {
-      return <div className="emptyState">Loading students</div>;
-    }
-
-    if (studentsError) {
-      return <div className="emptyState">{studentsError}</div>;
-    }
-
-    if (!students.length) {
-      return <div className="emptyState">No students found</div>;
-    }
-
-    return (
-      <div className="tableBody tableBodySpaced">
-        {students.map((s) => {
-          const name = s.studentName || s.name || "No name";
-
-          const yearValue =
-            typeof s.year === "number"
-              ? s.year
-              : typeof s.grade === "number"
-              ? s.grade
-              : null;
-
-          const yearText = yearValue ? `Year ${yearValue}` : "No grade";
-
-          const statusText = s.status || s.overallStatus || "pending";
-
-          return (
-            <div key={s.id} className="profileInfoRow">
-              <div className="profileInfoLeft">
-                <span className="profileInfoLabel">{name}</span>
-              </div>
-
-              <div className="profileInfoValue">
-                <span className="studentMeta">{yearText}</span>
-                <span className="studentMeta">{statusText}</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
   const renderEnrollment = () => (
     <div className="pagePad">
-      <div className="eventDetailBlock">
-        <div className="eventDetailTitle">Students Overview</div>
-        <div className="eventDetailDesc">This list is loaded from Firestore</div>
-        {renderStudentsList()}
-      </div>
+      <EnrollmentOverview />
     </div>
   );
 
@@ -229,9 +109,8 @@ export default function DashboardPage() {
     <div className="pagePad">
       <div className="eventDetailBlock">
         <div className="eventDetailTitle">Manage Student</div>
-        <div className="eventDetailDesc">This list is loaded from Firestore</div>
-
-        {renderStudentsList()}
+        <div className="eventDetailDesc">Use Enrollment Overview for Add/Edit/Delete</div>
+        <div className="emptyState">Go to Enrollment Overview</div>
 
         <div className="modalActions">
           <button type="button" className="btnOutlinePrimary" onClick={goBack}>
@@ -241,9 +120,9 @@ export default function DashboardPage() {
           <button
             type="button"
             className="btnPrimary btnPrimaryAuto"
-            onClick={() => alert("Add student later")}
+            onClick={() => openView("enrollment")}
           >
-            Add Student
+            Open Enrollment Overview
           </button>
         </div>
       </div>
@@ -352,7 +231,9 @@ export default function DashboardPage() {
         <div className="eventDetailTitle">
           {selectedTaskTitle || "Task Details"}
         </div>
-        <div className="eventDetailDesc">This screen can show real task data later</div>
+        <div className="eventDetailDesc">
+          This screen can show real task data later
+        </div>
 
         <div className="modalActions">
           <button
@@ -387,8 +268,14 @@ export default function DashboardPage() {
   const renderDashboardHome = () => (
     <div className="dashWrap">
       <div className="dashTopGrid">
-        <WideCard title="Enrollment Overview" onClick={() => openView("enrollment")} />
-        <WideCard title="Completed Onboarding" onClick={() => openView("completed")} />
+        <WideCard
+          title="Enrollment Overview"
+          onClick={() => openView("enrollment")}
+        />
+        <WideCard
+          title="Completed Onboarding"
+          onClick={() => openView("completed")}
+        />
       </div>
 
       <div className="dashMainGrid">
@@ -399,16 +286,35 @@ export default function DashboardPage() {
             <div className="panelTitle">Pending Tasks</div>
 
             <div className="checklistList">
-              <ChecklistRow text="Pending Tasks" onClick={() => openTaskDetails("Pending Tasks")} />
-              <ChecklistRow text="Awaiting Payments" onClick={() => openTaskDetails("Awaiting Payments")} />
-              <ChecklistRow text="Fill Health Form" onClick={() => openTaskDetails("Fill Health Form")} />
-              <ChecklistRow text="Pay Tuition and Fees" onClick={() => openTaskDetails("Pay Tuition and Fees")} />
-              <ChecklistRow text="Attend Orientation" onClick={() => openTaskDetails("Attend Orientation")} />
+              <ChecklistRow
+                text="Pending Tasks"
+                onClick={() => openTaskDetails("Pending Tasks")}
+              />
+              <ChecklistRow
+                text="Awaiting Payments"
+                onClick={() => openTaskDetails("Awaiting Payments")}
+              />
+              <ChecklistRow
+                text="Fill Health Form"
+                onClick={() => openTaskDetails("Fill Health Form")}
+              />
+              <ChecklistRow
+                text="Pay Tuition and Fees"
+                onClick={() => openTaskDetails("Pay Tuition and Fees")}
+              />
+              <ChecklistRow
+                text="Attend Orientation"
+                onClick={() => openTaskDetails("Attend Orientation")}
+              />
             </div>
 
             <div className="panelFooter">
               <span className="mutedLink">Step 2 of 5</span>
-              <button className="linkBtn" type="button" onClick={() => openView("checklist")}>
+              <button
+                className="linkBtn"
+                type="button"
+                onClick={() => openView("checklist")}
+              >
                 View Checklist
               </button>
             </div>
@@ -421,7 +327,10 @@ export default function DashboardPage() {
           <div className="quickGrid">
             <QuickCard title="Contact" onClick={() => openView("contact")} />
             <QuickCard title="Tuition Fees" onClick={() => openView("tuition")} />
-            <QuickCard title="Documents" onClick={() => openView("documents")} />
+            <QuickCard
+              title="Documents"
+              onClick={() => openView("documents")}
+            />
             <QuickCard title="Manage Student" onClick={() => openView("manage")} />
           </div>
         </section>

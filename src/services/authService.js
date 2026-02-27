@@ -1,32 +1,40 @@
-import { firebaseLogin, firebaseLogout } from "../firebase/auth";
-import { getUserProfileByEmail } from "../firebase/userProfile";
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { auth } from "../firebase/auth";
+import { getUserProfileByUid } from "../firebase/userProfile";
 
-export async function loginAsAdmin(email, password) {
-  const user = await firebaseLogin(email, password);
-
-  const profile = await getUserProfileByEmail(user.email);
-  if (!profile) {
-    await firebaseLogout();
-    throw new Error("No user profile found in Firestore (users).");
+export async function loginWithEmailPassword(email, password) {
+  if (!email || !password) {
+    throw new Error("Email and password are required");
   }
-
-  if (profile.role !== "admin") {
-    await firebaseLogout();
-    throw new Error("This account is not admin.");
-  }
-
-  if (profile.isActive === false) {
-    await firebaseLogout();
-    throw new Error("Admin account is inactive.");
-  }
-
-  return {
-    uid: user.uid,
-    email: user.email,
-    profile,
-  };
+  const cred = await signInWithEmailAndPassword(auth, email, password);
+  return cred.user;
 }
 
 export async function logout() {
-  await firebaseLogout();
+  await signOut(auth);
+}
+
+export function listenAuthSession(onUser, onLogout, onError) {
+  return onAuthStateChanged(auth, async (fbUser) => {
+    try {
+      if (!fbUser?.uid) {
+        onLogout?.();
+        return;
+      }
+
+      const profile = await getUserProfileByUid(fbUser.uid);
+
+      // Must have real schoolId (no fallback)
+      if (!profile?.schoolId) {
+        onError?.("No schoolId found for this user");
+        onLogout?.();
+        return;
+      }
+
+      onUser?.(profile);
+    } catch (error) {
+      onError?.(error?.message || "Cannot load user profile");
+      onLogout?.();
+    }
+  });
 }
