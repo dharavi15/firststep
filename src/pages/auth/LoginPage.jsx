@@ -46,7 +46,6 @@ export default function LoginPage() {
 
       const authUser = await loginWithEmailPassword(cleanEmail, cleanPassword);
 
-      // This must be allowed by Firestore Rules
       const profile = await getUserProfile(authUser.email);
 
       if (!profile) {
@@ -100,27 +99,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "flex-start",
-        paddingTop: 48,
-        paddingLeft: 16,
-        paddingRight: 16,
-      }}
-    >
+    <div className="pageCenter">
       <Card>
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+        <div className="logoWrap">
           <Logo />
         </div>
 
-        <h2>Login</h2>
+        <h2 className="authTitle">Login</h2>
 
-        {localError && <p>{localError}</p>}
+        {localError && <p className="centerText">{localError}</p>}
 
-        <form onSubmit={handleSubmit}>
+        <form className="form" onSubmit={handleSubmit}>
           <InputField
             type="email"
             placeholder="Email"
@@ -135,13 +124,16 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <div>
-            <TextLink text="Forgot password" onClick={(e) => e.preventDefault()} />
+          <div className="rowCenter">
+            <TextLink
+              text="Forgot password?"
+              onClick={(e) => e.preventDefault()}
+            />
           </div>
 
           <Button text="Login" type="submit" />
 
-          <p>
+          <p className="centerText">
             Do not have an account{" "}
             <TextLink text="Sign up" onClick={(e) => e.preventDefault()} />
           </p>

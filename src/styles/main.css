@@ -1987,3 +1987,15 @@ body {
   }
 }
 
+/* auth */
+.rowCenter {
+  display: flex;
+  justify-content: center;
+}
+
+.authTitle {
+  text-align: center;
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 800;
+}
