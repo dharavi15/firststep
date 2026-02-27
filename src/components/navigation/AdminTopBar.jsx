@@ -8,13 +8,13 @@ export default function AdminTopBar({ title = "Dashboard", userName = "Miss ABC"
   const navigate = useNavigate();
   const location = useLocation();
 
-  //state for open or close dropdown
+  // state for open or close dropdown
   const [isOpen, setIsOpen] = useState(false);
 
-  //ref for click outside
+  // ref for click outside
   const wrapRef = useRef(null);
 
-  //menu items for dropdown
+  // menu items for dropdown
   const items = useMemo(() => {
     return [
       { label: "Dashboard", path: "/admin/dashboard", icon: Home },
@@ -24,27 +24,27 @@ export default function AdminTopBar({ title = "Dashboard", userName = "Miss ABC"
     ];
   }, []);
 
-  //check active route
+  // check active route
   const isActive = (path) => location.pathname === path;
 
-  //toggle dropdown
+  // toggle dropdown
   const toggleMenu = () => {
     setIsOpen((prev) => !prev);
   };
 
-  //go to page and close dropdown
+  // go to page and close dropdown
   const goTo = (path) => {
     navigate(path);
     setIsOpen(false);
   };
 
-  //logout user
+  // logout user
   const handleLogout = async () => {
     await signOut(auth);
     navigate("/");
   };
 
-  //close dropdown when click outside
+  // close dropdown when click outside
   useEffect(() => {
     const onMouseDown = (event) => {
       if (wrapRef.current && !wrapRef.current.contains(event.target)) {
@@ -56,7 +56,7 @@ export default function AdminTopBar({ title = "Dashboard", userName = "Miss ABC"
     return () => document.removeEventListener("mousedown", onMouseDown);
   }, []);
 
-  //close dropdown when press Escape
+  // close dropdown when press Escape
   useEffect(() => {
     const onKeyDown = (event) => {
       if (event.key === "Escape") setIsOpen(false);
@@ -111,8 +111,6 @@ export default function AdminTopBar({ title = "Dashboard", userName = "Miss ABC"
         <button className="logoutBtn" type="button" onClick={handleLogout}>
           Logout
         </button>
-
-        <div className="adminAvatar" />
       </div>
     </header>
   );
