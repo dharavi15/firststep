@@ -2852,3 +2852,593 @@ a { color: inherit; text-decoration: none; }
   border: 1px solid rgba(0, 0, 0, 0.08);
   padding: 16px;
 }
+
+/* Calendar - Due Soon panel */
+.calendarDueSoon {
+  background: var(--color-surface);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+  padding: 14px;
+}
+
+.calendarDueSoonTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.calendarDueSoonTitle {
+  font-weight: 900;
+  color: #111;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calendarDueSoonCount {
+  min-width: 28px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(74, 144, 226, 0.14);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 0 8px;
+}
+
+.calendarDueSoonSub {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.calendarDueSoonEmpty {
+  padding: 10px 2px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.calendarDueSoonList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.calendarDueSoonItem {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+  padding: 12px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.calendarDueSoonItem:hover {
+  background: rgba(74, 144, 226, 0.06);
+}
+
+.calendarDueSoonLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.calendarDueSoonBadge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(242, 201, 76, 0.22);
+  font-weight: 900;
+  font-size: 12px;
+  color: #111;
+}
+
+.calendarDueSoonName {
+  font-weight: 900;
+  color: #111;
+}
+
+.calendarDueSoonNote {
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.calendarDueSoonDate {
+  font-weight: 800;
+  color: #111;
+  opacity: 0.7;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* Small extra notif row */
+.calendarNotifMuted {
+  opacity: 0.9;
+  gap: 8px;
+  margin-left: 10px;
+}
+
+.calendarNotifLabel {
+  font-size: 12px;
+  font-weight: 800;
+  color: #111;
+  opacity: 0.75;
+}
+
+.notifBadgeLight {
+  background: rgba(17, 24, 39, 0.10);
+  color: #111;
+}
+
+/* Quick Add Templates (Calendar) */
+.quickTemplateRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 8px 0 10px;
+}
+
+.quickTemplateLabel {
+  font-size: 12px;
+  font-weight: 900;
+  color: #111;
+  opacity: 0.85;
+}
+
+.quickTemplateBtns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.quickTemplateBtn {
+  border: none;
+  background: rgba(74, 144, 226, 0.12);
+  color: #111;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.quickTemplateBtn:hover {
+  background: rgba(74, 144, 226, 0.18);
+}
+
+.quickTemplateBtn:active {
+  transform: translateY(1px);
+}
+
+/* Payments Overview - inline detail under clicked student */
+.paymentsRowWrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.payments-inline-detail {
+  margin: 10px 0 14px;
+  padding: 18px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.paymentsDueDateField {
+  grid-column: 1 / -1;
+}
+
+/* Print (Documents -> Save as PDF) */
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+
+  body {
+    background: #ffffff;
+  }
+
+  .adminTopBar,
+  .adminBottomNav,
+  .parentTopBar,
+  .parentBottomNav {
+    display: none !important;
+  }
+
+  .pagePad {
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+
+  .docPaper {
+    box-shadow: none !important;
+  }
+}
+
+/* Calendar - Today row + today highlight */
+.calendarTodayRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 6px 2px;
+  flex-wrap: wrap;
+}
+
+.calendarTodayText,
+.calendarSelectedText {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-text-secondary);
+}
+
+.calendarTodayBold {
+  color: #111;
+}
+
+.calendarTodayBtn {
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+/* highlight today cell */
+.calCell.isToday {
+  outline: 2px solid rgba(242, 201, 76, 0.55);
+  background: rgba(242, 201, 76, 0.12);
+}
+
+/* Print styles for Documents (save as PDF) */
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+
+  /* remove app chrome */
+  header,
+  nav,
+  footer,
+  .adminTopBar,
+  .footerNav,
+  .bottomNav,
+  .footerBar,
+  .adminFooter,
+  .noPrint {
+    display: none !important;
+  }
+
+  /* keep only document content */
+  html,
+  body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  /* remove spacing that is for app layout */
+  .adminApp,
+  .adminContent,
+  .dashWrap,
+  .pagePad,
+  .docsWrap,
+  .eventDetailBlock {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /* paper look for print */
+  .docPaper {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* typography */
+  .docTitle {
+    font-size: 18px !important;
+    margin: 0 0 6px !important;
+  }
+
+  .docMeta {
+    font-size: 12px !important;
+    color: #444 !important;
+    margin-bottom: 10px !important;
+  }
+
+  .docSectionTitle {
+    font-size: 14px !important;
+    margin: 12px 0 6px !important;
+  }
+
+  .docText,
+  .docList li,
+  .docSmallNote {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+
+  .docList {
+    margin: 8px 0 0 18px !important;
+    padding: 0 !important;
+  }
+
+  /* boxes in doc */
+  .docBox {
+    border: 1px solid #ddd !important;
+    border-radius: 8px !important;
+    padding: 10px 12px !important;
+    margin-top: 10px !important;
+    break-inside: avoid;
+  }
+
+  .docGrid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    margin-top: 10px !important;
+  }
+
+  .docField {
+    border: 1px solid #ddd !important;
+    border-radius: 8px !important;
+    padding: 10px !important;
+    min-height: 40px !important;
+  }
+
+  .docFieldLabel {
+    font-size: 11px !important;
+    color: #444 !important;
+    margin-bottom: 6px !important;
+  }
+
+  .docFieldLine {
+    border-bottom: 1px solid #999 !important;
+    height: 18px !important;
+  }
+}
+
+/* buttons */
+.btnPrimary {
+  background: var(--color-primary);
+  color: #fff;
+  border: 1px solid var(--color-primary);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnPrimary:hover {
+  filter: brightness(0.97);
+}
+
+.btnPrimary:active {
+  transform: translateY(1px);
+}
+
+.btnOutlinePrimary {
+  background: #fff;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnOutlinePrimary:hover {
+  background: rgba(74, 144, 226, 0.08);
+}
+
+/* calendar small UI */
+.calendarInfoRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 6px 6px;
+}
+
+.calendarInfoText {
+  font-size: 13px;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.calendarInfoLabel {
+  color: var(--color-text, #333);
+  font-weight: 600;
+}
+
+.calendarTodayBtn {
+  margin-left: 8px;
+  padding: 6px 10px;
+}
+
+.calCell.isToday {
+  outline: 2px solid rgba(242, 201, 76, 0.7);
+}
+
+/* due soon block */
+.dueSoonBlock {
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px;
+  margin-top: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+
+.dueSoonHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.dueSoonTitle {
+  font-weight: 800;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.dueSoonHint {
+  font-size: 12px;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.dueSoonRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 12px;
+  margin-top: 10px;
+}
+
+.dueSoonTag {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(242, 201, 76, 0.35);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dueSoonName {
+  margin-top: 6px;
+  font-weight: 800;
+}
+
+.dueSoonNote {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.dueSoonAuto {
+  color: var(--color-text-muted, #6b7280);
+  font-weight: 700;
+}
+
+.dueSoonDate {
+  font-size: 12px;
+  color: var(--color-text-muted, #6b7280);
+}
+
+/* quick add */
+.quickAddRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.quickAddLabel {
+  font-size: 13px;
+  color: var(--color-text-muted, #6b7280);
+  font-weight: 700;
+}
+
+.quickAddList {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.quickAddBtn {
+  border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(74, 144, 226, 0.10);
+  color: var(--color-text, #333);
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.quickAddBtn:hover {
+  filter: brightness(0.98);
+}
+
+/* tags in event row */
+.eventSourceTag {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  border: 1px solid rgba(0,0,0,0.08);
+  margin-right: 10px;
+}
+
+.eventSourceTag.auto {
+  background: rgba(242, 201, 76, 0.25);
+}
+
+.eventSourceTag.manual {
+  background: rgba(111, 207, 151, 0.20);
+}
+
+.upcomingTitleText {
+  font-weight: 800;
+}
+
+.upcomingNoteText {
+  color: var(--color-text-muted, #6b7280);
+  font-size: 13px;
+}
+
+/* documents print (Option B) */
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  /* hide app chrome */
+  header,
+  nav,
+  .adminTopBar,
+  .footerNav,
+  .docsNoPrint {
+    display: none !important;
+  }
+
+  /* show only doc content clean */
+  .docsPrintRoot {
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .docPaper {
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
