@@ -9,6 +9,8 @@ import {
 } from "../../services/studentService";
 
 const STATUS_OPTIONS = ["pending", "completed"];
+const STATUS_FILTERS = ["all", "pending", "completed"];
+const PAGE_SIZE = 6;
 
 function emptyForm() {
   return {
@@ -36,6 +38,20 @@ function validateForm(values) {
   return errs;
 }
 
+function getInitials(name) {
+  const s = String(name || "").trim();
+  if (!s) return "?";
+  const parts = s.split(/\s+/).slice(0, 2);
+  return parts.map((p) => p[0]?.toUpperCase()).join("") || "?";
+}
+
+function statusPillClass(status) {
+  const s = String(status || "").toLowerCase();
+  if (s === "completed") return "statusPill ok";
+  if (s === "pending") return "statusPill warn";
+  return "statusPill neutral";
+}
+
 export default function EnrollmentOverview() {
   const user = useAuthStore((s) => s.user);
 
@@ -51,6 +67,10 @@ export default function EnrollmentOverview() {
   const [items, setItems] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
 
   const [showAdd, setShowAdd] = useState(false);
   const [addForm, setAddForm] = useState(emptyForm());
@@ -100,6 +120,42 @@ export default function EnrollmentOverview() {
     return copy;
   }, [items]);
 
+  const filteredItems = useMemo(() => {
+    const q = String(searchTerm || "").trim().toLowerCase();
+
+    return sortedItems.filter((row) => {
+      const status = String(row.overallStatus || "pending").toLowerCase();
+
+      if (statusFilter !== "all" && status !== statusFilter) return false;
+      if (!q) return true;
+
+      const name = String(row.studentName || "").toLowerCase();
+      const parent = String(row.parentName || "").toLowerCase();
+      const email = String(row.parentEmail || "").toLowerCase();
+      const year = String(row.year ?? "").toLowerCase();
+
+      return (
+        name.includes(q) ||
+        parent.includes(q) ||
+        email.includes(q) ||
+        year.includes(q) ||
+        status.includes(q)
+      );
+    });
+  }, [sortedItems, statusFilter, searchTerm]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter, searchTerm]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+
+  const pageItems = useMemo(() => {
+    const start = (safePage - 1) * PAGE_SIZE;
+    return filteredItems.slice(start, start + PAGE_SIZE);
+  }, [filteredItems, safePage]);
+
   const openAdd = () => {
     setShowAdd(true);
     setAddForm(emptyForm());
@@ -133,6 +189,16 @@ export default function EnrollmentOverview() {
     setEditId("");
     setEditForm(emptyForm());
     setEditErrors({});
+  };
+
+  const askDelete = (id) => {
+    setDeleteId(id);
+    setEditId("");
+    setShowAdd(false);
+  };
+
+  const cancelDelete = () => {
+    setDeleteId("");
   };
 
   const onSaveAdd = async () => {
@@ -195,16 +261,6 @@ export default function EnrollmentOverview() {
     }
   };
 
-  const askDelete = (id) => {
-    setDeleteId(id);
-    setEditId("");
-    setShowAdd(false);
-  };
-
-  const cancelDelete = () => {
-    setDeleteId("");
-  };
-
   const confirmDelete = async () => {
     if (!deleteId) return;
 
@@ -226,11 +282,11 @@ export default function EnrollmentOverview() {
     if (!isAdmin || !showAdd) return null;
 
     return (
-      <div className="modalForm modalFormSpaced" style={{ marginTop: 12 }}>
-        <div className="eventDetailTitle" style={{ fontSize: 16 }}>
-          Add Student
+      <div className="eoInlineForm">
+        <div className="eoInlineHead">
+          <div className="eoInlineTitle">Add Student</div>
+          <div className="eoInlineSub">Fill the fields and save</div>
         </div>
-        <div className="eventDetailDesc">Fill the fields and save</div>
 
         <label className="modalLabel">
           Student Name
@@ -318,7 +374,7 @@ export default function EnrollmentOverview() {
 
           <button
             type="button"
-            className="btnPrimary btnPrimaryAuto"
+            className="btnPrimary"
             onClick={onSaveAdd}
             disabled={savingAdd}
           >
@@ -333,11 +389,11 @@ export default function EnrollmentOverview() {
     if (!isAdmin || !editId) return null;
 
     return (
-      <div className="modalForm modalFormSpaced" style={{ marginTop: 12 }}>
-        <div className="eventDetailTitle" style={{ fontSize: 16 }}>
-          Edit Student
+      <div className="eoInlineForm">
+        <div className="eoInlineHead">
+          <div className="eoInlineTitle">Edit Student</div>
+          <div className="eoInlineSub">Update fields and save</div>
         </div>
-        <div className="eventDetailDesc">Update fields and save</div>
 
         <label className="modalLabel">
           Student Name
@@ -359,9 +415,7 @@ export default function EnrollmentOverview() {
           <input
             className="modalInput"
             value={editForm.year}
-            onChange={(e) =>
-              setEditForm((p) => ({ ...p, year: e.target.value }))
-            }
+            onChange={(e) => setEditForm((p) => ({ ...p, year: e.target.value }))}
             placeholder="1 - 12"
             inputMode="numeric"
           />
@@ -427,7 +481,7 @@ export default function EnrollmentOverview() {
 
           <button
             type="button"
-            className="btnPrimary btnPrimaryAuto"
+            className="btnPrimary"
             onClick={onSaveEdit}
             disabled={savingEdit}
           >
@@ -442,12 +496,10 @@ export default function EnrollmentOverview() {
     if (!isAdmin || !deleteId) return null;
 
     return (
-      <div className="eventDetailBlock" style={{ marginTop: 12 }}>
-        <div className="eventDetailTitle" style={{ fontSize: 16 }}>
-          Delete Student
-        </div>
-        <div className="eventDetailDesc">
-          Are you sure you want to delete this student?
+      <div className="eoDeleteBox">
+        <div className="eoInlineHead">
+          <div className="eoInlineTitle">Delete Student</div>
+          <div className="eoInlineSub">Are you sure you want to delete this student?</div>
         </div>
 
         <div className="modalActions">
@@ -462,7 +514,7 @@ export default function EnrollmentOverview() {
 
           <button
             type="button"
-            className="btnPrimary btnPrimaryAuto"
+            className="btnPrimary"
             onClick={confirmDelete}
             disabled={deleting}
           >
@@ -474,69 +526,145 @@ export default function EnrollmentOverview() {
   };
 
   return (
-    <div className="eventDetailBlock">
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-        }}
-      >
-        <div>
+    <div className="checklistWrap eoWrap">
+      <div className="eoTopRow">
+        <div className="eoTopLeft">
           <div className="eventDetailTitle">Students Overview</div>
           <div className="eventDetailDesc">List of enrolled students</div>
         </div>
 
         {isAdmin ? (
-          <button type="button" className="btnPrimary btnPrimaryAuto" onClick={openAdd}>
+          <button type="button" className="eoBtnAdd" onClick={openAdd}>
             Add Student
           </button>
         ) : null}
       </div>
 
-      {!schoolId ? <div className="emptyState">No schoolId found for this user</div> : null}
-      {schoolId && !canLoad ? (
-        <div className="emptyState">No parent email found for this user</div>
-      ) : null}
+      <div className="eoControls">
+        <div className="eoStatusGroup">
+          <div className="eoStatusLabel">Status :</div>
+          <div className="eoTabs">
+            {STATUS_FILTERS.map((s) => {
+              const active = statusFilter === s;
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  className={active ? "eoTab eoTabActive" : "eoTab"}
+                  onClick={() => setStatusFilter(s)}
+                >
+                  {s[0].toUpperCase() + s.slice(1)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
+        <div className="eoSearch">
+          <span className="eoSearchIcon">🔍</span>
+          <input
+            className="searchInput"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search"
+          />
+        </div>
+      </div>
+
+      {!schoolId ? <div className="emptyState">No schoolId found for this user</div> : null}
+      {schoolId && !canLoad ? <div className="emptyState">No parent email found for this user</div> : null}
       {schoolId && canLoad && loading ? <div className="emptyState">Loading students</div> : null}
       {schoolId && canLoad && !loading && error ? <div className="emptyState">{error}</div> : null}
 
-      {schoolId && canLoad && !loading && !error && sortedItems.length === 0 ? (
-        <div className="emptyState">No students found</div>
-      ) : null}
+      {schoolId && canLoad && !loading && !error ? (
+        <div className="tableCard eoTableCard">
+          <div className="eoTableHeader">
+            <div className="eoTh eoThNo">No</div>
+            <div className="eoTh">Student Name</div>
+            <div className="eoTh">Parent Name</div>
+            <div className="eoTh">Class</div>
+            <div className="eoTh">Status</div>
+          </div>
 
-      {schoolId && canLoad && !loading && !error && sortedItems.length > 0 ? (
-        <div className="tableBody tableBodySpaced" style={{ marginTop: 10 }}>
-          {sortedItems.map((row) => {
-            const yearText = typeof row.year === "number" ? `Year ${row.year}` : "No year";
-            const statusText = row.overallStatus || "pending";
+          <div className="tableBody eoTableBody">
+            {pageItems.length === 0 ? (
+              <div className="emptyState">No students found</div>
+            ) : (
+              pageItems.map((row, idx) => {
+                const statusText = String(row.overallStatus || "pending").toLowerCase();
+                const yearText =
+                  typeof row.year === "number" || String(row.year || "").trim()
+                    ? `Year ${row.year}`
+                    : "-";
 
-            return (
-              <div key={row.id} className="profileInfoRow">
-                <div className="profileInfoLeft">
-                  <span className="profileInfoLabel">{row.studentName || "No name"}</span>
+                const no = (safePage - 1) * PAGE_SIZE + idx + 1;
 
-                  {isAdmin ? (
-                    <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
-                      <button type="button" className="linkBtn" onClick={() => startEdit(row)}>
-                        Edit
-                      </button>
-                      <button type="button" className="linkBtn" onClick={() => askDelete(row.id)}>
-                        Delete
-                      </button>
+                return (
+                  <div key={row.id} className="eoRow">
+                    <div className="eoTd eoTdNo">
+                      <div className="eoNoBadge">{no}</div>
                     </div>
-                  ) : null}
-                </div>
 
-                <div className="profileInfoValue">
-                  <span className="studentMeta">{yearText}</span>
-                  <span className="studentMeta">{statusText}</span>
-                </div>
-              </div>
-            );
-          })}
+                    <div className="eoTd eoStudentCell">
+                      <div className="studentAvatar">{getInitials(row.studentName)}</div>
+
+                      <div className="eoStudentText">
+                        <div className="studentName">{row.studentName || "No name"}</div>
+
+                        {isAdmin ? (
+                          <div className="eoRowActions">
+                            <button type="button" className="linkBtn" onClick={() => startEdit(row)}>
+                              Edit
+                            </button>
+                            <button type="button" className="linkBtn" onClick={() => askDelete(row.id)}>
+                              Delete
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    <div className="eoTd">{row.parentName || "-"}</div>
+                    <div className="eoTd">{yearText}</div>
+
+                    <div className="eoTd">
+                      <span className={statusPillClass(statusText)}>
+                        {statusText[0].toUpperCase() + statusText.slice(1)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          <div className="tableFooter eoFooter">
+            <div className="eoPageText">
+              Page : {safePage} of {totalPages}
+            </div>
+
+            <div className="pageBtns">
+              <button
+                type="button"
+                className="pageBtn"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={safePage <= 1}
+                aria-label="Prev page"
+              >
+                ‹
+              </button>
+
+              <button
+                type="button"
+                className="pageBtn"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={safePage >= totalPages}
+                aria-label="Next page"
+              >
+                ›
+              </button>
+            </div>
+          </div>
         </div>
       ) : null}
 
