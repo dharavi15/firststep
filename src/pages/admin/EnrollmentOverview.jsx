@@ -1,42 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import useAuthStore from "../../store/useAuthStore";
-import {
-  addStudentForAdmin,
-  deleteStudentForAdmin,
-  getStudentsForAdmin,
-  getStudentsForParent,
-  updateStudentForAdmin,
-} from "../../services/studentService";
+import { getStudentsForAdmin, getStudentsForParent } from "../../services/studentService";
 
-const STATUS_OPTIONS = ["pending", "completed"];
 const STATUS_FILTERS = ["all", "pending", "completed"];
 const PAGE_SIZE = 6;
-
-function emptyForm() {
-  return {
-    studentName: "",
-    year: "",
-    parentName: "",
-    parentEmail: "",
-    overallStatus: "pending",
-  };
-}
-
-function validateForm(values) {
-  const errs = {};
-
-  const name = String(values.studentName || "").trim();
-  const yearNum = Number(values.year);
-  const pName = String(values.parentName || "").trim();
-  const pEmail = String(values.parentEmail || "").trim();
-
-  if (!name) errs.studentName = "Required";
-  if (!Number.isFinite(yearNum) || yearNum <= 0) errs.year = "Use a number";
-  if (!pName) errs.parentName = "Required";
-  if (!pEmail) errs.parentEmail = "Required";
-
-  return errs;
-}
 
 function getInitials(name) {
   const s = String(name || "").trim();
@@ -71,19 +38,6 @@ export default function EnrollmentOverview() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-
-  const [showAdd, setShowAdd] = useState(false);
-  const [addForm, setAddForm] = useState(emptyForm());
-  const [addErrors, setAddErrors] = useState({});
-  const [savingAdd, setSavingAdd] = useState(false);
-
-  const [editId, setEditId] = useState("");
-  const [editForm, setEditForm] = useState(emptyForm());
-  const [editErrors, setEditErrors] = useState({});
-  const [savingEdit, setSavingEdit] = useState(false);
-
-  const [deleteId, setDeleteId] = useState("");
-  const [deleting, setDeleting] = useState(false);
 
   const canLoad = Boolean(schoolId) && (isAdmin || Boolean(parentEmail));
 
@@ -156,375 +110,6 @@ export default function EnrollmentOverview() {
     return filteredItems.slice(start, start + PAGE_SIZE);
   }, [filteredItems, safePage]);
 
-  const openAdd = () => {
-    setShowAdd(true);
-    setAddForm(emptyForm());
-    setAddErrors({});
-    setEditId("");
-    setDeleteId("");
-  };
-
-  const closeAdd = () => {
-    setShowAdd(false);
-    setAddForm(emptyForm());
-    setAddErrors({});
-  };
-
-  const startEdit = (row) => {
-    setEditId(row.id);
-    setDeleteId("");
-    setShowAdd(false);
-
-    setEditForm({
-      studentName: row.studentName || "",
-      year: row.year ?? "",
-      parentName: row.parentName || "",
-      parentEmail: row.parentEmail || "",
-      overallStatus: row.overallStatus || "pending",
-    });
-    setEditErrors({});
-  };
-
-  const cancelEdit = () => {
-    setEditId("");
-    setEditForm(emptyForm());
-    setEditErrors({});
-  };
-
-  const askDelete = (id) => {
-    setDeleteId(id);
-    setEditId("");
-    setShowAdd(false);
-  };
-
-  const cancelDelete = () => {
-    setDeleteId("");
-  };
-
-  const onSaveAdd = async () => {
-    const errs = validateForm(addForm);
-    setAddErrors(errs);
-    if (Object.keys(errs).length) return;
-
-    if (!schoolId) {
-      setError("No schoolId found for this user");
-      return;
-    }
-
-    setSavingAdd(true);
-    setError("");
-
-    try {
-      await addStudentForAdmin({
-        schoolId,
-        studentName: addForm.studentName,
-        year: addForm.year,
-        parentName: addForm.parentName,
-        parentEmail: addForm.parentEmail,
-        overallStatus: addForm.overallStatus,
-      });
-
-      closeAdd();
-      await loadStudents();
-    } catch (e) {
-      setError(e?.message || "Cannot add student");
-    } finally {
-      setSavingAdd(false);
-    }
-  };
-
-  const onSaveEdit = async () => {
-    const errs = validateForm(editForm);
-    setEditErrors(errs);
-    if (Object.keys(errs).length) return;
-
-    if (!editId) return;
-
-    setSavingEdit(true);
-    setError("");
-
-    try {
-      await updateStudentForAdmin(editId, {
-        studentName: editForm.studentName,
-        year: editForm.year,
-        parentName: editForm.parentName,
-        parentEmail: editForm.parentEmail,
-        overallStatus: editForm.overallStatus,
-      });
-
-      cancelEdit();
-      await loadStudents();
-    } catch (e) {
-      setError(e?.message || "Cannot update student");
-    } finally {
-      setSavingEdit(false);
-    }
-  };
-
-  const confirmDelete = async () => {
-    if (!deleteId) return;
-
-    setDeleting(true);
-    setError("");
-
-    try {
-      await deleteStudentForAdmin(deleteId);
-      setDeleteId("");
-      await loadStudents();
-    } catch (e) {
-      setError(e?.message || "Cannot delete student");
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  const renderAddForm = () => {
-    if (!isAdmin || !showAdd) return null;
-
-    return (
-      <div className="eoInlineForm">
-        <div className="eoInlineHead">
-          <div className="eoInlineTitle">Add Student</div>
-          <div className="eoInlineSub">Fill the fields and save</div>
-        </div>
-
-        <label className="modalLabel">
-          Student Name
-          <input
-            className="modalInput"
-            value={addForm.studentName}
-            onChange={(e) =>
-              setAddForm((p) => ({ ...p, studentName: e.target.value }))
-            }
-            placeholder="Student Name"
-          />
-          {addErrors.studentName ? (
-            <div className="uiError">{addErrors.studentName}</div>
-          ) : null}
-        </label>
-
-        <label className="modalLabel">
-          Year
-          <input
-            className="modalInput"
-            value={addForm.year}
-            onChange={(e) => setAddForm((p) => ({ ...p, year: e.target.value }))}
-            placeholder="1 - 12"
-            inputMode="numeric"
-          />
-          {addErrors.year ? <div className="uiError">{addErrors.year}</div> : null}
-        </label>
-
-        <label className="modalLabel">
-          Parent Name
-          <input
-            className="modalInput"
-            value={addForm.parentName}
-            onChange={(e) =>
-              setAddForm((p) => ({ ...p, parentName: e.target.value }))
-            }
-            placeholder="Parent Name"
-          />
-          {addErrors.parentName ? (
-            <div className="uiError">{addErrors.parentName}</div>
-          ) : null}
-        </label>
-
-        <label className="modalLabel">
-          Parent Email
-          <input
-            className="modalInput"
-            value={addForm.parentEmail}
-            onChange={(e) =>
-              setAddForm((p) => ({ ...p, parentEmail: e.target.value }))
-            }
-            placeholder="parent@email.com"
-          />
-          {addErrors.parentEmail ? (
-            <div className="uiError">{addErrors.parentEmail}</div>
-          ) : null}
-        </label>
-
-        <label className="modalLabel">
-          Status
-          <select
-            className="modalInput"
-            value={addForm.overallStatus}
-            onChange={(e) =>
-              setAddForm((p) => ({ ...p, overallStatus: e.target.value }))
-            }
-          >
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <div className="modalActions">
-          <button
-            type="button"
-            className="btnOutlinePrimary"
-            onClick={closeAdd}
-            disabled={savingAdd}
-          >
-            Cancel
-          </button>
-
-          <button
-            type="button"
-            className="btnPrimary"
-            onClick={onSaveAdd}
-            disabled={savingAdd}
-          >
-            {savingAdd ? "Saving..." : "Save Student"}
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  const renderEditFormInline = () => {
-    if (!isAdmin || !editId) return null;
-
-    return (
-      <div className="eoInlineForm">
-        <div className="eoInlineHead">
-          <div className="eoInlineTitle">Edit Student</div>
-          <div className="eoInlineSub">Update fields and save</div>
-        </div>
-
-        <label className="modalLabel">
-          Student Name
-          <input
-            className="modalInput"
-            value={editForm.studentName}
-            onChange={(e) =>
-              setEditForm((p) => ({ ...p, studentName: e.target.value }))
-            }
-            placeholder="Student Name"
-          />
-          {editErrors.studentName ? (
-            <div className="uiError">{editErrors.studentName}</div>
-          ) : null}
-        </label>
-
-        <label className="modalLabel">
-          Year
-          <input
-            className="modalInput"
-            value={editForm.year}
-            onChange={(e) => setEditForm((p) => ({ ...p, year: e.target.value }))}
-            placeholder="1 - 12"
-            inputMode="numeric"
-          />
-          {editErrors.year ? <div className="uiError">{editErrors.year}</div> : null}
-        </label>
-
-        <label className="modalLabel">
-          Parent Name
-          <input
-            className="modalInput"
-            value={editForm.parentName}
-            onChange={(e) =>
-              setEditForm((p) => ({ ...p, parentName: e.target.value }))
-            }
-            placeholder="Parent Name"
-          />
-          {editErrors.parentName ? (
-            <div className="uiError">{editErrors.parentName}</div>
-          ) : null}
-        </label>
-
-        <label className="modalLabel">
-          Parent Email
-          <input
-            className="modalInput"
-            value={editForm.parentEmail}
-            onChange={(e) =>
-              setEditForm((p) => ({ ...p, parentEmail: e.target.value }))
-            }
-            placeholder="parent@email.com"
-          />
-          {editErrors.parentEmail ? (
-            <div className="uiError">{editErrors.parentEmail}</div>
-          ) : null}
-        </label>
-
-        <label className="modalLabel">
-          Status
-          <select
-            className="modalInput"
-            value={editForm.overallStatus}
-            onChange={(e) =>
-              setEditForm((p) => ({ ...p, overallStatus: e.target.value }))
-            }
-          >
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <div className="modalActions">
-          <button
-            type="button"
-            className="btnOutlinePrimary"
-            onClick={cancelEdit}
-            disabled={savingEdit}
-          >
-            Cancel
-          </button>
-
-          <button
-            type="button"
-            className="btnPrimary"
-            onClick={onSaveEdit}
-            disabled={savingEdit}
-          >
-            {savingEdit ? "Saving..." : "Save Changes"}
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  const renderDeleteConfirmInline = () => {
-    if (!isAdmin || !deleteId) return null;
-
-    return (
-      <div className="eoDeleteBox">
-        <div className="eoInlineHead">
-          <div className="eoInlineTitle">Delete Student</div>
-          <div className="eoInlineSub">Are you sure you want to delete this student?</div>
-        </div>
-
-        <div className="modalActions">
-          <button
-            type="button"
-            className="btnOutlinePrimary"
-            onClick={cancelDelete}
-            disabled={deleting}
-          >
-            Cancel
-          </button>
-
-          <button
-            type="button"
-            className="btnPrimary"
-            onClick={confirmDelete}
-            disabled={deleting}
-          >
-            {deleting ? "Deleting..." : "Yes, Delete"}
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="checklistWrap eoWrap">
       <div className="eoTopRow">
@@ -532,12 +117,6 @@ export default function EnrollmentOverview() {
           <div className="eventDetailTitle">Students Overview</div>
           <div className="eventDetailDesc">List of enrolled students</div>
         </div>
-
-        {isAdmin ? (
-          <button type="button" className="eoBtnAdd" onClick={openAdd}>
-            Add Student
-          </button>
-        ) : null}
       </div>
 
       <div className="eoControls">
@@ -572,7 +151,9 @@ export default function EnrollmentOverview() {
       </div>
 
       {!schoolId ? <div className="emptyState">No schoolId found for this user</div> : null}
-      {schoolId && !canLoad ? <div className="emptyState">No parent email found for this user</div> : null}
+      {schoolId && !canLoad ? (
+        <div className="emptyState">No parent email found for this user</div>
+      ) : null}
       {schoolId && canLoad && loading ? <div className="emptyState">Loading students</div> : null}
       {schoolId && canLoad && !loading && error ? <div className="emptyState">{error}</div> : null}
 
@@ -610,17 +191,6 @@ export default function EnrollmentOverview() {
 
                       <div className="eoStudentText">
                         <div className="studentName">{row.studentName || "No name"}</div>
-
-                        {isAdmin ? (
-                          <div className="eoRowActions">
-                            <button type="button" className="linkBtn" onClick={() => startEdit(row)}>
-                              Edit
-                            </button>
-                            <button type="button" className="linkBtn" onClick={() => askDelete(row.id)}>
-                              Delete
-                            </button>
-                          </div>
-                        ) : null}
                       </div>
                     </div>
 
@@ -667,10 +237,6 @@ export default function EnrollmentOverview() {
           </div>
         </div>
       ) : null}
-
-      {renderAddForm()}
-      {renderEditFormInline()}
-      {renderDeleteConfirmInline()}
     </div>
   );
 }

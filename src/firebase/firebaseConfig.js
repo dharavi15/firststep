@@ -1,8 +1,9 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-export const firebaseConfig = {
+// Read values from .env.local
+const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
@@ -11,8 +12,12 @@ export const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Prevent duplicate app initialization 
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 
+// Export Firebase services
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+export { firebaseConfig, app, auth, db };
 export default firebaseConfig;

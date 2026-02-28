@@ -2657,6 +2657,7 @@ a { color: inherit; text-decoration: none; }
 
 /* ==========================
    Enrollment Overview (Admin)
+   Read-only (no add/edit/delete)
    ========================== */
 
 .eoWrap {
@@ -2743,60 +2744,10 @@ a { color: inherit; text-decoration: none; }
   opacity: 0.55;
 }
 
-/* Add button (top right) */
-.eoBtnAdd {
-  border: none;
-  border-radius: 12px;
-  padding: 10px 14px;
-  background: var(--color-primary-solid);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 10px 18px rgba(74, 144, 226, 0.25);
-}
-
-.eoBtnAdd:hover {
-  filter: brightness(0.98);
-}
-
-.eoBtnAdd:active {
-  transform: translateY(1px);
-}
-
-/* Make primary buttons consistent (Save Student / Save Changes / Yes Delete) */
-.btnPrimary {
-  border: none;
-  border-radius: 12px;
-  padding: 10px 14px;
-  background: var(--color-primary-solid);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 10px 18px rgba(74, 144, 226, 0.25);
-}
-
-.btnPrimary:hover {
-  filter: brightness(0.98);
-}
-
-.btnPrimary:active {
-  transform: translateY(1px);
-}
-
-.btnPrimary:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-/* Table card */
 .eoTableCard {
   margin-top: 14px;
 }
 
-/* Header */
 .eoTableHeader {
   background: rgba(207,224,245,0.75);
   padding: 12px 14px;
@@ -2813,7 +2764,6 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
 }
 
-/* Rows */
 .eoRow {
   display: grid;
   grid-template-columns: 72px 2.2fr 2fr 1fr 1.2fr;
@@ -2839,7 +2789,6 @@ a { color: inherit; text-decoration: none; }
   justify-content: center;
 }
 
-/* Number badge instead of checkbox */
 .eoNoBadge {
   min-width: 40px;
   height: 34px;
@@ -2863,11 +2812,6 @@ a { color: inherit; text-decoration: none; }
   gap: 6px;
 }
 
-.eoRowActions {
-  display: flex;
-  gap: 10px;
-}
-
 .eoFooter {
   align-items: center;
 }
@@ -2875,46 +2819,6 @@ a { color: inherit; text-decoration: none; }
 .eoPageText {
   font-weight: 800;
   color: #111;
-}
-
-/* Inline forms under table */
-.eoInlineForm {
-  margin-top: 14px;
-  background: var(--color-surface);
-  border-radius: 16px;
-  box-shadow: var(--shadow-card);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.eoDeleteBox {
-  margin-top: 14px;
-  background: var(--color-surface);
-  border-radius: 16px;
-  box-shadow: var(--shadow-card);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.eoInlineHead {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.eoInlineTitle {
-  font-size: 16px;
-  font-weight: 900;
-  color: #111;
-}
-
-.eoInlineSub {
-  font-weight: 700;
-  color: var(--color-text-secondary);
 }
 
 /* Responsive */
@@ -2938,4 +2842,3 @@ a { color: inherit; text-decoration: none; }
     padding-top: 2px;
   }
 }
-
