@@ -13,8 +13,15 @@ import Button from "../../components/ui/Button";
 import TextLink from "../../components/ui/TextLink";
 
 const loginSchema = z.object({
-  email: z.string().trim().min(1, "Email is required").email("Enter a valid email"),
-  password: z.string().min(1, "Password is required").min(6, "Password must be at least 6 characters"),
+  email: z
+    .string()
+    .trim()
+    .min(1, "Email is required")
+    .email("Enter a valid email"),
+  password: z
+    .string()
+    .min(1, "Password is required")
+    .min(6, "Password must be at least 6 characters"),
 });
 
 export default function LoginPage() {
@@ -111,43 +118,49 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="pageCenter">
-      <Card>
-        <div className="logoWrap">
-          <Logo />
-        </div>
-
-        <h2 className="authTitle">Login</h2>
-
-        {localError && <p className="centerText">{localError}</p>}
-
-        <form className="form" onSubmit={handleSubmit}>
-          <InputField
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          <InputField
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-
-          <div className="rowCenter">
-            <TextLink text="Forgot password?" onClick={(e) => e.preventDefault()} />
+    <div className="pageCenter authPage">
+      <div className="authStack">
+        <Card className="authCard">
+          <div className="logoWrap">
+            <Logo />
           </div>
 
-          <Button text={loading ? "Logging in..." : "Login"} type="submit" disabled={loading} />
+          <h2 className="authTitle">Login</h2>
 
-          <p className="centerText">
-            Do not have an account{" "}
-            <TextLink text="Sign up" onClick={(e) => e.preventDefault()} />
-          </p>
-        </form>
-      </Card>
+          {localError && <div className="statusSuccess">{localError}</div>}
+
+          <form className="authForm" onSubmit={handleSubmit}>
+            <InputField
+              type="email"
+              placeholder="Username"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+
+            <InputField
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            <div className="authRowRight">
+              <TextLink text="Forgot password?" onClick={(e) => e.preventDefault()} />
+            </div>
+
+            <Button
+              className="btnPrimary"
+              text={loading ? "Logging in..." : "Login"}
+              type="submit"
+              disabled={loading}
+            />
+
+            <div className="rowCenter">
+              <TextLink text="Sign up" onClick={(e) => e.preventDefault()} />
+            </div>
+          </form>
+        </Card>
+      </div>
     </div>
   );
 }
