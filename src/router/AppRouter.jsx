@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "../pages/auth/LoginPage";
 import SignupPage from "../pages/auth/SignupPage";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
-
+import SchoolLandingPage from "../pages/home/SchoolLandingPage";
 import ProtectedRoute from "./ProtectedRoute";
 
 import AdminLayout from "../layouts/AdminLayout";
@@ -27,11 +27,13 @@ export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* auth */}
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+       {/* public home */}
+<Route path="/" element={<SchoolLandingPage />} />
 
+{/* auth */}
+<Route path="/login" element={<LoginPage />} />
+<Route path="/signup" element={<SignupPage />} />
+<Route path="/forgot-password" element={<ForgotPasswordPage />} />
         {/* admin */}
         <Route
           path="/admin"
