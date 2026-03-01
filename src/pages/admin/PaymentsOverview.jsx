@@ -27,14 +27,39 @@ function computeStatus(due, paid) {
   return p >= d ? "paid" : "pending";
 }
 
+function normalizeDateKey(value) {
+  // Accept: "YYYY-MM-DD" or "DD/MM/YYYY" or empty
+  const s = String(value || "").trim();
+  if (!s) return "";
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+  // DD/MM/YYYY -> YYYY-MM-DD
+  const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (m) {
+    const dd = m[1];
+    const mm = m[2];
+    const yyyy = m[3];
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  return s;
+}
+
 export default function PaymentsOverview() {
   const [rows, setRows] = useState([]);
+
+  // which student row is expanded
   const [selectedStudentId, setSelectedStudentId] = useState("");
+
+  // edit mode for the expanded row
   const [isEditing, setIsEditing] = useState(false);
 
+  // form fields for expanded row
   const [form, setForm] = useState({
     totalDue: "",
     totalPaid: "",
+    dueDate: "",
   });
 
   const selectedRow = useMemo(() => {
@@ -65,6 +90,7 @@ export default function PaymentsOverview() {
           totalPaid,
           outstanding,
           status,
+          dueDate: pay?.dueDate || "",
           hasPayment: !!pay,
         };
       })
@@ -79,14 +105,15 @@ export default function PaymentsOverview() {
     })();
   }, [loadAll]);
 
-  const openDetail = (id) => {
-    // click same student again -> close
+  const toggleDetail = (id) => {
+    // click same row -> close
     if (selectedStudentId === id) {
       setSelectedStudentId("");
       setIsEditing(false);
       return;
     }
 
+    // open new row
     setSelectedStudentId(id);
     setIsEditing(false);
 
@@ -96,6 +123,7 @@ export default function PaymentsOverview() {
     setForm({
       totalDue: String(r.totalDue ?? ""),
       totalPaid: String(r.totalPaid ?? ""),
+      dueDate: String(r.dueDate ?? ""),
     });
   };
 
@@ -110,6 +138,7 @@ export default function PaymentsOverview() {
     const totalDue = Number(form.totalDue || 0);
     const totalPaid = Number(form.totalPaid || 0);
     const status = computeStatus(totalDue, totalPaid);
+    const dueDate = normalizeDateKey(form.dueDate);
 
     await setDoc(doc(db, "payments", selectedRow.studentId), {
       studentId: selectedRow.studentId,
@@ -121,6 +150,7 @@ export default function PaymentsOverview() {
       totalDue,
       totalPaid,
       status,
+      dueDate,
       updatedAt: serverTimestamp(),
     });
 
@@ -133,117 +163,6 @@ export default function PaymentsOverview() {
     await deleteDoc(doc(db, "payments", selectedRow.studentId));
     closeDetail();
     await loadAll();
-  };
-
-  const renderInlineDetail = (r) => {
-    const isOpen = selectedRow && selectedRow.studentId === r.studentId;
-    if (!isOpen) return null;
-
-    return (
-      <div className="payments-inline-detail">
-        <div className="payments-detail-top">
-          <div className="payments-detail-left">
-            <h3 className="detail-title">{selectedRow.studentName}</h3>
-            <div className="detail-sub">
-              Parent: {selectedRow.parentName} ({selectedRow.parentEmail})
-            </div>
-          </div>
-
-          <button type="button" className="btn-secondary" onClick={closeDetail}>
-            Close
-          </button>
-        </div>
-
-        <div className="payments-detail-grid">
-          <div className="detail-box">
-            <div className="detail-label">Year</div>
-            <div className="detail-value">{selectedRow.year}</div>
-          </div>
-
-          <div className="detail-box">
-            <div className="detail-label">Status</div>
-            <div className="detail-value">
-              <span className={`status-badge ${selectedRow.status}`}>
-                {selectedRow.status}
-              </span>
-            </div>
-          </div>
-
-          <div className="detail-box">
-            <div className="detail-label">Outstanding</div>
-            <div className="detail-value">{formatTHB(selectedRow.outstanding)}</div>
-          </div>
-
-          <div className="detail-box">
-            <div className="detail-label">Total Due</div>
-            <div className="detail-value">{formatTHB(selectedRow.totalDue)}</div>
-          </div>
-
-          <div className="detail-box">
-            <div className="detail-label">Total Paid</div>
-            <div className="detail-value">{formatTHB(selectedRow.totalPaid)}</div>
-          </div>
-        </div>
-
-        <div className="payments-form-grid">
-          <div className="form-field">
-            <label className="form-label">Total Due</label>
-            <input
-              className="text-input"
-              value={form.totalDue}
-              disabled={!isEditing}
-              onChange={(e) => setForm({ ...form, totalDue: e.target.value })}
-              placeholder="Total Due"
-              inputMode="numeric"
-            />
-          </div>
-
-          <div className="form-field">
-            <label className="form-label">Total Paid</label>
-            <input
-              className="text-input"
-              value={form.totalPaid}
-              disabled={!isEditing}
-              onChange={(e) => setForm({ ...form, totalPaid: e.target.value })}
-              placeholder="Total Paid"
-              inputMode="numeric"
-            />
-          </div>
-        </div>
-
-        <div className="button-row">
-          {!isEditing ? (
-            <>
-              <button
-                type="button"
-                className="primary-btn"
-                onClick={() => setIsEditing(true)}
-              >
-                {selectedRow.hasPayment ? "Edit" : "Add"}
-              </button>
-
-              <button type="button" className="btn-danger" onClick={removePayment}>
-                Delete
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => setIsEditing(false)}
-              >
-                Cancel
-              </button>
-
-              <button type="button" className="primary-btn" onClick={savePayment}>
-                Save
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    );
   };
 
   return (
@@ -261,30 +180,159 @@ export default function PaymentsOverview() {
         {rows.length === 0 ? (
           <div className="empty-state">No data yet</div>
         ) : (
-          rows.map((r) => (
-            <div key={r.studentId}>
-              <div className="payments-row">
-                <button
-                  type="button"
-                  className="payments-student-link"
-                  onClick={() => openDetail(r.studentId)}
-                  title="Open payment detail"
-                >
-                  {r.studentName}
-                </button>
+          rows.map((r) => {
+            const isOpen = selectedStudentId === r.studentId;
 
-                <div className="payments-year">Year {r.year}</div>
+            return (
+              <div key={r.studentId} className="paymentsRowWrap">
+                <div className="payments-row">
+                  <button
+                    type="button"
+                    className="payments-student-link"
+                    onClick={() => toggleDetail(r.studentId)}
+                    title="Open payment detail"
+                  >
+                    {r.studentName}
+                  </button>
 
-                <div className="payments-status">
-                  <span className={`status-badge ${r.status}`}>{r.status}</span>
+                  <div className="payments-year">Year {r.year}</div>
+
+                  <div className="payments-status">
+                    <span className={`status-badge ${r.status}`}>{r.status}</span>
+                  </div>
+
+                  <div className="payments-outstanding">{formatTHB(r.outstanding)}</div>
                 </div>
 
-                <div className="payments-outstanding">{formatTHB(r.outstanding)}</div>
-              </div>
+                {isOpen && selectedRow && (
+                  <div className="payments-inline-detail">
+                    <div className="payments-detail-top">
+                      <div className="payments-detail-left">
+                        <h3 className="detail-title">{selectedRow.studentName}</h3>
+                        <div className="detail-sub">
+                          Parent: {selectedRow.parentName} ({selectedRow.parentEmail})
+                        </div>
+                      </div>
 
-              {renderInlineDetail(r)}
-            </div>
-          ))
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        onClick={closeDetail}
+                      >
+                        Close
+                      </button>
+                    </div>
+
+                    <div className="payments-detail-grid">
+                      <div className="detail-box">
+                        <div className="detail-label">Year</div>
+                        <div className="detail-value">{selectedRow.year}</div>
+                      </div>
+
+                      <div className="detail-box">
+                        <div className="detail-label">Status</div>
+                        <div className="detail-value">
+                          <span className={`status-badge ${selectedRow.status}`}>
+                            {selectedRow.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="detail-box">
+                        <div className="detail-label">Outstanding</div>
+                        <div className="detail-value">
+                          {formatTHB(selectedRow.outstanding)}
+                        </div>
+                      </div>
+
+                      <div className="detail-box">
+                        <div className="detail-label">Total Due</div>
+                        <div className="detail-value">{formatTHB(selectedRow.totalDue)}</div>
+                      </div>
+
+                      <div className="detail-box">
+                        <div className="detail-label">Total Paid</div>
+                        <div className="detail-value">{formatTHB(selectedRow.totalPaid)}</div>
+                      </div>
+                    </div>
+
+                    <div className="payments-form-grid">
+                      <div className="form-field">
+                        <label className="form-label">Total Due</label>
+                        <input
+                          className="text-input"
+                          value={form.totalDue}
+                          disabled={!isEditing}
+                          onChange={(e) => setForm({ ...form, totalDue: e.target.value })}
+                          placeholder="Total Due"
+                          inputMode="numeric"
+                        />
+                      </div>
+
+                      <div className="form-field">
+                        <label className="form-label">Total Paid</label>
+                        <input
+                          className="text-input"
+                          value={form.totalPaid}
+                          disabled={!isEditing}
+                          onChange={(e) => setForm({ ...form, totalPaid: e.target.value })}
+                          placeholder="Total Paid"
+                          inputMode="numeric"
+                        />
+                      </div>
+
+                      <div className="form-field paymentsDueDateField">
+                        <label className="form-label">Due Date</label>
+                        <input
+                          className="text-input"
+                          value={form.dueDate}
+                          disabled={!isEditing}
+                          onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+                          placeholder="YYYY-MM-DD (or DD/MM/YYYY)"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="button-row">
+                      {!isEditing ? (
+                        <>
+                          <button
+                            type="button"
+                            className="primary-btn"
+                            onClick={() => setIsEditing(true)}
+                          >
+                            {selectedRow.hasPayment ? "Edit" : "Add"}
+                          </button>
+
+                          <button
+                            type="button"
+                            className="btn-danger"
+                            onClick={removePayment}
+                          >
+                            Delete
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            className="btn-secondary"
+                            onClick={() => setIsEditing(false)}
+                          >
+                            Cancel
+                          </button>
+
+                          <button type="button" className="primary-btn" onClick={savePayment}>
+                            Save
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })
         )}
       </div>
     </div>

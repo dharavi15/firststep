@@ -132,7 +132,7 @@ export default function NewsEvents() {
   return (
     <div className="pagePad">
       <div className="eventDetailBlock newsWrap">
-        <div className="eventDetailTitle">SBS News and Events</div>
+        <div className="eventDetailTitle">News and Events</div>
         <div className="eventDetailDesc">
           Read highlights from our school’s life and important updates.
         </div>

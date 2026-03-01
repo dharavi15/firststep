@@ -1,42 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
-function buildPrintHtml(docTitle, innerHtml) {
-  // This HTML is used only for printing / Save as PDF
-  return `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>${docTitle}</title>
-    <style>
-      @page { size: A4; margin: 16mm; }
-      body { font-family: Arial, Helvetica, sans-serif; color: #111; }
-      .page { max-width: 210mm; }
-      h1 { font-size: 18px; margin: 0 0 8px; }
-      h2 { font-size: 14px; margin: 14px 0 8px; }
-      p, li { font-size: 12px; line-height: 1.5; }
-      ul { margin: 8px 0 0 18px; padding: 0; }
-      .meta { font-size: 12px; color: #444; margin-bottom: 12px; }
-      .box { border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px; margin-top: 10px; }
-      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-      .field { border: 1px solid #ddd; border-radius: 8px; padding: 10px; min-height: 40px; }
-      .label { font-size: 11px; color: #444; margin-bottom: 6px; }
-      .line { border-bottom: 1px solid #999; height: 18px; }
-      .small { font-size: 11px; color: #444; }
-    </style>
-  </head>
-  <body>
-    <div class="page">
-      ${innerHtml}
-    </div>
-    <script>
-      window.onload = function () {
-        window.print();
-      };
-    </script>
-  </body>
-</html>`;
-}
-
+// Signature block (print-friendly)
 function SignatureBlock() {
   return (
     <div className="docBox">
@@ -74,6 +38,9 @@ function SignatureBlock() {
 export default function Documents() {
   const [activeId, setActiveId] = useState(null);
 
+  // Print ONLY this area
+  const printAreaRef = useRef(null);
+
   const docs = useMemo(
     () => [
       {
@@ -82,28 +49,26 @@ export default function Documents() {
         needsSignature: false,
         meta: "Read-only information",
         content: (
-          <>
-            <div className="docBox">
-              <div className="docSectionTitle">Purpose</div>
-              <div className="docText">
-                This document helps families understand the school, the admission
-                process, and the next steps.
-              </div>
-
-              <div className="docSectionTitle">What parents should do</div>
-              <ul className="docList">
-                <li>Read the school overview (curriculum, campus, daily routine)</li>
-                <li>Check admission requirements and key dates</li>
-                <li>Prepare questions for the school team</li>
-              </ul>
-
-              <div className="docSectionTitle">What the school provides</div>
-              <ul className="docList">
-                <li>Programme overview and basic policies</li>
-                <li>Contact channels and visiting schedule</li>
-              </ul>
+          <div className="docBox">
+            <div className="docSectionTitle">Purpose</div>
+            <div className="docText">
+              This document helps families understand the school, the admission
+              process, and the next steps.
             </div>
-          </>
+
+            <div className="docSectionTitle">What parents should do</div>
+            <ul className="docList">
+              <li>Read the school overview (curriculum, campus, daily routine)</li>
+              <li>Check admission requirements and key dates</li>
+              <li>Prepare questions for the school team</li>
+            </ul>
+
+            <div className="docSectionTitle">What the school provides</div>
+            <ul className="docList">
+              <li>Programme overview and basic policies</li>
+              <li>Contact channels and visiting schedule</li>
+            </ul>
+          </div>
         ),
       },
 
@@ -113,29 +78,27 @@ export default function Documents() {
         needsSignature: false,
         meta: "Read-only information",
         content: (
-          <>
-            <div className="docBox">
-              <div className="docSectionTitle">Purpose</div>
-              <div className="docText">
-                This document explains what information is needed to complete the
-                application correctly.
-              </div>
-
-              <div className="docSectionTitle">Parent checklist</div>
-              <ul className="docList">
-                <li>Fill in student basic information</li>
-                <li>Add parent / guardian contacts</li>
-                <li>Prepare required ID documents (if requested)</li>
-              </ul>
-
-              <div className="docSectionTitle">Required details</div>
-              <ul className="docList">
-                <li>Student: full name, date of birth, nationality</li>
-                <li>Parent: full name, phone, email, address</li>
-                <li>Previous school (optional)</li>
-              </ul>
+          <div className="docBox">
+            <div className="docSectionTitle">Purpose</div>
+            <div className="docText">
+              This document explains what information is needed to complete the
+              application correctly.
             </div>
-          </>
+
+            <div className="docSectionTitle">Parent checklist</div>
+            <ul className="docList">
+              <li>Fill in student basic information</li>
+              <li>Add parent / guardian contacts</li>
+              <li>Prepare required ID documents (if requested)</li>
+            </ul>
+
+            <div className="docSectionTitle">Required details</div>
+            <ul className="docList">
+              <li>Student: full name, date of birth, nationality</li>
+              <li>Parent: full name, phone, email, address</li>
+              <li>Previous school (optional)</li>
+            </ul>
+          </div>
         ),
       },
 
@@ -145,27 +108,25 @@ export default function Documents() {
         needsSignature: false,
         meta: "Read-only information",
         content: (
-          <>
-            <div className="docBox">
-              <div className="docSectionTitle">Purpose</div>
-              <div className="docText">
-                This document explains the timeline after submitting an application.
-              </div>
-
-              <div className="docSectionTitle">What happens next</div>
-              <ul className="docList">
-                <li>School reviews the application (estimated 3–7 working days)</li>
-                <li>School contacts parents to schedule the interview</li>
-                <li>Parents receive status updates by email</li>
-              </ul>
-
-              <div className="docSectionTitle">Important notes</div>
-              <ul className="docList">
-                <li>Missing documents may delay the review</li>
-                <li>Please keep your email and phone reachable</li>
-              </ul>
+          <div className="docBox">
+            <div className="docSectionTitle">Purpose</div>
+            <div className="docText">
+              This document explains the timeline after submitting an application.
             </div>
-          </>
+
+            <div className="docSectionTitle">What happens next</div>
+            <ul className="docList">
+              <li>School reviews the application (estimated 3–7 working days)</li>
+              <li>School contacts parents to schedule the interview</li>
+              <li>Parents receive status updates by email</li>
+            </ul>
+
+            <div className="docSectionTitle">Important notes</div>
+            <ul className="docList">
+              <li>Missing documents may delay the review</li>
+              <li>Please keep your email and phone reachable</li>
+            </ul>
+          </div>
         ),
       },
 
@@ -175,27 +136,25 @@ export default function Documents() {
         needsSignature: false,
         meta: "Read-only information",
         content: (
-          <>
-            <div className="docBox">
-              <div className="docSectionTitle">Purpose</div>
-              <div className="docText">
-                This document explains how the admission interview works and how
-                to prepare.
-              </div>
-
-              <div className="docSectionTitle">Interview preparation</div>
-              <ul className="docList">
-                <li>Student interview (age-appropriate questions)</li>
-                <li>Parent interview (expectations and student support)</li>
-                <li>Bring original documents if requested</li>
-              </ul>
-
-              <div className="docSectionTitle">After the interview</div>
-              <ul className="docList">
-                <li>School shares the result and the next step instructions</li>
-              </ul>
+          <div className="docBox">
+            <div className="docSectionTitle">Purpose</div>
+            <div className="docText">
+              This document explains how the admission interview works and how
+              to prepare.
             </div>
-          </>
+
+            <div className="docSectionTitle">Interview preparation</div>
+            <ul className="docList">
+              <li>Student interview (age-appropriate questions)</li>
+              <li>Parent interview (expectations and student support)</li>
+              <li>Bring original documents if requested</li>
+            </ul>
+
+            <div className="docSectionTitle">After the interview</div>
+            <ul className="docList">
+              <li>School shares the result and the next step instructions</li>
+            </ul>
+          </div>
         ),
       },
 
@@ -303,28 +262,26 @@ export default function Documents() {
         needsSignature: false,
         meta: "Read-only information",
         content: (
-          <>
-            <div className="docBox">
-              <div className="docSectionTitle">Purpose</div>
-              <div className="docText">
-                Orientation helps families start smoothly and understand daily routines.
-              </div>
-
-              <div className="docSectionTitle">Orientation includes</div>
-              <ul className="docList">
-                <li>Campus tour and classroom introduction</li>
-                <li>Meet teachers and staff</li>
-                <li>Explain daily routines and school rules</li>
-              </ul>
-
-              <div className="docSectionTitle">Parent checklist</div>
-              <ul className="docList">
-                <li>Attend the orientation session (date and time provided by school)</li>
-                <li>Ask any final questions</li>
-                <li>Confirm first-day schedule</li>
-              </ul>
+          <div className="docBox">
+            <div className="docSectionTitle">Purpose</div>
+            <div className="docText">
+              Orientation helps families start smoothly and understand daily routines.
             </div>
-          </>
+
+            <div className="docSectionTitle">Orientation includes</div>
+            <ul className="docList">
+              <li>Campus tour and classroom introduction</li>
+              <li>Meet teachers and staff</li>
+              <li>Explain daily routines and school rules</li>
+            </ul>
+
+            <div className="docSectionTitle">Parent checklist</div>
+            <ul className="docList">
+              <li>Attend the orientation session (date and time provided by school)</li>
+              <li>Ask any final questions</li>
+              <li>Confirm first-day schedule</li>
+            </ul>
+          </div>
         ),
       },
     ],
@@ -336,28 +293,138 @@ export default function Documents() {
     return docs.find((d) => d.id === activeId) || null;
   }, [activeId, docs]);
 
+ // Print / Save as PDF using a clean iframe.
   const downloadPdf = () => {
-    if (!activeDoc) return;
+    if (!printAreaRef.current || !activeDoc) return;
 
-    // Build a clean print-only HTML (no app header/footer)
-    const printInner = `
-      <h1>${activeDoc.title}</h1>
-      <div class="meta">${activeDoc.meta}</div>
-      ${document.getElementById("doc-print-area")?.innerHTML || ""}
+    // Create hidden iframe
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    iframe.setAttribute("aria-hidden", "true");
+    document.body.appendChild(iframe);
+
+    const iwin = iframe.contentWindow;
+    const idoc = iframe.contentDocument || iwin.document;
+
+    // Minimal PDF styles (always visible)
+    const pdfCss = `
+      @page { margin: 14mm; }
+
+      html, body {
+        background: #fff;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        color: #111;
+        font-size: 12pt;
+        line-height: 1.5;
+      }
+
+      .docPaper {
+        width: 100%;
+      }
+
+      .docHeader {
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .docTitle {
+        font-size: 16pt;
+        font-weight: 700;
+        margin: 0 0 4px 0;
+      }
+
+      .docMeta {
+        font-size: 10pt;
+        color: #444;
+      }
+
+      .docSectionTitle {
+        font-size: 12pt;
+        font-weight: 700;
+        margin: 14px 0 6px;
+      }
+
+      .docText {
+        margin: 0 0 10px 0;
+      }
+
+      .docList {
+        margin: 0 0 10px 18px;
+      }
+
+      .docBox {
+        margin-bottom: 12px;
+      }
+
+      .docGrid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 8px;
+      }
+
+      .docFieldLabel {
+        font-size: 10pt;
+        color: #333;
+        margin-bottom: 6px;
+      }
+
+      .docFieldLine {
+        border-bottom: 1px solid #333;
+        height: 18px;
+      }
+
+      .docSmallNote {
+        margin-top: 10px;
+        font-size: 10pt;
+        color: #333;
+      }
     `;
 
-    const html = buildPrintHtml(activeDoc.title, printInner);
+    // Build iframe HTML
+    idoc.open();
+    idoc.write(`
+      <!doctype html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <title>FirstStep - ${activeDoc.title}</title>
+          <style>${pdfCss}</style>
+        </head>
+        <body></body>
+      </html>
+    `);
+    idoc.close();
 
-    // Open a new tab for printing. User can choose "Save as PDF"
-    const w = window.open("", "_blank");
-    if (!w) return;
+    // use innerHTML to avoid copying app layout wrappers
+    const paper = idoc.createElement("div");
+    paper.className = "docPaper";
+    paper.innerHTML = printAreaRef.current.innerHTML;
+    idoc.body.appendChild(paper);
 
-    w.document.open();
-    w.document.write(html);
-    w.document.close();
+    // Print
+    setTimeout(() => {
+      try {
+        iwin.focus();
+        iwin.print();
+      } finally {
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 400);
+      }
+    }, 150);
   };
 
-  // List view
+  // LIST
   if (!activeDoc) {
     return (
       <div className="pagePad">
@@ -391,7 +458,7 @@ export default function Documents() {
     );
   }
 
-  // Detail view
+  // DETAIL
   return (
     <div className="pagePad">
       <div className="eventDetailBlock docsWrap">
@@ -409,7 +476,8 @@ export default function Documents() {
           </button>
         </div>
 
-        <div className="docPaper">
+        {/* printable area */}
+        <div className="docPaper" ref={printAreaRef}>
           <div className="docHeader">
             <div className="docTitle">{activeDoc.title}</div>
             <div className="docMeta">{activeDoc.meta}</div>

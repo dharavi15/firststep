@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -9,58 +9,12 @@ import {
   Trash2,
 } from "lucide-react";
 
-// storage key for localStorage
-// later you can replace this with Firebase collection
+// storage key for localStorage  
 const STORAGE_KEY = "firststep_calendar_events";
 
 // create random id for new event
 function makeId() {
   return "e-" + Math.random().toString(16).slice(2) + "-" + Date.now();
-}
-
-// get events from localStorage
-// later replace with Firebase getDocs()
-function getEventsFromStorage() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-
-    if (!raw) {
-      // default demo data
-      return [
-        {
-          id: "e1",
-          date: "2026-02-10",
-          title: "Health Form Due",
-          note: "2 days left",
-        },
-        {
-          id: "e2",
-          date: "2026-02-20",
-          title: "Orientation",
-          note: "Parent meeting",
-        },
-        {
-          id: "e3",
-          date: "2026-02-05",
-          title: "Pay Tuition & Fees",
-          note: "Pending",
-        },
-      ];
-    }
-
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-
-    return parsed;
-  } catch {
-    return [];
-  }
-}
-
-// save events to localStorage
-// later replace with Firebase setDoc()
-function saveEventsToStorage(events) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
 }
 
 // convert number to 2 digits
@@ -76,7 +30,7 @@ function toKey(dateObj) {
   return `${y}-${m}-${d}`;
 }
 
-// create month title like February 2026
+// create month title  
 function monthLabel(dateObj) {
   const m = dateObj.toLocaleString("en-US", { month: "long" });
   const y = dateObj.getFullYear();
@@ -124,15 +78,91 @@ function countEventsInMonth(events, viewDate) {
   }).length;
 }
 
+// read manual events from localStorage (with demo fallback)
+function getManualEventsFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+
+    if (!raw) {
+      const now = new Date();
+      const today = toKey(now);
+      const in2Days = toKey(
+        new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2)
+      );
+
+      return [
+        { id: "demo-1", date: today, title: "Open house", note: "At school" },
+        {
+          id: "demo-2",
+          date: in2Days,
+          title: "Document Due",
+          note: "Please submit documents",
+        },
+      ];
+    }
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed;
+  } catch {
+    return [];
+  }
+}
+
+function saveManualEventsToStorage(events) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+}
+
+// helper: clamp to start of day (local time)
+function startOfDay(dt) {
+  return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+}
+
+// helper: diff days between two YYYY-MM-DD (target - today)
+function diffDaysFromToday(dateKey) {
+  const now = startOfDay(new Date());
+  const [y, m, d] = dateKey.split("-").map(Number);
+  const target = startOfDay(new Date(y, m - 1, d));
+  const ms = target.getTime() - now.getTime();
+  return Math.round(ms / (1000 * 60 * 60 * 24));
+}
+
+// build due soon list (next 7 days including today)
+function buildDueSoon(events) {
+  const list = events
+    .map((ev) => ({ ...ev, diff: diffDaysFromToday(ev.date) }))
+    .filter((ev) => ev.diff >= 0 && ev.diff <= 7)
+    .sort((a, b) => a.diff - b.diff || a.title.localeCompare(b.title));
+
+  return list;
+}
+
+// quick add templates
+const QUICK_TEMPLATES = [
+  { key: "tuition", title: "Tuition Due", note: "Please pay tuition & fees" },
+  { key: "doc", title: "Document Due", note: "Please submit documents" },
+  { key: "meeting", title: "Parent Meeting", note: "At school" },
+  { key: "ori", title: "Orientation", note: "Campus visit" },
+];
+
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 export default function CalendarPage() {
+  // today reference
+  const todayKey = useMemo(() => toKey(new Date()), []);
+
   // month user is viewing
-  const [viewDate, setViewDate] = useState(new Date(2026, 1, 1));
+  const [viewDate, setViewDate] = useState(() => startOfMonth(new Date()));
 
   // selected date
-  const [selected, setSelected] = useState("2026-02-05");
+  const [selected, setSelected] = useState(todayKey);
 
-  // events list
-  const [events, setEvents] = useState([]);
+  // manual events (localStorage)
+  const [manualEvents, setManualEvents] = useState([]);
+
+  // auto events  
+  const [autoEvents, setAutoEvents] = useState([]);
 
   // loading state
   const [loading, setLoading] = useState(true);
@@ -151,12 +181,12 @@ export default function CalendarPage() {
   const [formTitle, setFormTitle] = useState("");
   const [formNote, setFormNote] = useState("");
 
-  // load events on first render
+  // load manual events on first render
   useEffect(() => {
     try {
       setLoading(true);
-      const list = getEventsFromStorage();
-      setEvents(list);
+      const list = getManualEventsFromStorage();
+      setManualEvents(list);
       setError("");
     } catch {
       setError("Cannot load events.");
@@ -165,15 +195,45 @@ export default function CalendarPage() {
     }
   }, []);
 
+  // auto events loader 
+  const loadAutoEvents = useCallback(async () => {
+    try {
+       
+      setAutoEvents([]);
+    } catch {
+      setError((prev) => prev || "Auto deadlines cannot load.");
+      setAutoEvents([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      await loadAutoEvents();
+    })();
+  }, [loadAutoEvents]);
+
+  // merged events used by UI
+  const events = useMemo(() => {
+    return [...manualEvents, ...autoEvents];
+  }, [manualEvents, autoEvents]);
+
   const eventMap = useMemo(() => buildEventMap(events), [events]);
 
   const selectedEvents = useMemo(() => {
-    return eventMap.get(selected) || [];
+    const list = eventMap.get(selected) || [];
+    // auto events first  
+    return [...list].sort((a, b) => {
+      const aa = a.isAuto ? 0 : 1;
+      const bb = b.isAuto ? 0 : 1;
+      return aa - bb;
+    });
   }, [eventMap, selected]);
 
   const notifCount = useMemo(() => {
     return countEventsInMonth(events, viewDate);
   }, [events, viewDate]);
+
+  const dueSoonList = useMemo(() => buildDueSoon(events), [events]);
 
   const grid = useMemo(() => {
     const first = startOfMonth(viewDate);
@@ -203,6 +263,12 @@ export default function CalendarPage() {
 
   function nextMonth() {
     setViewDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
+  }
+
+  function goToday() {
+    const now = new Date();
+    setViewDate(startOfMonth(now));
+    setSelected(toKey(now));
   }
 
   function onPickDate(dt) {
@@ -245,14 +311,14 @@ export default function CalendarPage() {
       let next;
 
       if (editId) {
-        next = events.map((ev) =>
+        next = manualEvents.map((ev) =>
           ev.id === editId
             ? { ...ev, date: formDate, title: formTitle, note: formNote }
             : ev
         );
       } else {
         next = [
-          ...events,
+          ...manualEvents,
           {
             id: makeId(),
             date: formDate,
@@ -262,12 +328,13 @@ export default function CalendarPage() {
         ];
       }
 
-      setEvents(next);
-      saveEventsToStorage(next);
+      setManualEvents(next);
+      saveManualEventsToStorage(next);
 
       setSelected(formDate);
       setIsModalOpen(false);
       setEditId("");
+      setError("");
     } catch {
       setError("Cannot save event.");
     }
@@ -275,11 +342,31 @@ export default function CalendarPage() {
 
   function onDeleteEvent(eventId) {
     try {
-      const next = events.filter((e) => e.id !== eventId);
-      setEvents(next);
-      saveEventsToStorage(next);
+      const next = manualEvents.filter((e) => e.id !== eventId);
+      setManualEvents(next);
+      saveManualEventsToStorage(next);
+      setError("");
     } catch {
       setError("Cannot delete event.");
+    }
+  }
+
+  function quickAdd(template) {
+    try {
+      const next = [
+        ...manualEvents,
+        {
+          id: makeId(),
+          date: selected,
+          title: template.title,
+          note: template.note,
+        },
+      ];
+      setManualEvents(next);
+      saveManualEventsToStorage(next);
+      setError("");
+    } catch {
+      setError("Cannot quick add event.");
     }
   }
 
@@ -297,61 +384,140 @@ export default function CalendarPage() {
     });
   }, [selected]);
 
+  const todayLabel = useMemo(() => {
+    const [y, m, d] = todayKey.split("-").map(Number);
+    const dt = new Date(y, m - 1, d);
+
+    return dt.toLocaleString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  }, [todayKey]);
+
   return (
     <div className="calendarWrap">
       <div className="calendarCard">
         <div className="calendarTop">
           <div className="calendarTitle">
-            <div className="calendarMonth">
-              {monthLabel(viewDate)}
-            </div>
+            <div className="calendarMonth">{monthLabel(viewDate)}</div>
 
             <div className="calendarNotif">
               <Bell size={18} />
               <span className="notifBadge">{notifCount}</span>
             </div>
+
+            <button
+              type="button"
+              className="btnOutlinePrimary calendarTodayBtn"
+              onClick={goToday}
+              title="Go to today"
+            >
+              Today
+            </button>
           </div>
 
           <div className="calendarNav">
-            <button className="iconBtn" onClick={prevMonth}>
+            <button type="button" className="iconBtn calNavBtn" onClick={prevMonth}>
               <ChevronLeft size={20} />
             </button>
-            <button className="iconBtn" onClick={nextMonth}>
+            <button type="button" className="iconBtn calNavBtn" onClick={nextMonth}>
               <ChevronRight size={20} />
             </button>
           </div>
         </div>
 
+        <div className="calendarHintRow">
+          <div>
+            <span className="calendarHintLabel">Today:</span> {todayLabel}
+          </div>
+          <div>
+            <span className="calendarHintLabel">Selected:</span> {selectedLabel}
+          </div>
+        </div>
+
+        <div className="calendarWeekdays">
+          {WEEKDAYS.map((w) => (
+            <div key={w} className="weekdayCell">
+              {w}
+            </div>
+          ))}
+        </div>
+
         <div className="calendarGrid">
           {grid.map((dt, idx) => {
-            if (!dt) return <div key={idx} className="calCell" />;
+            if (!dt) return <div key={idx} className="calCell isEmpty" />;
 
             const key = toKey(dt);
             const isSelected = key === selected;
+            const isToday = key === todayKey;
             const hasEvents = (eventMap.get(key) || []).length > 0;
 
             return (
               <button
                 key={key}
-                className={`calCell ${isSelected ? "isSelected" : ""}`}
+                type="button"
+                className={`calCell ${isSelected ? "isSelected" : ""} ${
+                  isToday ? "isToday" : ""
+                }`}
                 onClick={() => onPickDate(dt)}
               >
-                <div>{dt.getDate()}</div>
-                {hasEvents && <span className="calDot" />}
+                <div className="calDayNum">{dt.getDate()}</div>
+                <div className="calDotRow">
+                  {hasEvents && <span className="calDot" />}
+                </div>
               </button>
             );
           })}
         </div>
       </div>
 
+      {/* Due Soon */}
+      <div className="dueSoonBlock">
+        <div className="dueSoonHeader">
+          <div className="dueSoonTitle">
+            Due Soon <span className="notifBadge">{dueSoonList.length}</span>
+          </div>
+          <div className="dueSoonMeta">Next 7 days (including today)</div>
+        </div>
+
+        {dueSoonList.length === 0 ? (
+          <div className="empty-state">No due soon</div>
+        ) : (
+          dueSoonList.map((ev) => {
+            const diff = diffDaysFromToday(ev.date);
+            const badge =
+              diff === 0 ? "Due today" : `${diff} day${diff > 1 ? "s" : ""} left`;
+
+            return (
+              <div key={ev.id} className="dueSoonRow">
+                <div className="dueSoonLeft">
+                  <div className="dueSoonBadge">{badge}</div>
+                  <div className="dueSoonName">
+                    {ev.title}{" "}
+                    {ev.isAuto ? <span className="dueSoonAuto">(auto)</span> : null}
+                  </div>
+                  {ev.note ? <div className="dueSoonNote">{ev.note}</div> : null}
+                </div>
+                <div className="dueSoonDate">{ev.date}</div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Upcoming */}
       <div className="upcomingBlock">
         <div className="upcomingHeader">
-          <h3>Up Coming Event</h3>
-          <div>{selectedLabel}</div>
+          <div className="upcomingHeadLeft">
+            <h3 className="upcomingTitle">Up Coming Event</h3>
+            <div className="upcomingDate">{selectedLabel}</div>
+          </div>
 
           <button
             type="button"
-            className="btnOutlinePrimary btnWithIcon"
+            className="btnOutlinePrimary btnWithIcon upcomingAddBtn"
             onClick={openAddModal}
           >
             <Plus size={16} />
@@ -359,23 +525,48 @@ export default function CalendarPage() {
           </button>
         </div>
 
-        {loading && <div>Loading...</div>}
+        <div className="quickAddRow">
+          <div className="quickAddLabel">Quick Add:</div>
+          <div className="quickAddBtns">
+            {QUICK_TEMPLATES.map((t) => (
+              <button
+                key={t.key}
+                type="button"
+                className="quickAddBtn"
+                onClick={() => quickAdd(t)}
+              >
+                {t.title}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {loading && <div className="calendarLoading">Loading...</div>}
+
+        {!loading && selectedEvents.length === 0 && (
+          <div className="empty-state">No events for this date.</div>
+        )}
 
         {!loading &&
           selectedEvents.map((ev) => (
             <div key={ev.id} className="upcomingRow">
               <div className="upcomingLeft">
                 <CheckCircle2 size={16} />
-                <span>{ev.title}</span>
+                <span className="upcomingTitleText">
+                  {ev.title}{" "}
+                  {ev.isAuto ? <span className="dueSoonAuto">(auto)</span> : null}
+                </span>
               </div>
 
-              <div>{ev.note}</div>
+              <div className="upcomingNoteText">{ev.note}</div>
 
               <div className="calendarActionGroup">
                 <button
                   type="button"
-                  className="btnOutlinePrimary btnWithIcon"
+                  className="btnOutlinePrimary btnWithIcon btnSm"
                   onClick={() => openEditModal(ev)}
+                  disabled={!!ev.isAuto}
+                  title={ev.isAuto ? "Auto event cannot edit" : "Edit"}
                 >
                   <Pencil size={14} />
                   Edit
@@ -383,8 +574,10 @@ export default function CalendarPage() {
 
                 <button
                   type="button"
-                  className="btnOutlinePrimary btnWithIcon"
+                  className="btnOutlinePrimary btnWithIcon btnSm"
                   onClick={() => onDeleteEvent(ev.id)}
+                  disabled={!!ev.isAuto}
+                  title={ev.isAuto ? "Auto event cannot delete" : "Delete"}
                 >
                   <Trash2 size={14} />
                   Delete
@@ -393,42 +586,62 @@ export default function CalendarPage() {
             </div>
           ))}
 
-        {error && <div>{error}</div>}
+        {error && <div className="error-text">{error}</div>}
       </div>
 
+      {/* Modal */}
       {isModalOpen && (
         <div className="modalOverlay">
           <div className="modalCard">
-            <button
-              type="button"
-              className="btnOutlinePrimary"
-              onClick={closeModal}
-            >
-              Close
-            </button>
-
-            <form onSubmit={onSubmitEvent}>
-              <input
-                type="date"
-                value={formDate}
-                onChange={(e) => setFormDate(e.target.value)}
-              />
-
-              <input
-                value={formTitle}
-                onChange={(e) => setFormTitle(e.target.value)}
-                placeholder="Title"
-              />
-
-              <input
-                value={formNote}
-                onChange={(e) => setFormNote(e.target.value)}
-                placeholder="Note"
-              />
-
-              <button type="submit" className="btnOutlinePrimary">
-                Save
+            <div className="modalTopRow">
+              <div className="modalTitle">{editId ? "Edit Event" : "Add Event"}</div>
+              <button
+                type="button"
+                className="btnOutlinePrimary btnSm"
+                onClick={closeModal}
+              >
+                Close
               </button>
+            </div>
+
+            <form onSubmit={onSubmitEvent} className="modalForm">
+              <div className="form-field">
+                <label className="form-label">Date</label>
+                <input
+                  className="text-input"
+                  type="date"
+                  value={formDate}
+                  onChange={(e) => setFormDate(e.target.value)}
+                />
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">Title</label>
+                <input
+                  className="text-input"
+                  value={formTitle}
+                  onChange={(e) => setFormTitle(e.target.value)}
+                  placeholder="Title"
+                />
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">Note</label>
+                <input
+                  className="text-input"
+                  value={formNote}
+                  onChange={(e) => setFormNote(e.target.value)}
+                  placeholder="Note"
+                />
+              </div>
+
+              <div className="modalActions">
+                <button type="submit" className="btnOutlinePrimary">
+                  Save
+                </button>
+              </div>
+
+              {error && <div className="error-text modalErrorInline">{error}</div>}
             </form>
           </div>
         </div>
