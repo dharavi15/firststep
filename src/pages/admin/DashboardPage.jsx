@@ -1,4 +1,12 @@
 import { useMemo, useState } from "react";
+import {
+  ClipboardList,
+  CreditCard,
+  PhoneCall,
+  Coins,
+  FileText,
+  Newspaper,
+} from "lucide-react";
 
 import EnrollmentOverview from "./EnrollmentOverview";
 import PaymentsOverview from "./PaymentsOverview";
@@ -8,29 +16,47 @@ import NewsEvents from "./NewsEvents";
 import Contact from "./Contact";
 
 // This button is used for the top shortcuts
-function WideCard({ title, onClick }) {
+function WideCard({ title, icon: Icon, onClick }) {
   return (
     <button type="button" className="wideCard" onClick={onClick}>
+      <span className="wideCardIcon" aria-hidden="true">
+        {Icon ? <Icon size={26} /> : null}
+      </span>
       <div className="wideCardTitle">{title}</div>
     </button>
   );
 }
 
 // This button is used for quick actions
-function QuickCard({ title, onClick }) {
+function QuickCard({ title, icon: Icon, onClick }) {
   return (
     <button type="button" className="quickCard" onClick={onClick}>
+      <span className="quickCardIcon" aria-hidden="true">
+        {Icon ? <Icon size={28} /> : null}
+      </span>
       <div className="quickCardTitle">{title}</div>
     </button>
   );
 }
 
-// Text only row (no click, no link)
-function ChecklistTextRow({ text }) {
+// Text - Stepper style
+function ChecklistTextRow({ index, text }) {
+  const match = String(text).match(/^Step\s*(\d+)\s*:\s*(.*)$/i);
+  const stepNo = match ? match[1] : String(index + 1);
+  const stepText = match ? match[2] : text;
+
   return (
-    <div className="checklistTextRow">
-      <div className="checklistTextLeft">
-        <span>{text}</span>
+    <div className="pendingStep">
+      <div className="pendingStepLeft">
+        <div className="pendingStepDot" aria-hidden="true" />
+        <div className="pendingStepLine" aria-hidden="true" />
+      </div>
+
+      <div className="pendingStepBody">
+        <div className="pendingStepHeader">
+          <span className="pendingStepBadge">STEP {stepNo}</span>
+        </div>
+        <div className="pendingStepText">{stepText}</div>
       </div>
     </div>
   );
@@ -62,7 +88,7 @@ export default function DashboardPage() {
     return "Dashboard";
   }, [view]);
 
-  // Admin view (text only)
+  // Admin view 
   const onboardingSteps = useMemo(
     () => [
       "Step 1: Providing Information to Prospective Parents",
@@ -142,12 +168,20 @@ export default function DashboardPage() {
     return null;
   };
 
-  // Dashboard home (Quick Actions must stay the same)
+  // Dashboard home 
   const renderDashboardHome = () => (
     <div className="dashWrap">
       <div className="dashTopGrid">
-        <WideCard title="Enrollment Overview" onClick={() => openView("enrollment")} />
-        <WideCard title="Payments Overview" onClick={() => openView("payments")} />
+        <WideCard
+          title="Enrollment Overview"
+          icon={ClipboardList}
+          onClick={() => openView("enrollment")}
+        />
+        <WideCard
+          title="Payments Overview"
+          icon={CreditCard}
+          onClick={() => openView("payments")}
+        />
       </div>
 
       <div className="dashMainGrid">
@@ -157,9 +191,9 @@ export default function DashboardPage() {
           <div className="panelCard">
             <div className="panelTitle">Pending Tasks</div>
 
-            <div className="checklistList">
-              {onboardingSteps.map((step) => (
-                <ChecklistTextRow key={step} text={step} />
+            <div className="pendingStepsWrap">
+              {onboardingSteps.map((step, idx) => (
+                <ChecklistTextRow key={step} index={idx} text={step} />
               ))}
             </div>
           </div>
@@ -169,10 +203,10 @@ export default function DashboardPage() {
           <h3 className="sectionTitle">Quick Actions</h3>
 
           <div className="quickGrid">
-            <QuickCard title="Contact" onClick={() => openView("contact")} />
-            <QuickCard title="Tuition Fees" onClick={() => openView("tuition")} />
-            <QuickCard title="Documents" onClick={() => openView("documents")} />
-            <QuickCard title="News & Events" onClick={() => openView("news")} />
+            <QuickCard title="Contact" icon={PhoneCall} onClick={() => openView("contact")} />
+            <QuickCard title="Tuition Fees" icon={Coins} onClick={() => openView("tuition")} />
+            <QuickCard title="Documents" icon={FileText} onClick={() => openView("documents")} />
+            <QuickCard title="News & Events" icon={Newspaper} onClick={() => openView("news")} />
           </div>
         </section>
       </div>
