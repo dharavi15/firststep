@@ -3,6 +3,9 @@ import useAuthStore from "../store/useAuthStore";
 
 export default function ProtectedRoute({ allowRole, children }) {
   const user = useAuthStore((s) => s.user);
+  const authReady = useAuthStore((s) => s.authReady);
+
+  if (!authReady) return null;
 
   if (!user) return <Navigate to="/" replace />;
 

@@ -34,7 +34,15 @@ export default function LoginPage() {
 
   const setUser = useAuthStore((s) => s.setUser);
   const setStoreLoading = useAuthStore((s) => s.setLoading);
-  const setStoreError = useAuthStore((s) => s.setError);
+
+  const setErrorFromStore = useAuthStore((s) => s.setError);
+  const setStoreErrorFallback = useAuthStore((s) => s.setStoreError);
+  const setStoreError =
+    typeof setErrorFromStore === "function"
+      ? setErrorFromStore
+      : typeof setStoreErrorFallback === "function"
+      ? setStoreErrorFallback
+      : () => {};
 
   const handleSubmit = async (e) => {
     e.preventDefault();

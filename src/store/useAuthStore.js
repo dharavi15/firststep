@@ -1,45 +1,87 @@
 import { create } from "zustand";
-import { listenAuthState } from "../firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase/firebase";
 
 const useAuthStore = create((set, get) => ({
+  // user session
   user: null,
+
+  // for route guard (wait firebase restore)
+  authReady: false,
+
+  // legacy fields for LoginPage (keep API stable)
   loading: false,
   error: "",
 
-  setUser: (user) => set({ user }),
-  setLoading: (loading) => set({ loading }),
-  setError: (error) => set({ error }),
+  // internal unsubscribe
+  _unsub: null,
 
-  unsubscribe: null,
+  // legacy setters used by LoginPage.jsx
+  setUser: (user) => {
+    set({ user: user || null });
+  },
 
+  setLoading: (isLoading) => {
+    set({ loading: Boolean(isLoading) });
+  },
+
+  setError: (msg) => {
+    set({ error: msg || "" });
+  },
+
+  // also support newer naming 
+  setStoreError: (msg) => {
+    set({ error: msg || "" });
+  },
+
+  clearStoreError: () => {
+    set({ error: "" });
+  },
+
+  // start firebase auth listener once
   startAuthListener: () => {
-    // prevent double listener
-    const existing = get().unsubscribe;
-    if (typeof existing === "function") existing();
+    const oldUnsub = get()._unsub;
+    if (oldUnsub) return;
 
-    const unsub = listenAuthState((firebaseUser) => {
-      // sync  auth state 
-      // LoginPage will set full profile after login
-      if (!firebaseUser) {
-        set({ user: null });
+    const unsub = onAuthStateChanged(auth, async (fbUser) => {
+      if (!fbUser) {
+        set({ user: null, authReady: true });
         return;
       }
 
-      set((state) => ({
-        user: state.user
-          ? { ...state.user, uid: firebaseUser.uid, email: firebaseUser.email }
-          : { uid: firebaseUser.uid, email: firebaseUser.email },
-      }));
+      try {
+        // users/{uid} 
+        const ref = doc(db, "users", fbUser.uid);
+        const snap = await getDoc(ref);
+        const profile = snap.exists() ? snap.data() : {};
+
+        set({
+          user: {
+            uid: fbUser.uid,
+            email: fbUser.email,
+            ...profile,
+          },
+          authReady: true,
+        });
+      } catch {
+        set({
+          user: {
+            uid: fbUser.uid,
+            email: fbUser.email,
+          },
+          authReady: true,
+        });
+      }
     });
 
-    set({ unsubscribe: unsub });
-    return unsub;
+    set({ _unsub: unsub });
   },
 
   stopAuthListener: () => {
-    const unsub = get().unsubscribe;
-    if (typeof unsub === "function") unsub();
-    set({ unsubscribe: null });
+    const unsub = get()._unsub;
+    if (unsub) unsub();
+    set({ _unsub: null });
   },
 }));
 
