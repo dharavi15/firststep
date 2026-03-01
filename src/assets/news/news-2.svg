@@ -1,10 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+  <!-- background -->
   <rect width="1200" height="700" fill="#F9FAFB"></rect>
-  <rect x="70" y="80" width="1060" height="540" rx="28" fill="#ffffff" opacity="0.95"></rect>
-  <rect x="110" y="130" width="420" height="420" rx="22" fill="#4A90E2" opacity="0.10"></rect>
-  <rect x="560" y="150" width="540" height="18" rx="9" fill="#6B7280" opacity="0.20"></rect>
-  <rect x="560" y="190" width="460" height="18" rx="9" fill="#6B7280" opacity="0.15"></rect>
-  <text x="560" y="290" font-family="Arial" font-size="54" font-weight="800" fill="#333">Campus Open House</text>
-  <text x="560" y="350" font-family="Arial" font-size="28" fill="#6B7280">Meet our teachers and teams</text>
-  <text x="110" y="590" font-family="Arial" font-size="18" fill="#6B7280">FirstStep • News &amp; Events</text>
+
+  <!-- card -->
+  <rect x="80" y="80" width="1040" height="540" rx="40" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2"></rect>
+
+  <!-- image placeholder -->
+  <rect x="140" y="140" width="420" height="300" rx="32" fill="#EEF4FB"></rect>
+
+  <!-- title -->
+  <text x="620" y="320" font-size="80" font-weight="700" fill="#333333" font-family="Inter, Arial, sans-serif">
+    Campus
+  </text>
+
+  <text x="620" y="410" font-size="80" font-weight="700" fill="#333333" font-family="Inter, Arial, sans-serif">
+    Open House
+  </text>
+
+  <!-- footer -->
+  <text x="140" y="580" font-size="20" fill="#9CA3AF" font-family="Inter, Arial, sans-serif">
+    FirstStep • News &amp; Events
+  </text>
 </svg>
