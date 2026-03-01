@@ -942,9 +942,9 @@ export default function CheklistPage() {
                   cursor: "pointer",
                 }}
               >
-                <div className="td tdCheck">
-                  <input type="checkbox" onClick={(e) => e.stopPropagation()} />
-                </div>
+               <div className="td tdCheck">
+              
+                </div> 
 
                 <div className="td tdName" style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <AvatarEmoji name={row.name} />
