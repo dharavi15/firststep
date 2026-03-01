@@ -1,358 +1,583 @@
-import { useMemo, useState } from "react";
+// src/pages/admin/Documents.jsx
 
-function SignatureBlock() {
-  return (
-    <div className="docBox">
-      <div className="docSectionTitle">Acknowledgement and Signature</div>
+import { useEffect, useMemo, useState } from "react";
+import { Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-      <div className="docGrid">
-        <div className="docField">
-          <div className="docFieldLabel">Student Full Name</div>
-          <div className="docFieldLine" />
-        </div>
+import { db, storage } from "../../firebase/firebase";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
-        <div className="docField">
-          <div className="docFieldLabel">Parent / Guardian Name</div>
-          <div className="docFieldLine" />
-        </div>
+import useAuthStore from "../../store/useAuthStore";
 
-        <div className="docField">
-          <div className="docFieldLabel">Date</div>
-          <div className="docFieldLine" />
-        </div>
+/**
+ * Step -> Document mapping
+ * We use this to show "what document is needed" by current step.
+ */
+const STEP_DOCS = {
+  1: [], // Awaiting Payment (no document required in this demo)
+  2: ["healthForm"], // Fill Health Form
+  3: ["tuitionPayment"], // Pay Tuition & Fees (receipt / payment info)
+  4: [], // Attend Orientation (no document required in this demo)
+  5: ["proofOfPayment"], // Upload Proof of Payment
+};
 
-        <div className="docField">
-          <div className="docFieldLabel">Signature</div>
-          <div className="docFieldLine" />
-        </div>
-      </div>
+/**
+ * Document display config
+ * key = field name inside enrollment.documents
+ */
+const DOC_CONFIG = {
+  healthForm: {
+    title: "Health Form",
+    stepNo: 2,
+    desc: "Upload the completed health form file.",
+  },
+  tuitionPayment: {
+    title: "Tuition & Fees Receipt",
+    stepNo: 3,
+    desc: "Upload payment receipt or proof of payment info.",
+  },
+  proofOfPayment: {
+    title: "Proof of Payment",
+    stepNo: 5,
+    desc: "Upload proof of payment file (image or PDF).",
+  },
+};
 
-      <div className="docSmallNote">
-        By signing, I confirm that I have read and understood this document.
-      </div>
-    </div>
+/**
+ * Make initials for avatar circle
+ */
+function getInitials(name) {
+  const s = String(name || "").trim();
+  if (!s) return "?";
+  const parts = s.split(/\s+/).slice(0, 2);
+  return parts.map((p) => p[0]?.toUpperCase()).join("") || "?";
+}
+
+/**
+ * Safe file name for Storage path
+ * Keep letters, numbers, "_" plus dot and dash
+ */
+function makeSafeFileName(originalName) {
+  // Clean file name
+  // Keep only letters, numbers, dot and dash
+  // Replace other characters with "_"
+  return String(originalName || "file").replace(/[^\w.-]+/g, "_");
+}
+
+/**
+ * Build current step from completedSteps and totalSteps
+ */
+function calcCurrentStep(completedSteps, totalSteps) {
+  const completed = Number.isFinite(completedSteps) ? completedSteps : 0;
+  const total = Number.isFinite(totalSteps) ? totalSteps : 5;
+  return Math.min(completed + 1, total);
+}
+
+/**
+ * Ensure enrollment doc exists for a student
+ * We use doc id = studentId (same as your ChecklistPage)
+ */
+async function ensureEnrollmentDoc(student) {
+  const enrRef = doc(db, "enrollments", student.id);
+  const snap = await getDoc(enrRef);
+
+  if (snap.exists()) {
+    return { id: snap.id, ...snap.data() };
+  }
+
+  // Create new enrollment doc if missing
+  const base = {
+    schoolId: student.schoolId || "demo-school",
+    studentId: student.id,
+    studentName: student.studentName || "",
+    parentName: student.parentName || "",
+    parentEmail: student.parentEmail || "",
+    year: student.year ?? null,
+
+    totalSteps: 5,
+    completedSteps: 0,
+    progressPercent: 0,
+    overallStatus: "pending",
+    nextDeadline: "N/A",
+
+    // Document state is stored here
+    documents: {},
+
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+
+  await setDoc(enrRef, base);
+  return { id: student.id, ...base };
+}
+
+/**
+ * Decide which documents should be visible for the current step
+ * - Show required docs for current step
+ * - Also show any doc that was already uploaded before (so admin can review)
+ */
+function buildVisibleDocKeys(enrollment) {
+  const docs = enrollment?.documents || {};
+  const completedSteps = Number(enrollment?.completedSteps ?? 0);
+  const totalSteps = Number(enrollment?.totalSteps ?? 5);
+  const currentStep = calcCurrentStep(completedSteps, totalSteps);
+
+  const required = new Set(STEP_DOCS[currentStep] || []);
+  const uploaded = new Set(
+    Object.keys(docs).filter((k) => docs?.[k]?.received === true)
   );
+
+  return Array.from(new Set([...required, ...uploaded]));
 }
 
 export default function Documents() {
-  const [activeId, setActiveId] = useState(null);
+  const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
 
-  const docs = useMemo(
-    () => [
-      {
-        id: "doc1",
-        title: "Step 1: Providing Information to Prospective Parents",
-        needsSignature: false,
-        meta: "Read-only information",
-        content: (
-          <div className="docBox">
-            <div className="docSectionTitle">Purpose</div>
-            <div className="docText">
-              This document helps families understand the school, the admission
-              process, and the next steps.
-            </div>
+  // Admin only page (simple guard)
+  const isAdmin =
+    user?.role === "admin" ||
+    user?.userRole === "admin" ||
+    user?.type === "admin" ||
+    user?.email === "admin@test.com";
 
-            <div className="docSectionTitle">What parents should do</div>
-            <ul className="docList">
-              <li>Read the school overview (curriculum, campus, daily routine)</li>
-              <li>Check admission requirements and key dates</li>
-              <li>Prepare questions for the school team</li>
-            </ul>
+  const schoolId = user?.schoolId || "demo-school";
 
-            <div className="docSectionTitle">What the school provides</div>
-            <ul className="docList">
-              <li>Programme overview and basic policies</li>
-              <li>Contact channels and visiting schedule</li>
-            </ul>
-          </div>
-        ),
-      },
+  const [qText, setQText] = useState("");
+  const [students, setStudents] = useState([]);
+  const [loadingStudents, setLoadingStudents] = useState(true);
 
-      {
-        id: "doc2",
-        title: "Step 2: Making Your Application",
-        needsSignature: false,
-        meta: "Read-only information",
-        content: (
-          <div className="docBox">
-            <div className="docSectionTitle">Purpose</div>
-            <div className="docText">
-              This document explains what information is needed to complete the
-              application correctly.
-            </div>
+  const [selectedStudentId, setSelectedStudentId] = useState(null);
+  const [enrollment, setEnrollment] = useState(null);
+  const [loadingEnrollment, setLoadingEnrollment] = useState(false);
 
-            <div className="docSectionTitle">Parent checklist</div>
-            <ul className="docList">
-              <li>Fill in student basic information</li>
-              <li>Add parent / guardian contacts</li>
-              <li>Prepare required ID documents (if requested)</li>
-            </ul>
+  const [uploading, setUploading] = useState(false);
+  const [msg, setMsg] = useState("");
 
-            <div className="docSectionTitle">Required details</div>
-            <ul className="docList">
-              <li>Student: full name, date of birth, nationality</li>
-              <li>Parent: full name, phone, email, address</li>
-              <li>Previous school (optional)</li>
-            </ul>
-          </div>
-        ),
-      },
+  /**
+   * Load all students (admin)
+   * Note: This matches your current approach in ChecklistPage (get all then filter)
+   */
+  async function loadStudents() {
+    try {
+      setLoadingStudents(true);
+      setMsg("");
 
-      {
-        id: "doc3",
-        title: "Step 3: Submission of Application and Time Frame",
-        needsSignature: false,
-        meta: "Read-only information",
-        content: (
-          <div className="docBox">
-            <div className="docSectionTitle">Purpose</div>
-            <div className="docText">
-              This document explains the timeline after submitting an application.
-            </div>
+      const snap = await getDocs(collection(db, "students"));
 
-            <div className="docSectionTitle">What happens next</div>
-            <ul className="docList">
-              <li>School reviews the application (estimated 3–7 working days)</li>
-              <li>School contacts parents to schedule the interview</li>
-              <li>Parents receive status updates by email</li>
-            </ul>
+      const all = snap.docs.map((d) => {
+        const data = d.data() || {};
+        return {
+          id: d.id,
+          schoolId: data.schoolId ?? "",
+          studentName: data.studentName ?? "",
+          parentName: data.parentName ?? "",
+          parentEmail: data.parentEmail ?? "",
+          year: data.year ?? null,
+        };
+      });
 
-            <div className="docSectionTitle">Important notes</div>
-            <ul className="docList">
-              <li>Missing documents may delay the review</li>
-              <li>Please keep your email and phone reachable</li>
-            </ul>
-          </div>
-        ),
-      },
+      const filtered = all.filter((s) => {
+        const sid = String(s.schoolId || "").trim().toLowerCase();
+        return sid === String(schoolId).trim().toLowerCase();
+      });
 
-      {
-        id: "doc4",
-        title: "Step 4: Admission Interview",
-        needsSignature: false,
-        meta: "Read-only information",
-        content: (
-          <div className="docBox">
-            <div className="docSectionTitle">Purpose</div>
-            <div className="docText">
-              This document explains how the admission interview works and how
-              to prepare.
-            </div>
+      setStudents(filtered);
+    } catch (err) {
+      console.error("Load students failed:", err);
+      setStudents([]);
+      setMsg("Load students failed ❌");
+    } finally {
+      setLoadingStudents(false);
+    }
+  }
 
-            <div className="docSectionTitle">Interview preparation</div>
-            <ul className="docList">
-              <li>Student interview (age-appropriate questions)</li>
-              <li>Parent interview (expectations and student support)</li>
-              <li>Bring original documents if requested</li>
-            </ul>
+  useEffect(() => {
+    if (!isAdmin) return;
+    loadStudents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin, schoolId]);
 
-            <div className="docSectionTitle">After the interview</div>
-            <ul className="docList">
-              <li>School shares the result and the next step instructions</li>
-            </ul>
-          </div>
-        ),
-      },
+  const selectedStudent = useMemo(() => {
+    if (!selectedStudentId) return null;
+    return students.find((s) => s.id === selectedStudentId) || null;
+  }, [selectedStudentId, students]);
 
-      {
-        id: "doc5",
-        title: "Step 5: Offer of Entry and Acceptance",
-        needsSignature: true,
-        meta: "Requires acknowledgement and signature",
-        content: (
-          <>
-            <div className="docBox">
-              <div className="docSectionTitle">Purpose</div>
-              <div className="docText">
-                This document confirms the offer decision and explains acceptance
-                steps.
-              </div>
+  /**
+   * Load enrollment when student selected
+   * We also create enrollment doc if it doesn't exist.
+   */
+  useEffect(() => {
+    if (!selectedStudent) return;
 
-              <div className="docSectionTitle">If accepted, parents will</div>
-              <ul className="docList">
-                <li>Receive an offer letter from the school</li>
-                <li>Confirm acceptance by the deadline</li>
-                <li>Review fee summary and payment instructions</li>
-              </ul>
+    async function loadEnrollment() {
+      try {
+        setLoadingEnrollment(true);
+        setMsg("");
+        setEnrollment(null);
 
-              <div className="docSectionTitle">Important</div>
-              <ul className="docList">
-                <li>Acceptance is secured only after confirmation steps are completed</li>
-                <li>If the deadline is missed, the offer may be withdrawn</li>
-              </ul>
-            </div>
+        const enr = await ensureEnrollmentDoc({
+          ...selectedStudent,
+          schoolId: selectedStudent.schoolId || schoolId,
+        });
 
-            <SignatureBlock />
-          </>
-        ),
-      },
+        setEnrollment(enr);
+      } catch (err) {
+        console.error("Load enrollment failed:", err);
+        setEnrollment(null);
+        setMsg("Load enrollment failed ❌");
+      } finally {
+        setLoadingEnrollment(false);
+      }
+    }
 
-      {
-        id: "doc6",
-        title: "Step 6: Registration",
-        needsSignature: true,
-        meta: "Requires acknowledgement and signature",
-        content: (
-          <>
-            <div className="docBox">
-              <div className="docSectionTitle">Purpose</div>
-              <div className="docText">
-                This document finalizes enrollment and confirms student record details.
-              </div>
+    loadEnrollment();
+  }, [selectedStudent, schoolId]);
 
-              <div className="docSectionTitle">Registration checklist</div>
-              <ul className="docList">
-                <li>Confirm student details and emergency contacts</li>
-                <li>Submit medical information / allergies (if applicable)</li>
-                <li>Sign school agreements (policies and consent forms)</li>
-              </ul>
+  /**
+   * Filter students list by search
+   */
+  const filtered = useMemo(() => {
+    const t = String(qText || "").trim().toLowerCase();
+    if (!t) return students;
 
-              <div className="docSectionTitle">School provides</div>
-              <ul className="docList">
-                <li>Student account setup information</li>
-                <li>School communication channels</li>
-              </ul>
-            </div>
+    return students.filter((s) => {
+      const name = String(s.studentName || "").toLowerCase();
+      const parent = String(s.parentName || "").toLowerCase();
+      const email = String(s.parentEmail || "").toLowerCase();
+      const year = String(s.year ?? "").toLowerCase();
+      return (
+        name.includes(t) ||
+        parent.includes(t) ||
+        email.includes(t) ||
+        year.includes(t)
+      );
+    });
+  }, [qText, students]);
 
-            <SignatureBlock />
-          </>
-        ),
-      },
+  /**
+   * Back to list
+   */
+  function onBackToList() {
+    setSelectedStudentId(null);
+    setEnrollment(null);
+    setMsg("");
+  }
 
-      {
-        id: "doc7",
-        title: "Step 7: Information to Registered Students and Parents",
-        needsSignature: true,
-        meta: "Requires acknowledgement and signature",
-        content: (
-          <>
-            <div className="docBox">
-              <div className="docSectionTitle">Purpose</div>
-              <div className="docText">
-                This document shares important information for the school year.
-              </div>
+  /**
+   * Refresh enrollment data (after upload)
+   */
+  async function reloadEnrollment() {
+    if (!selectedStudentId) return;
+    try {
+      setLoadingEnrollment(true);
+      const enrRef = doc(db, "enrollments", selectedStudentId);
+      const snap = await getDoc(enrRef);
+      if (snap.exists()) setEnrollment({ id: snap.id, ...snap.data() });
+    } catch (err) {
+      console.error("Reload enrollment failed:", err);
+    } finally {
+      setLoadingEnrollment(false);
+    }
+  }
 
-              <div className="docSectionTitle">Parents receive</div>
-              <ul className="docList">
-                <li>School calendar and term dates</li>
-                <li>Uniform and supply list</li>
-                <li>Communication guide (apps / email / phone)</li>
-                <li>Transportation and lunch options</li>
-              </ul>
+  /**
+   * Upload document file to Storage and update Firestore
+   */
+  async function onUploadDoc(docKey, file) {
+    if (!file || !selectedStudentId) return;
 
-              <div className="docSectionTitle">Parents should</div>
-              <ul className="docList">
-                <li>Read all instructions and keep a copy of this document</li>
-                <li>Contact the school if any information is unclear</li>
-              </ul>
-            </div>
+    const cfg = DOC_CONFIG[docKey];
+    if (!cfg) return;
 
-            <SignatureBlock />
-          </>
-        ),
-      },
+    try {
+      setUploading(true);
+      setMsg("");
 
-      {
-        id: "doc8",
-        title: "Step 8: Orientation",
-        needsSignature: false,
-        meta: "Read-only information",
-        content: (
-          <div className="docBox">
-            <div className="docSectionTitle">Purpose</div>
-            <div className="docText">
-              Orientation helps families start smoothly and understand daily routines.
-            </div>
+      const safeName = makeSafeFileName(file.name);
 
-            <div className="docSectionTitle">Orientation includes</div>
-            <ul className="docList">
-              <li>Campus tour and classroom introduction</li>
-              <li>Meet teachers and staff</li>
-              <li>Explain daily routines and school rules</li>
-            </ul>
+      // Storage path includes step number
+      // This makes "Documents" connected to real step.
+      const path = `enrollments/${selectedStudentId}/step${cfg.stepNo}/${Date.now()}_${safeName}`;
+      const r = ref(storage, path);
 
-            <div className="docSectionTitle">Parent checklist</div>
-            <ul className="docList">
-              <li>Attend the orientation session (date and time provided by school)</li>
-              <li>Ask any final questions</li>
-              <li>Confirm first-day schedule</li>
-            </ul>
-          </div>
-        ),
-      },
-    ],
-    []
-  );
+      await uploadBytes(r, file);
+      const url = await getDownloadURL(r);
 
-  const activeDoc = useMemo(() => {
-    if (!activeId) return null;
-    return docs.find((d) => d.id === activeId) || null;
-  }, [activeId, docs]);
+      // Update enrollment document
+      const enrRef = doc(db, "enrollments", selectedStudentId);
 
-  const downloadPdf = () => {
-    // Print this page. User can pick "Save as PDF"
+      const nextDocs = {
+        ...(enrollment?.documents || {}),
+        [docKey]: {
+          received: true,
+          fileName: file.name,
+          url,
+          storagePath: path,
+          stepNo: cfg.stepNo,
+          updatedAt: Date.now(),
+        },
+      };
+
+      await updateDoc(enrRef, {
+        documents: nextDocs,
+        updatedAt: serverTimestamp(),
+      });
+
+      setMsg("Saved ✅");
+      await reloadEnrollment();
+    } catch (err) {
+      console.error("Upload failed:", err);
+      setMsg("Save failed ❌");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  /**
+   * Remove only the Firestore doc state (does not delete file in Storage)
+   * This is safer for demo. You can add deleteObject later if you want.
+   */
+  async function onClearDoc(docKey) {
+    if (!selectedStudentId) return;
+
+    const ok = window.confirm("Clear this document status?\n(File in Storage will stay.)");
+    if (!ok) return;
+
+    try {
+      setMsg("");
+      const enrRef = doc(db, "enrollments", selectedStudentId);
+
+      const nextDocs = { ...(enrollment?.documents || {}) };
+      delete nextDocs[docKey];
+
+      await updateDoc(enrRef, {
+        documents: nextDocs,
+        updatedAt: serverTimestamp(),
+      });
+
+      setMsg("Cleared ✅");
+      await reloadEnrollment();
+    } catch (err) {
+      console.error("Clear doc failed:", err);
+      setMsg("Clear failed ❌");
+    }
+  }
+
+  /**
+   * Print (for PDF)
+   */
+  function onPrint() {
     window.print();
-  };
+  }
 
-  if (!activeDoc) {
+  // --------- Guards ----------
+  if (!isAdmin) {
     return (
-      <div className="pagePad">
-        <div className="eventDetailBlock docsWrap">
-          <div className="eventDetailTitle">Documents</div>
-          <div className="eventDetailDesc">
-            Select a document below to view its details.
-          </div>
-
-          <div className="docsList">
-            {docs.map((d, idx) => (
-              <button
-                key={d.id}
-                type="button"
-                className="docBtn"
-                onClick={() => setActiveId(d.id)}
-              >
-                <div className="docBtnLeft">
-                  <div className="docBtnStep">Document {idx + 1}</div>
-                  <div className="docBtnTitle">{d.title}</div>
-                  <div className="docBtnMeta">
-                    {d.needsSignature ? "Signature required" : "Read-only"}
-                  </div>
-                </div>
-                <div className="docBtnRight">Open</div>
-              </button>
-            ))}
-          </div>
-        </div>
+      <div className="docsWrap">
+        <div className="emptyState">Admin only</div>
       </div>
     );
   }
 
-  return (
-    <div className="pagePad">
-      <div className="eventDetailBlock docsWrap docsPrintRoot">
-        <div className="docsTop docsNoPrint">
-          <button
-            type="button"
-            className="btnOutlinePrimary"
-            onClick={() => setActiveId(null)}
-          >
-            Back to Documents
+  // --------- DETAIL VIEW ----------
+  if (selectedStudent) {
+    const completedSteps = Number(enrollment?.completedSteps ?? 0);
+    const totalSteps = Number(enrollment?.totalSteps ?? 5);
+    const currentStep = calcCurrentStep(completedSteps, totalSteps);
+
+    const percentDone =
+      typeof enrollment?.progressPercent === "number"
+        ? enrollment.progressPercent
+        : totalSteps
+        ? Math.round((completedSteps / totalSteps) * 100)
+        : 0;
+
+    const visibleDocKeys = buildVisibleDocKeys(enrollment);
+
+    return (
+      <div className="docsWrap docsPrintRoot">
+        <div className="docsTop">
+          <button type="button" className="viewBackBtn docsNoPrint" onClick={onBackToList}>
+            ← Back
           </button>
 
-          <button type="button" className="btnPrimary" onClick={downloadPdf}>
-            Download PDF
+          <button type="button" className="btnOutlinePrimary docsNoPrint" onClick={onPrint}>
+            Print / Save PDF
           </button>
         </div>
 
         <div className="docPaper">
           <div className="docHeader">
-            <div className="docTitle">{activeDoc.title}</div>
-            <div className="docMeta">{activeDoc.meta}</div>
+            <div className="docTitle">Documents for {selectedStudent.studentName || "Student"}</div>
+            <div className="docMeta">
+              Parent: {selectedStudent.parentName || "-"} • Email: {selectedStudent.parentEmail || "-"}
+            </div>
+            <div className="docMeta">
+              Progress: {percentDone}% • Current Step: <b>Step {currentStep}</b>
+            </div>
           </div>
 
-          <div id="doc-print-area">{activeDoc.content}</div>
+          {msg ? <div className="docBox docsNoPrint"><b>{msg}</b></div> : null}
+
+          {loadingEnrollment ? (
+            <div className="emptyState">Loading enrollment...</div>
+          ) : !enrollment ? (
+            <div className="emptyState">Enrollment not found</div>
+          ) : (
+            <>
+              <div className="docBox">
+                <div className="docSectionTitle">What is needed now</div>
+                <div className="docText">
+                  We show documents based on <b>Current Step</b>.  
+                  If a document was uploaded before, we still show it here.
+                </div>
+              </div>
+
+              {visibleDocKeys.length === 0 ? (
+                <div className="docBox">
+                  <div className="docSectionTitle">No document required for this step</div>
+                  <div className="docText">Current step does not require upload.</div>
+                </div>
+              ) : (
+                <div className="docsList">
+                  {visibleDocKeys.map((key) => {
+                    const cfg = DOC_CONFIG[key];
+                    if (!cfg) return null;
+
+                    const docState = enrollment?.documents?.[key] || null;
+                    const received = docState?.received === true;
+                    const showUpload = cfg.stepNo === currentStep;
+
+                    return (
+                      <div key={key} className="docBtn" role="group" aria-label={cfg.title}>
+                        <div className="docBtnLeft">
+                          <div className="docBtnStep">Step {cfg.stepNo}</div>
+                          <div className="docBtnTitle">{cfg.title}</div>
+                          <div className="docBtnMeta">
+                            {cfg.desc}
+                          </div>
+
+                          {received ? (
+                            <div className="docBtnMeta">
+                              Status: <b>Received</b> • File: {docState?.fileName || "-"}
+                            </div>
+                          ) : (
+                            <div className="docBtnMeta">
+                              Status: <b>Not received</b>
+                            </div>
+                          )}
+
+                          {received && docState?.url ? (
+                            <div className="docBtnMeta">
+                              Link:{" "}
+                              <a href={docState.url} target="_blank" rel="noreferrer">
+                                Open file
+                              </a>
+                            </div>
+                          ) : null}
+                        </div>
+
+                        <div className="docBtnRight docsNoPrint">
+                          {/* Upload is enabled only on the real current step */}
+                          {showUpload ? (
+                            <>
+                              <label className="btnOutlinePrimary btnSm" style={{ cursor: "pointer" }}>
+                                📎 Upload
+                                <input
+                                  type="file"
+                                  style={{ display: "none" }}
+                                  disabled={uploading}
+                                  onChange={(e) => {
+                                    const f = e.target.files?.[0];
+                                    if (f) onUploadDoc(key, f);
+                                    e.target.value = "";
+                                  }}
+                                />
+                              </label>
+
+                              <button
+                                type="button"
+                                className="btnDangerSoft btnSm"
+                                disabled={uploading}
+                                onClick={() => onClearDoc(key)}
+                              >
+                                ✖ Clear
+                              </button>
+                            </>
+                          ) : (
+                            <div className="docBtnMeta">
+                              Upload enabled at <b>Step {cfg.stepNo}</b>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
+    );
+  }
+
+  // --------- LIST VIEW ----------
+  return (
+    <div className="docsWrap">
+      <div className="docsTop">
+        <div />
+        <button type="button" className="btnOutlinePrimary" onClick={() => navigate("/admin/dashboard")}>
+          Back to Dashboard
+        </button>
+      </div>
+
+      <div className="searchCard">
+        <Search className="searchIcon" size={20} />
+        <input
+          className="searchInput"
+          value={qText}
+          onChange={(e) => setQText(e.target.value)}
+          placeholder="Search"
+        />
+      </div>
+
+      {loadingStudents ? (
+        <div className="emptyState">Loading students...</div>
+      ) : filtered.length === 0 ? (
+        <div className="emptyState">No students found</div>
+      ) : (
+        <div className="docsList">
+          {filtered.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              className="docBtn"
+              onClick={() => setSelectedStudentId(s.id)}
+            >
+              <div className="docBtnLeft">
+                <div className="docBtnTitle">
+                  {getInitials(s.studentName)} • {s.studentName || "Unknown student"}
+                </div>
+                <div className="docBtnMeta">
+                  Parent: {s.parentName || "-"} • Year: {s.year ?? "-"}
+                </div>
+              </div>
+              <div className="docBtnRight">Open</div>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

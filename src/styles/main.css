@@ -1,4 +1,12 @@
-/* root */
+/* =========================================
+   main.css (Clean Single File)
+   - Keep styles consistent (no other pages change)
+   - Includes ALL rules in a cleaned + deduped order
+   ========================================= */
+
+/* =========================
+   ROOT (Theme Variables)
+   ========================= */
 :root {
   --color-primary: rgba(74, 144, 226, 0.5);
   --color-primary-solid: #4a90e2;
@@ -12,9 +20,16 @@
   --radius-lg: 16px;
   --radius-md: 12px;
   --shadow-card: 0 10px 25px rgba(0, 0, 0, 0.08);
+
+  /* aliases used in some blocks (safe + matches your palette) */
+  --color-card: var(--color-surface);
+  --color-text: var(--color-text-primary);
+  --color-text-muted: var(--color-text-secondary);
 }
 
-/* reset */
+/* =========================
+   RESET / BASE
+   ========================= */
 * {
   box-sizing: border-box;
 }
@@ -31,11 +46,14 @@ body {
   background: var(--color-background);
 }
 
-a { color: inherit; text-decoration: none; }
+a {
+  color: inherit;
+  text-decoration: none;
+}
 
-/* ===========================
+/* =========================
    BASE LAYOUT
-   =========================== */
+   ========================= */
 
 /* auth layout */
 .pageCenter {
@@ -54,11 +72,18 @@ a { color: inherit; text-decoration: none; }
   gap: 18px;
 }
 
-.centerText { text-align: center; }
+.centerText {
+  text-align: center;
+}
 
 .rowRight {
   display: flex;
   justify-content: flex-end;
+}
+
+.rowCenter {
+  display: flex;
+  justify-content: center;
 }
 
 .card {
@@ -80,30 +105,44 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* Logo */
-.logoWrap { display: grid; place-items: center; }
-.logoTitle { margin: 0; font-size: 44px; letter-spacing: 0.2px; }
-.logoSub { margin: 4px 0 0 0; font-size: 14px; opacity: 0.75; }
-
-@media (max-width: 420px) {
-  .logoTitle { font-size: 36px; }
-  .card { padding: 20px 18px 18px; }
+.logoWrap {
+  display: grid;
+  place-items: center;
+}
+.logoTitle {
+  margin: 0;
+  font-size: 44px;
+  letter-spacing: 0.2px;
+}
+.logoSub {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  opacity: 0.75;
 }
 
-/* ===========================
+@media (max-width: 420px) {
+  .logoTitle {
+    font-size: 36px;
+  }
+  .card {
+    padding: 20px 18px 18px;
+  }
+}
+
+/* =========================
    AUTH STYLES (SCOPED ONLY)
    Works only on <div className="pageCenter authPage">
-   =========================== */
+   ========================= */
 
 .authPage .field {
   width: 100%;
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid rgba(0,0,0,0.10);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: var(--radius-md);
   padding: 12px 14px;
   background: #fff;
-  
 }
 
 .authPage .field:focus-within {
@@ -117,7 +156,7 @@ a { color: inherit; text-decoration: none; }
   color: #9ca3af;
 }
 
-/* IMPORTANT: This fixes the “box inside box” */
+/* IMPORTANT: fixes “box inside box” */
 .authPage .inputField {
   width: 100%;
   border: none;
@@ -125,7 +164,7 @@ a { color: inherit; text-decoration: none; }
   font-size: 15px;
   background: transparent;
   color: var(--color-text-primary);
-  padding: 2px 0;  
+  padding: 2px 0;
 }
 
 .authPage .textLink {
@@ -136,8 +175,9 @@ a { color: inherit; text-decoration: none; }
   border: none;
   padding: 0;
 }
-
-.authPage .textLink:hover { text-decoration: underline; }
+.authPage .textLink:hover {
+  text-decoration: underline;
+}
 
 .authPage .btnPrimary {
   width: 100%;
@@ -172,7 +212,6 @@ a { color: inherit; text-decoration: none; }
   color: #065f46;
 }
 
-
 .authPage .form {
   display: grid;
   gap: 22px;
@@ -182,17 +221,14 @@ a { color: inherit; text-decoration: none; }
 .authPage .rowRight {
   display: flex;
   justify-content: flex-end;
-  margin-top: -6px;    /* slightly closer to password */
-  margin-bottom: 6px;  /* space before login button */
+  margin-top: -6px;
+  margin-bottom: 6px;
 }
 
-/* ==========================
-   LOGIN PAGE (NEW CLASSES)
-   ========================== */
-
+/* Login page (new classes) */
 .authPage .authStack {
   width: 100%;
-  max-width: 560px; /* wider login box */
+  max-width: 560px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -207,16 +243,15 @@ a { color: inherit; text-decoration: none; }
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 18px; /* gap between email + password + forgot + button */
+  gap: 18px;
 }
 
-/* Forgot password to the right */
 .authPage .authRowRight {
   width: 100%;
   display: flex;
   justify-content: flex-end;
-  margin-top: -8px;  /* closer to password */
-  margin-bottom: 8px; /* gap before button */
+  margin-top: -8px;
+  margin-bottom: 8px;
 }
 
 .authPage .authTitle {
@@ -227,12 +262,18 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: 0.5px;
 }
 
+/* legacy auth title helper */
+.authTitle {
+  text-align: center;
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 800;
+}
 
-/* ===========================
+/* =========================
    ADMIN AREA STYLES
-   =========================== */
+   ========================= */
 
-/* admin app */
 .adminApp {
   min-height: 100vh;
   background: var(--color-background);
@@ -249,16 +290,6 @@ a { color: inherit; text-decoration: none; }
   z-index: 1000;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
-
-.iconBtn {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 10px;
-}
-
-.iconBtn:hover { background: rgba(255, 255, 255, 0.35); }
 
 .adminTopTitle {
   margin: 0;
@@ -303,6 +334,19 @@ a { color: inherit; text-decoration: none; }
   z-index: 1000;
 }
 
+/* generic icon button */
+.iconBtn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 10px;
+}
+.iconBtn:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* bottom nav item (admin + shared) */
 .navItem {
   display: flex;
   flex-direction: column;
@@ -312,6 +356,17 @@ a { color: inherit; text-decoration: none; }
   color: #6b7280;
   padding: 6px 8px;
   border-radius: 10px;
+
+  /* button reset (also used on parent) */
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-family: inherit;
+}
+
+.navItem:focus-visible {
+  outline: 2px solid rgba(74, 144, 226, 0.35);
+  outline-offset: 2px;
 }
 
 .navItemActive {
@@ -319,14 +374,27 @@ a { color: inherit; text-decoration: none; }
   background: rgba(74, 144, 226, 0.12);
 }
 
-/* Checklist styles (your current ones) */
-.checklistWrap { max-width: 1180px; margin: 0 auto; }
+/* compatibility: some code uses .navItem.active */
 .navItem.active {
   font-weight: 700;
   background: rgba(255, 255, 255, 0.35);
 }
 
-/* dashboard */
+.navItemIcon {
+  width: 28px;
+  height: 28px;
+}
+@media (max-width: 520px) {
+  .navItemIcon {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+/* =========================
+   DASHBOARD
+   ========================= */
+
 .dashWrap {
   max-width: 980px;
   margin: 0 auto;
@@ -348,23 +416,27 @@ a { color: inherit; text-decoration: none; }
   padding: 14px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   cursor: pointer;
 }
 
 .wideCardIcon {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: rgba(74, 144, 226, 0.12);
+  color: var(--color-primary);
 }
 
 .wideCardTitle {
   font-size: 14px;
   font-weight: 700;
   text-align: left;
+  display: flex;
+  align-items: center;
 }
 
 .dashMainGrid {
@@ -401,11 +473,28 @@ a { color: inherit; text-decoration: none; }
   gap: 10px;
 }
 
+/* checklist button row (used in dashboard too) */
 .checklistRow {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 12px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 6px 4px;
+}
+
+.checklistRow:hover {
+  background: rgba(74, 144, 226, 0.06);
+}
+
+.checklistRow:focus-visible {
+  outline: 2px solid rgba(74, 144, 226, 0.35);
+  outline-offset: 2px;
 }
 
 .checklistLeft {
@@ -422,6 +511,18 @@ a { color: inherit; text-decoration: none; }
   border: 2px solid #111;
   display: grid;
   place-items: center;
+}
+
+.checkCircle svg {
+  display: block;
+}
+
+.checklistRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: #111;
 }
 
 .panelFooter {
@@ -457,16 +558,37 @@ a { color: inherit; text-decoration: none; }
   border: none;
   border-radius: 14px;
   box-shadow: var(--shadow-card);
-  padding: 18px 12px;
   cursor: pointer;
-  display: grid;
-  place-items: center;
-  gap: 10px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 22px 16px;
+  text-align: center;
+}
+
+.quickCardIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(74, 144, 226, 0.12);
+  color: var(--color-primary);
+}
+
+.quickCardIcon svg {
+  width: 30px;
+  height: 30px;
 }
 
 .quickCardTitle {
-  font-weight: 700;
-  font-size: 13px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--color-text);
 }
 
 .pagePad {
@@ -486,7 +608,6 @@ a { color: inherit; text-decoration: none; }
   font-weight: 600;
   cursor: pointer;
 }
-
 .logoutBtn:hover {
   background: #f1f5f9;
 }
@@ -497,7 +618,10 @@ a { color: inherit; text-decoration: none; }
   }
 }
 
-/* checklist list page */
+/* =========================
+   CHECKLIST LIST PAGE
+   ========================= */
+
 .checklistWrap {
   max-width: 980px;
   margin: 0 auto;
@@ -511,14 +635,16 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
   gap: 12px;
   background: #fff;
-  border: 1px solid rgba(0,0,0,0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 16px;
   padding: 14px 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
   margin-bottom: 14px;
 }
 
-.searchIcon { opacity: 0.55; }
+.searchIcon {
+  opacity: 0.55;
+}
 
 .searchInput {
   width: 100%;
@@ -530,22 +656,26 @@ a { color: inherit; text-decoration: none; }
 
 .tableCard {
   background: #fff;
-  border: 1px solid rgba(0,0,0,0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
 }
 
 .tableHeader {
-  background: rgba(207,224,245,0.75);
+  background: rgba(207, 224, 245, 0.75);
   padding: 14px 14px;
   font-weight: 700;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.th { font-size: 15px; }
+.th {
+  font-size: 15px;
+}
 
-.tableBody { display: grid; }
+.tableBody {
+  display: grid;
+}
 
 .tableRow {
   width: 100%;
@@ -554,12 +684,17 @@ a { color: inherit; text-decoration: none; }
   text-align: left;
   padding: 14px 14px;
   cursor: pointer;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.tableRow:hover { background: rgba(74,144,226,0.06); }
+.tableRow:hover {
+  background: rgba(74, 144, 226, 0.06);
+}
 
-.td { font-size: 14px; color: #111; }
+.td {
+  font-size: 14px;
+  color: #111;
+}
 
 .tdCheck {
   display: flex;
@@ -573,10 +708,12 @@ a { color: inherit; text-decoration: none; }
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: rgba(0,0,0,0.06);
+  background: rgba(0, 0, 0, 0.06);
 }
 
-.studentName { font-weight: 700; }
+.studentName {
+  font-weight: 700;
+}
 
 .statusPill {
   display: inline-flex;
@@ -586,14 +723,23 @@ a { color: inherit; text-decoration: none; }
   border-radius: 999px;
   font-weight: 700;
   font-size: 13px;
-  border: 1px solid rgba(0,0,0,0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.statusPill.ok { background: #eaf8ef; }
-.statusPill.warn { background: #fff3d6; }
-.statusPill.neutral { background: #eef2ff; }
+.statusPill.ok {
+  background: #eaf8ef;
+}
+.statusPill.warn {
+  background: #fff3d6;
+}
+.statusPill.neutral {
+  background: #eef2ff;
+}
 
-.emptyState { padding: 18px; color: #6b7280; }
+.emptyState {
+  padding: 18px;
+  color: #6b7280;
+}
 
 .tableFooter {
   display: flex;
@@ -603,7 +749,10 @@ a { color: inherit; text-decoration: none; }
   background: #fff;
 }
 
-.pageBtns { display: flex; gap: 8px; }
+.pageBtns {
+  display: flex;
+  gap: 8px;
+}
 
 .pageBtn {
   width: 44px;
@@ -616,8 +765,8 @@ a { color: inherit; text-decoration: none; }
 }
 
 .pageBtn:disabled {
-  opacity: 0.3;
-  cursor: default;
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 @media (max-width: 820px) {
@@ -642,7 +791,10 @@ a { color: inherit; text-decoration: none; }
   }
 }
 
-/* checklist details */
+/* =========================
+   CHECKLIST DETAILS
+   ========================= */
+
 .ckDWrap {
   max-width: 980px;
   margin: 0 auto;
@@ -794,7 +946,7 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(74, 144, 226, 0.10);
+  background: rgba(74, 144, 226, 0.1);
   font-weight: 900;
   color: #111;
   margin-right: 8px;
@@ -879,12 +1031,12 @@ a { color: inherit; text-decoration: none; }
 
 .ckDDotOk {
   background: rgba(111, 207, 151, 0.95);
-  border-color: rgba(17, 24, 39, 0.10);
+  border-color: rgba(17, 24, 39, 0.1);
 }
 
 .ckDDotWarn {
   background: rgba(242, 201, 76, 0.95);
-  border-color: rgba(17, 24, 39, 0.10);
+  border-color: rgba(17, 24, 39, 0.1);
 }
 
 .ckDDotUp {
@@ -926,7 +1078,6 @@ a { color: inherit; text-decoration: none; }
   cursor: pointer;
   box-shadow: 0 10px 18px rgba(74, 144, 226, 0.25);
 }
-
 .ckDDownloadBtn:hover {
   filter: brightness(0.98);
 }
@@ -948,7 +1099,35 @@ a { color: inherit; text-decoration: none; }
   }
 }
 
-/* calendar */
+/* back button */
+.viewBackBtn {
+  border: none;
+  background: rgba(74, 144, 226, 0.12);
+  color: var(--color-primary-solid);
+  border-radius: 12px;
+  padding: 8px 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  transition: all 0.15s ease;
+}
+.viewBackBtn:hover {
+  background: rgba(74, 144, 226, 0.18);
+}
+.viewBackBtn:active {
+  transform: translateY(1px);
+}
+.viewBackBtn svg {
+  color: var(--color-primary-solid);
+}
+
+/* =========================
+   CALENDAR
+   ========================= */
+
 .calendarWrap {
   max-width: 980px;
   margin: 0 auto;
@@ -1015,7 +1194,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 .calNavBtn {
-  background: rgba(74, 144, 226, 0.10);
+  background: rgba(74, 144, 226, 0.1);
 }
 
 .calendarWeekdays {
@@ -1089,6 +1268,56 @@ a { color: inherit; text-decoration: none; }
   opacity: 0.35;
 }
 
+/* Today + info row */
+.calendarTodayRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 6px 2px;
+  flex-wrap: wrap;
+}
+
+.calendarTodayText,
+.calendarSelectedText {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-text-secondary);
+}
+
+.calendarTodayBold {
+  color: #111;
+}
+
+.calendarInfoRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 6px 6px;
+}
+
+.calendarInfoText {
+  font-size: 13px;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.calendarInfoLabel {
+  color: var(--color-text, #333);
+  font-weight: 600;
+}
+
+.calendarTodayBtn {
+  margin-left: 8px;
+  padding: 6px 10px;
+  border-radius: 12px;
+}
+
+/* highlight today cell (final state keeps both) */
+.calCell.isToday {
+  outline: 2px solid rgba(242, 201, 76, 0.7);
+  background: rgba(242, 201, 76, 0.12);
+}
+
+/* Upcoming */
 .upcomingBlock {
   background: var(--color-surface);
   border-radius: 14px;
@@ -1133,6 +1362,10 @@ a { color: inherit; text-decoration: none; }
   justify-content: space-between;
 }
 
+.upcomingRowBtn:hover {
+  filter: brightness(0.99);
+}
+
 .upcomingLeft {
   display: flex;
   align-items: center;
@@ -1151,6 +1384,13 @@ a { color: inherit; text-decoration: none; }
 
 .upcomingText {
   font-weight: 800;
+}
+.upcomingTitleText {
+  font-weight: 800;
+}
+.upcomingNoteText {
+  color: var(--color-text-muted, #6b7280);
+  font-size: 13px;
 }
 
 .upcomingRight {
@@ -1175,19 +1415,22 @@ a { color: inherit; text-decoration: none; }
   }
 }
 
-/* outline button */
-.btnOutlinePrimary {
-  border: 1.5px solid var(--color-primary-solid);
-  background: #fff;
-  color: var(--color-primary-solid);
-  padding: 8px 14px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s ease;
+/* Calendar action group */
+.calendarActionGroup {
+  display: flex;
+  gap: 8px;
 }
 
+/* Outline button (primary) */
+.btnOutlinePrimary {
+  background: #fff;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
 .btnOutlinePrimary:hover {
   background: rgba(74, 144, 226, 0.08);
 }
@@ -1198,139 +1441,14 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
   gap: 6px;
 }
-
 .btnWithIcon svg {
   color: var(--color-primary-solid);
 }
 
-.calendarActionGroup {
-  display: flex;
-  gap: 8px;
-}
+/* =========================
+   MODAL (Calendar / Generic)
+   ========================= */
 
-/* profile */
-.profileWrap {
-  max-width: 980px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 16px;
-}
-
-.profileListCard {
-  background: var(--color-surface);
-  border-radius: 14px;
-  box-shadow: var(--shadow-card);
-  padding: 14px;
-}
-
-.profileListTitle {
-  font-weight: 900;
-  font-size: 14px;
-  margin-bottom: 10px;
-  color: #111;
-}
-
-.profileRowBtn {
-  width: 100%;
-  border: none;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
-  padding: 10px 12px;
-  margin-bottom: 10px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-align: left;
-}
-
-.profileRowBtn:hover {
-  background: rgba(74, 144, 226, 0.06);
-}
-
-.profileRowBtn.active {
-  outline: 2px solid rgba(74, 144, 226, 0.25);
-  background: rgba(74, 144, 226, 0.10);
-}
-
-.profileRowName {
-  flex: 1;
-  font-weight: 800;
-  color: #111;
-}
-
-.profileAvatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 999px;
-  background: rgba(74, 144, 226, 0.12);
-  display: grid;
-  place-items: center;
-  font-weight: 900;
-  color: #111;
-}
-
-.profileDetailCard {
-  background: var(--color-surface);
-  border-radius: 14px;
-  box-shadow: var(--shadow-card);
-  padding: 14px;
-}
-
-.profileHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 6px 4px 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  margin-bottom: 12px;
-}
-
-.profileHeaderLeft {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.profileHeaderText {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.profileHeaderName {
-  font-weight: 900;
-  font-size: 16px;
-  color: #111;
-}
-
-.profileHeaderEmail {
-  font-weight: 700;
-  font-size: 13px;
-  color: var(--color-text-secondary);
-}
-
-.profileHeaderRight {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  border: 1px solid rgba(0,0,0,0.12);
-  background: #fff;
-  cursor: pointer;
-  width: 100%;
-}
-
-.upcomingRowBtn:hover {
-  filter: brightness(0.99);
-}
-
-/* modal overlay */
 .modalOverlay {
   position: fixed;
   inset: 0;
@@ -1344,7 +1462,6 @@ a { color: inherit; text-decoration: none; }
   -webkit-overflow-scrolling: touch;
 }
 
-/* modal card */
 .modalCard {
   width: min(560px, 100%);
   background: var(--color-surface);
@@ -1373,14 +1490,11 @@ a { color: inherit; text-decoration: none; }
 }
 
 .modalError {
-  background: rgba(235, 87, 87, 0.10);
+  background: rgba(235, 87, 87, 0.1);
   border: 1px solid rgba(235, 87, 87, 0.25);
   color: #111;
   font-weight: 800;
 }
-
-.pageBtn:disabled { opacity: 0.45; cursor: not-allowed; }
-
 
 .modalInput {
   border: 1px solid #e5e7eb;
@@ -1432,94 +1546,10 @@ a { color: inherit; text-decoration: none; }
   line-height: 1.4;
 }
 
-@media (max-width: 820px) {
-  .profileWrap {
-    grid-template-columns: 1fr;
-  }
-}
+/* =========================
+   ADMIN HAMBURGER MENU
+   ========================= */
 
-/* checklist button */
-.checklistRow {
-  width: 100%;
-  border: none;
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  border-radius: 12px;
-}
-
-.checklistRow:hover {
-  background: rgba(74, 144, 226, 0.06);
-}
-
-.checklistRow:focus-visible {
-  outline: 2px solid rgba(74, 144, 226, 0.35);
-  outline-offset: 2px;
-}
-
-.checkCircle svg {
-  display: block;
-}
-
-/* back button */
-.viewBackBtn {
-  border: none;
-  background: rgba(74, 144, 226, 0.12);
-  color: var(--color-primary-solid);
-  border-radius: 12px;
-  padding: 8px 14px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 800;
-  transition: all 0.15s ease;
-}
-
-.viewBackBtn:hover {
-  background: rgba(74, 144, 226, 0.18);
-}
-
-.viewBackBtn:active {
-  transform: translateY(1px);
-}
-
-.viewBackBtn svg {
-  color: var(--color-primary-solid);
-}
-
-/* edit button */
-.profileEditBtn {
-  border: none;
-  background: var(--color-primary-solid);
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  box-shadow: 0 8px 18px rgba(74, 144, 226, 0.25);
-  transition: all 0.15s ease;
-}
-
-.profileEditBtn svg {
-  color: #ffffff;
-}
-
-/* hover */
-.profileEditBtn:hover {
-  filter: brightness(0.96);
-  transform: translateY(-1px);
-}
-
-/* active click */
-.profileEditBtn:active {
-  transform: translateY(1px);
-  box-shadow: 0 4px 10px rgba(74, 144, 226, 0.25);
-}
-
-/* dashboard hamburger menu */
 .adminMenuWrap {
   position: relative;
   display: inline-flex;
@@ -1561,7 +1591,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 .adminHamburgerItem.isActive {
-  background: #4A90E2;
+  background: #4a90e2;
   color: #ffffff;
   box-shadow: 0 10px 18px rgba(74, 144, 226, 0.28);
 }
@@ -1575,7 +1605,7 @@ a { color: inherit; text-decoration: none; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.10);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
 }
 
 .adminHamburgerItem.isActive .adminHamburgerIcon {
@@ -1589,47 +1619,20 @@ a { color: inherit; text-decoration: none; }
   font-weight: 600;
 }
 
-/* Parent Pages style */
+/* =========================
+   PARENT APP (FINAL MERGED)
+   ========================= */
 
-/* parent bottom nav fixes */
-.navItem {
-  border: none;
-  background: transparent;
-  width: 100%;
-  font-family: inherit;
-}
-
-.navItem:focus-visible {
-  outline: 2px solid rgba(74, 144, 226, 0.35);
-  outline-offset: 2px;
-}
-
-.navItemIcon {
-  width: 28px;
-  height: 28px;
-}
-
-@media (max-width: 520px) {
-  .navItemIcon {
-    width: 26px;
-    height: 26px;
-  }
-}
-
-/* Parent Page */
-/** parent app layout */
 .parentApp {
   min-height: 100vh;
   background: var(--color-background);
 }
 
-/** parent top bar */
 .parentTopBar {
   height: 56px;
   background: #cfe0f5;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 0 14px;
   position: sticky;
   top: 0;
@@ -1653,7 +1656,6 @@ a { color: inherit; text-decoration: none; }
   font-weight: 800;
   color: #111;
 }
-
 .parentTopBtn:hover {
   background: rgba(255, 255, 255, 0.8);
 }
@@ -1666,107 +1668,13 @@ a { color: inherit; text-decoration: none; }
 .parentTopTitle {
   margin: 0;
   font-size: 18px;
-  font-weight: 800;
-  color: #111;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.parentTopRight {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.parentUserName {
-  font-size: 12px;
-  font-weight: 700;
-  color: #111;
-}
-
-.parentAvatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.15);
-}
-
-/** parent content padding */
-.parentContent {
-  padding: 16px 14px 92px;
-}
-
-/** parent bottom nav */
-.parentBottomNav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 76px;
-  background: #cfe0f5;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  padding: 10px 10px 8px;
-  gap: 6px;
-  z-index: 1000;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.parentNavItem {
-  text-decoration: none;
-  color: #111;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  padding: 10px 6px;
-  font-weight: 700;
-  background: transparent;
-}
-
-.parentNavItem.active {
-  background: rgba(255, 255, 255, 0.35);
-}
-
-.parentNavLabel {
-  font-size: 12px;
-}
-
-@media (max-width: 520px) {
-  .parentNavLabel {
-    font-size: 11px;
-  }
-
-  .parentTopTitle {
-    font-size: 16px;
-  }
-}
-
-/* parent app layout */
-.parentApp {
-  min-height: 100vh;
-  background: var(--color-background);
-}
-
-.parentTopBar {
-  height: 56px;
-  background: #cfe0f5;
-  display: flex;
-  align-items: center;
-  padding: 0 14px;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.parentTopTitle {
-  margin: 0;
-  font-size: 18px;
   font-weight: 700;
   margin-left: 8px;
   flex: 1;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .parentUser {
@@ -1778,6 +1686,7 @@ a { color: inherit; text-decoration: none; }
 .parentUserName {
   font-size: 12px;
   color: var(--color-text-primary);
+  font-weight: 700;
 }
 
 .parentAvatar {
@@ -1847,7 +1756,7 @@ a { color: inherit; text-decoration: none; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.10);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
 }
 
 .parentHamburgerItem.isActive .parentHamburgerIcon {
@@ -1887,6 +1796,8 @@ a { color: inherit; text-decoration: none; }
   font-size: 12px;
   padding: 8px 6px;
   border-radius: 12px;
+  font-weight: 700;
+  background: transparent;
 }
 
 .parentNavItem.active {
@@ -1903,45 +1814,259 @@ a { color: inherit; text-decoration: none; }
   font-size: 12px;
 }
 
-/* dashboard icons */
-.quickCardIcon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  background: rgba(74, 144, 226, 0.12);
-}
-
-.checklistRight {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 700;
-  color: #111;
-}
-
 @media (max-width: 520px) {
   .parentNavIcon {
     width: 26px;
     height: 26px;
   }
+  .parentNavLabel {
+    font-size: 11px;
+  }
+  .parentTopTitle {
+    font-size: 16px;
+  }
 }
 
-/* auth */
-.rowCenter {
+/* =========================
+   PROFILE (ADMIN) - FINAL
+   ========================= */
+
+.profileWrap {
+  max-width: 980px;
+  margin: 0 auto;
+
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.profileListCard,
+.profileDetailCard {
+  background: var(--color-card);
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.06);
+}
+
+.profileListCard {
+  padding: 14px;
+  position: sticky;
+  top: 88px;
+  height: fit-content;
+}
+
+.profileListTitle {
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 10px;
+}
+
+.profileRowBtn {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 44px 1fr 18px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  background: rgba(249, 250, 251, 0.7);
+  margin-bottom: 10px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.profileRowBtn:hover {
+  border-color: rgba(74, 144, 226, 0.25);
+  background: rgba(74, 144, 226, 0.06);
+}
+
+.profileRowBtn.active {
+  border-color: rgba(74, 144, 226, 0.35);
+  background: rgba(74, 144, 226, 0.1);
+}
+
+.profileRowName {
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: left;
+  flex: 1;
+}
+
+.profileAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
   display: flex;
+  align-items: center;
   justify-content: center;
+  background: rgba(74, 144, 226, 0.12);
+  color: var(--color-primary);
+  font-size: 18px;
+  font-weight: 900;
 }
 
-.authTitle {
-  text-align: center;
-  margin: 0 0 8px;
-  font-size: 28px;
+.profileDetailCard {
+  padding: 18px;
+}
+
+.profileHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+  margin-bottom: 14px;
+}
+
+.profileHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profileHeaderText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profileHeaderName {
+  font-size: 18px;
   font-weight: 800;
+  color: var(--color-text);
 }
 
-/* Admin Contact page */
+.profileHeaderEmail {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.profileHeaderRight {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #fff;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* edit button */
+.profileEditBtn {
+  border: none;
+  background: var(--color-primary-solid);
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(74, 144, 226, 0.25);
+  transition: all 0.15s ease;
+}
+
+.profileEditBtn svg {
+  color: #ffffff;
+}
+
+.profileEditBtn:hover {
+  filter: brightness(0.96);
+  transform: translateY(-1px);
+}
+
+.profileEditBtn:active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 10px rgba(74, 144, 226, 0.25);
+}
+
+/* Info rows */
+.profileInfoRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  background: rgba(249, 250, 251, 0.75);
+  margin-bottom: 10px;
+}
+
+.profileInfoLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.profileInfoIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(74, 144, 226, 0.12);
+  color: var(--color-primary);
+  flex: 0 0 auto;
+}
+
+.profileInfoLabel {
+  font-weight: 700;
+  color: var(--color-text);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.profileInfoValue {
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 14px;
+  text-align: right;
+  max-width: 420px;
+  word-break: break-word;
+}
+
+/* Edit area */
+.profileEditCard {
+  margin-top: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  background: rgba(249, 250, 251, 0.7);
+  padding: 14px;
+}
+
+@media (max-width: 900px) {
+  .profileWrap {
+    grid-template-columns: 1fr;
+  }
+  .profileListCard {
+    position: static;
+  }
+  .profileInfoRow {
+    grid-template-columns: 1fr;
+  }
+  .profileInfoValue {
+    text-align: left;
+  }
+}
+
+@media (max-width: 820px) {
+  .profileWrap {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================
+   CONTACT (ADMIN)
+   ========================= */
+
 .contactWrap {
   max-width: 920px;
   margin: 0 auto;
@@ -2027,7 +2152,10 @@ a { color: inherit; text-decoration: none; }
   }
 }
 
-/* Tuition Fees page */
+/* =========================
+   TUITION FEES
+   ========================= */
+
 .feesWrap {
   max-width: 1100px;
   margin: 0 auto;
@@ -2083,7 +2211,7 @@ a { color: inherit; text-decoration: none; }
   color: var(--color-error, #eb5757);
 }
 
-/* Table */
+/* table */
 .feesTableWrap {
   overflow-x: auto;
   background: var(--color-surface, #ffffff);
@@ -2116,7 +2244,10 @@ a { color: inherit; text-decoration: none; }
   background: rgba(0, 0, 0, 0.02);
 }
 
-/* Documents page */
+/* =========================
+   DOCUMENTS
+   ========================= */
+
 .docsWrap {
   max-width: 1100px;
   margin: 0 auto;
@@ -2175,7 +2306,7 @@ a { color: inherit; text-decoration: none; }
   color: var(--color-primary-solid, #4a90e2);
 }
 
-/* Document detail */
+/* detail */
 .docsTop {
   display: flex;
   justify-content: space-between;
@@ -2278,7 +2409,10 @@ a { color: inherit; text-decoration: none; }
   }
 }
 
-/* News & Events */
+/* =========================
+   NEWS & EVENTS
+   ========================= */
+
 .newsWrap {
   max-width: 1150px;
   margin: 0 auto;
@@ -2360,7 +2494,6 @@ a { color: inherit; text-decoration: none; }
   line-height: 1;
 }
 
-/* News details */
 .newsDetailTop {
   display: flex;
   justify-content: flex-start;
@@ -2396,7 +2529,6 @@ a { color: inherit; text-decoration: none; }
   color: var(--color-text-primary, #333333);
 }
 
-/* Responsive */
 @media (max-width: 980px) {
   .newsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2417,8 +2549,9 @@ a { color: inherit; text-decoration: none; }
   }
 }
 
-
-/* Payments Overview (admin) */
+/* =========================
+   PAYMENTS (ADMIN)
+   ========================= */
 
 .payments-wide {
   max-width: 980px;
@@ -2440,6 +2573,11 @@ a { color: inherit; text-decoration: none; }
   font-weight: 600;
   color: var(--color-text-primary);
   margin-bottom: 10px;
+}
+
+.paymentsRowWrap {
+  display: flex;
+  flex-direction: column;
 }
 
 .payments-row {
@@ -2481,6 +2619,20 @@ a { color: inherit; text-decoration: none; }
 .empty-state {
   padding: 16px 10px;
   color: var(--color-text-secondary);
+}
+
+/* inline detail under clicked row */
+.payments-inline-detail {
+  margin: 10px 0 14px;
+  padding: 18px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.paymentsDueDateField {
+  grid-column: 1 / -1;
 }
 
 .payments-detail-card {
@@ -2580,21 +2732,23 @@ a { color: inherit; text-decoration: none; }
   background: rgba(74, 144, 226, 0.06);
 }
 
+/* final btn-danger (kept last to match your cascade) */
 .btn-danger {
-  border: 1px solid rgba(235, 87, 87, 0.35);
-  background: #ffffff;
-  color: var(--color-error, #eb5757);
+  background-color: rgba(235, 87, 87, 0.08);
+  color: #eb5757;
+  border: 1px solid rgba(235, 87, 87, 0.3);
   border-radius: 12px;
-  padding: 10px 14px;
-  cursor: pointer;
+  padding: 10px 18px;
   font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
 }
 
 .btn-danger:hover {
-  background: rgba(235, 87, 87, 0.06);
+  background-color: rgba(235, 87, 87, 0.15);
+  transform: translateY(-1px);
 }
 
-/* Mobile */
 @media (max-width: 720px) {
   .payments-table-head {
     display: none;
@@ -2614,7 +2768,7 @@ a { color: inherit; text-decoration: none; }
   }
 }
 
-/* Button Row */
+/* Button row helpers */
 .button-row {
   display: flex;
   gap: 12px;
@@ -2638,27 +2792,9 @@ a { color: inherit; text-decoration: none; }
   transform: translateY(-1px);
 }
 
-/* Button (Delete) */
-.btn-danger {
-  background-color: rgba(235, 87, 87, 0.08);
-  color: #eb5757;
-  border: 1px solid rgba(235, 87, 87, 0.3);
-  border-radius: 12px;
-  padding: 10px 18px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.btn-danger:hover {
-  background-color: rgba(235, 87, 87, 0.15);
-  transform: translateY(-1px);
-}
-
-/* ==========================
-   Enrollment Overview (Admin)
-   Read-only (no add/edit/delete)
-   ========================== */
+/* =========================
+   ENROLLMENT OVERVIEW (ADMIN)
+   ========================= */
 
 .eoWrap {
   max-width: 1150px;
@@ -2685,10 +2821,10 @@ a { color: inherit; text-decoration: none; }
   gap: 14px;
   flex-wrap: wrap;
   background: #fff;
-  border: 1px solid rgba(0,0,0,0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 16px;
   padding: 14px 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
 }
 
 .eoStatusGroup {
@@ -2749,19 +2885,14 @@ a { color: inherit; text-decoration: none; }
 }
 
 .eoTableHeader {
-  background: rgba(207,224,245,0.75);
+  background: rgba(207, 224, 245, 0.75);
   padding: 12px 14px;
   display: grid;
   grid-template-columns: 72px 2.2fr 2fr 1fr 1.2fr;
   gap: 12px;
   font-weight: 900;
   color: #111;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-}
-
-.eoThNo {
-  display: flex;
-  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .eoRow {
@@ -2770,12 +2901,12 @@ a { color: inherit; text-decoration: none; }
   gap: 12px;
   align-items: center;
   padding: 14px 14px;
-  border-top: 1px solid rgba(0,0,0,0.06);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
   background: #ffffff;
 }
 
 .eoRow:hover {
-  background: rgba(74,144,226,0.06);
+  background: rgba(74, 144, 226, 0.06);
 }
 
 .eoTd {
@@ -2821,7 +2952,6 @@ a { color: inherit; text-decoration: none; }
   color: #111;
 }
 
-/* Responsive */
 @media (max-width: 820px) {
   .eoTableHeader {
     display: none;
@@ -2843,208 +2973,178 @@ a { color: inherit; text-decoration: none; }
   }
 }
 
-/* Payments detail inline under clicked row */
-.payments-inline-detail {
-  margin: 10px 0 14px;
-  background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  padding: 16px;
-}
+/* =========================
+   PENDING TASKS (Dashboard)
+   ========================= */
 
-/* Calendar - Due Soon panel */
-.calendarDueSoon {
-  background: var(--color-surface);
-  border-radius: 14px;
-  box-shadow: var(--shadow-card);
-  padding: 14px;
-}
-
-.calendarDueSoonTop {
+.pendingStepsWrap {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 6px;
+}
+
+.pendingStep {
+  display: grid;
+  grid-template-columns: 22px 1fr;
   gap: 12px;
-  margin-bottom: 10px;
+  align-items: flex-start;
 }
 
-.calendarDueSoonTitle {
-  font-weight: 900;
-  color: #111;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.pendingStepLeft {
+  position: relative;
+  width: 22px;
+  display: flex;
+  justify-content: center;
 }
 
-.calendarDueSoonCount {
-  min-width: 28px;
-  height: 22px;
+.pendingStepDot {
+  width: 12px;
+  height: 12px;
   border-radius: 999px;
-  background: rgba(74, 144, 226, 0.14);
+  background: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.18);
+  margin-top: 6px;
+}
+
+.pendingStepLine {
+  position: absolute;
+  top: 22px;
+  bottom: -16px;
+  width: 2px;
+  background: rgba(74, 144, 226, 0.25);
+  border-radius: 999px;
+}
+
+.pendingStep:last-child .pendingStepLine {
+  display: none;
+}
+
+.pendingStepBody {
+  background: var(--color-card);
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 6px 18px rgba(17, 24, 39, 0.06);
+}
+
+.pendingStepHeader {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.pendingStepBadge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: 900;
-  padding: 0 8px;
-}
-
-.calendarDueSoonSub {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--color-text-secondary);
-}
-
-.calendarDueSoonEmpty {
-  padding: 10px 2px;
-  font-weight: 700;
-  color: var(--color-text-secondary);
-}
-
-.calendarDueSoonList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.calendarDueSoonItem {
-  width: 100%;
-  text-align: left;
-  border: none;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
-  padding: 12px 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.calendarDueSoonItem:hover {
-  background: rgba(74, 144, 226, 0.06);
-}
-
-.calendarDueSoonLeft {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-
-.calendarDueSoonBadge {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  padding: 6px 10px;
+  height: 24px;
+  padding: 0 10px;
   border-radius: 999px;
-  background: rgba(242, 201, 76, 0.22);
-  font-weight: 900;
-  font-size: 12px;
-  color: #111;
-}
-
-.calendarDueSoonName {
-  font-weight: 900;
-  color: #111;
-}
-
-.calendarDueSoonNote {
-  font-weight: 700;
-  color: var(--color-text-secondary);
-  font-size: 12px;
-}
-
-.calendarDueSoonDate {
-  font-weight: 800;
-  color: #111;
-  opacity: 0.7;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-/* Small extra notif row */
-.calendarNotifMuted {
-  opacity: 0.9;
-  gap: 8px;
-  margin-left: 10px;
-}
-
-.calendarNotifLabel {
-  font-size: 12px;
-  font-weight: 800;
-  color: #111;
-  opacity: 0.75;
-}
-
-.notifBadgeLight {
-  background: rgba(17, 24, 39, 0.10);
-  color: #111;
-}
-
-/* Quick Add Templates (Calendar) */
-.quickTemplateRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin: 8px 0 10px;
-}
-
-.quickTemplateLabel {
-  font-size: 12px;
-  font-weight: 900;
-  color: #111;
-  opacity: 0.85;
-}
-
-.quickTemplateBtns {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.quickTemplateBtn {
-  border: none;
   background: rgba(74, 144, 226, 0.12);
-  color: #111;
-  border-radius: 999px;
-  padding: 10px 14px;
+  color: var(--color-primary);
+  font-weight: 700;
   font-size: 12px;
-  font-weight: 900;
+  letter-spacing: 0.6px;
+}
+
+.pendingStepText {
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+@media (max-width: 520px) {
+  .pendingStepBody {
+    padding: 12px;
+  }
+  .pendingStepText {
+    font-size: 13px;
+  }
+}
+
+/* =========================
+   CHECKLIST LIST GRID HELPERS
+   ========================= */
+
+.checklistTopBar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.checklistHeaderGrid {
+  display: grid;
+  grid-template-columns: 40px 1.5fr 1.5fr 1fr 1fr auto;
+  align-items: center;
+}
+
+.checklistRowGrid {
+  display: grid;
+  grid-template-columns: 40px 1.5fr 1.5fr 1fr 1fr auto;
+  align-items: center;
   cursor: pointer;
 }
 
-.quickTemplateBtn:hover {
-  background: rgba(74, 144, 226, 0.18);
+.thActions {
+  text-align: right;
+  padding-right: 12px;
 }
 
-.quickTemplateBtn:active {
+.checklistNameCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checklistActionsCell {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* small button helper */
+.btnSm {
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+/* soft danger (extra helper) */
+.btnDangerSoft {
+  border: 1px solid rgba(235, 87, 87, 0.35);
+  background: rgba(235, 87, 87, 0.08);
+  color: var(--color-text, #333);
+}
+
+/* =========================
+   GLOBAL BUTTONS (FINAL)
+   ========================= */
+
+.btnPrimary {
+  background: var(--color-primary);
+  color: #fff;
+  border: 1px solid var(--color-primary);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnPrimary:hover {
+  filter: brightness(0.97);
+}
+
+.btnPrimary:active {
   transform: translateY(1px);
 }
 
-/* Payments Overview - inline detail under clicked student */
-.paymentsRowWrap {
-  display: flex;
-  flex-direction: column;
-}
+/* =========================
+   PRINT (Merged all print rules)
+   ========================= */
 
-.payments-inline-detail {
-  margin: 10px 0 14px;
-  padding: 18px;
-  border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.paymentsDueDateField {
-  grid-column: 1 / -1;
-}
-
-/* Print (Documents -> Save as PDF) */
 @media print {
   @page {
     size: A4;
@@ -3055,76 +3155,25 @@ a { color: inherit; text-decoration: none; }
     background: #ffffff;
   }
 
-  .adminTopBar,
-  .adminBottomNav,
-  .parentTopBar,
-  .parentBottomNav {
-    display: none !important;
-  }
-
-  .pagePad {
-    box-shadow: none !important;
-    padding: 0 !important;
-    background: #ffffff !important;
-  }
-
-  .docPaper {
-    box-shadow: none !important;
-  }
-}
-
-/* Calendar - Today row + today highlight */
-.calendarTodayRow {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 6px 2px;
-  flex-wrap: wrap;
-}
-
-.calendarTodayText,
-.calendarSelectedText {
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--color-text-secondary);
-}
-
-.calendarTodayBold {
-  color: #111;
-}
-
-.calendarTodayBtn {
-  padding: 8px 12px;
-  border-radius: 12px;
-}
-
-/* highlight today cell */
-.calCell.isToday {
-  outline: 2px solid rgba(242, 201, 76, 0.55);
-  background: rgba(242, 201, 76, 0.12);
-}
-
-/* Print styles for Documents (save as PDF) */
-@media print {
-  @page {
-    size: A4;
-    margin: 16mm;
-  }
-
   /* remove app chrome */
   header,
   nav,
   footer,
   .adminTopBar,
+  .adminBottomNav,
+  .parentTopBar,
+  .parentBottomNav,
   .footerNav,
   .bottomNav,
   .footerBar,
   .adminFooter,
-  .noPrint {
+  .noPrint,
+  .docsNoPrint,
+  .ckNoPrint {
     display: none !important;
   }
 
-  /* keep only document content */
+  /* base */
   html,
   body {
     background: #fff !important;
@@ -3144,7 +3193,13 @@ a { color: inherit; text-decoration: none; }
     box-shadow: none !important;
   }
 
-  /* paper look for print */
+  /* show only doc content clean */
+  .docsPrintRoot {
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
   .docPaper {
     border: none !important;
     border-radius: 0 !important;
@@ -3216,566 +3271,339 @@ a { color: inherit; text-decoration: none; }
     border-bottom: 1px solid #999 !important;
     height: 18px !important;
   }
+
+  /* Checklist PDF isolate */
+  body * {
+    visibility: hidden !important;
+  }
+
+  .ckPrintRoot,
+  .ckPrintRoot * {
+    visibility: visible !important;
+  }
+
+  .ckPrintRoot {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
 }
 
-/* buttons */
-.btnPrimary {
-  background: var(--color-primary);
-  color: #fff;
-  border: 1px solid var(--color-primary);
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
+/* =========================
+   Checklist - action buttons layout
+   Keep buttons in a clean row and wrap on small screens
+   ========================= */
+
+/* Row that contains "Current Step" + buttons */
+.ckDActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
 }
 
-.btnPrimary:hover {
-  filter: brightness(0.97);
+/* Left text (Current Step) */
+.ckDCurrentStepText {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
 }
 
-.btnPrimary:active {
-  transform: translateY(1px);
+/* Button group */
+.ckDBtnRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap; /* allow wrap instead of stacking badly */
 }
 
-.btnOutlinePrimary {
-  background: #fff;
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
+/* Make buttons consistent height */
+.ckDBtnRow .btnSm,
+.ckDBtnRow .ckDDownloadBtn {
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.btnOutlinePrimary:hover {
-  background: rgba(74, 144, 226, 0.08);
+/* Make the PDF button look like a main action but not too huge */
+.ckDBtnRow .ckDDownloadBtn {
+  padding: 0 14px;
 }
 
-/* calendar small UI */
-.calendarInfoRow {
+/* Responsive: stack nicely on small screens */
+@media (max-width: 720px) {
+  .ckDActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ckDCurrentStepText {
+    justify-content: flex-start;
+  }
+
+  .ckDBtnRow {
+    justify-content: stretch;
+  }
+
+  .ckDBtnRow .btnSm,
+  .ckDBtnRow .ckDDownloadBtn {
+    width: 100%; /* full width buttons on mobile */
+  }
+}
+
+/* ===== Calendar (scoped, do not affect other pages) ===== */
+
+.calendarHintRow {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 6px 6px;
+  padding: 10px 6px 8px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  margin-bottom: 8px;
 }
 
-.calendarInfoText {
-  font-size: 13px;
-  color: var(--color-text-muted, #6b7280);
+.calendarHintLabel {
+  font-weight: 900;
+  color: #111;
+  margin-right: 6px;
 }
 
-.calendarInfoLabel {
-  color: var(--color-text, #333);
-  font-weight: 600;
+.calendarWrap .btnOutlinePrimary {
+  /* keep outline button readable only in calendar page */
+  color: var(--color-primary-solid);
+  border-color: rgba(74, 144, 226, 0.45);
 }
 
-.calendarTodayBtn {
-  margin-left: 8px;
-  padding: 6px 10px;
+.calendarWrap .btnOutlinePrimary:hover {
+  background: rgba(74, 144, 226, 0.08);
+}
+
+.calendarWrap .iconBtn.calNavBtn {
+  background: rgba(74, 144, 226, 0.08);
+}
+
+.calendarWrap .iconBtn.calNavBtn:hover {
+  background: rgba(74, 144, 226, 0.14);
+}
+
+/* grid tweaks */
+.calendarGrid {
+  gap: 2px;
+}
+
+.calCell {
+  border: 1px solid transparent;
+}
+
+.calCell.isSelected {
+  border-color: rgba(74, 144, 226, 0.25);
 }
 
 .calCell.isToday {
-  outline: 2px solid rgba(242, 201, 76, 0.7);
+  border-color: rgba(242, 201, 76, 0.7);
 }
 
-/* due soon block */
+/* loading text */
+.calendarLoading {
+  padding: 10px 2px;
+  font-weight: 800;
+  color: var(--color-text-secondary);
+}
+
+/* ===== Due Soon ===== */
 .dueSoonBlock {
-  background: #fff;
-  border-radius: 16px;
+  background: var(--color-surface);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
   padding: 14px;
-  margin-top: 14px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
 }
 
 .dueSoonHeader {
   display: flex;
+  align-items: baseline;
   justify-content: space-between;
-  align-items: center;
   gap: 12px;
   margin-bottom: 10px;
+  flex-wrap: wrap;
 }
 
 .dueSoonTitle {
-  font-weight: 800;
-  display: flex;
-  gap: 8px;
+  font-size: 18px;
+  font-weight: 900;
+  color: #111;
+  display: inline-flex;
   align-items: center;
+  gap: 10px;
 }
 
-.dueSoonHint {
+.dueSoonMeta {
   font-size: 12px;
-  color: var(--color-text-muted, #6b7280);
+  font-weight: 800;
+  color: var(--color-text-secondary);
 }
 
 .dueSoonRow {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px;
-  border: 1px solid rgba(0,0,0,0.06);
+  background: #fff;
   border-radius: 12px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
   margin-top: 10px;
 }
 
-.dueSoonTag {
-  display: inline-flex;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(242, 201, 76, 0.35);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.dueSoonName {
-  margin-top: 6px;
-  font-weight: 800;
-}
-
-.dueSoonNote {
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--color-text-muted, #6b7280);
-}
-
-.dueSoonAuto {
-  color: var(--color-text-muted, #6b7280);
-  font-weight: 700;
-}
-
-.dueSoonDate {
-  font-size: 12px;
-  color: var(--color-text-muted, #6b7280);
-}
-
-/* quick add */
-.quickAddRow {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
-
-.quickAddLabel {
-  font-size: 13px;
-  color: var(--color-text-muted, #6b7280);
-  font-weight: 700;
-}
-
-.quickAddList {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.quickAddBtn {
-  border: 1px solid rgba(0,0,0,0.08);
-  background: rgba(74, 144, 226, 0.10);
-  color: var(--color-text, #333);
-  padding: 8px 12px;
-  border-radius: 999px;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.quickAddBtn:hover {
-  filter: brightness(0.98);
-}
-
-/* tags in event row */
-.eventSourceTag {
-  display: inline-flex;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 800;
-  border: 1px solid rgba(0,0,0,0.08);
-  margin-right: 10px;
-}
-
-.eventSourceTag.auto {
-  background: rgba(242, 201, 76, 0.25);
-}
-
-.eventSourceTag.manual {
-  background: rgba(111, 207, 151, 0.20);
-}
-
-.upcomingTitleText {
-  font-weight: 800;
-}
-
-.upcomingNoteText {
-  color: var(--color-text-muted, #6b7280);
-  font-size: 13px;
-}
-
-/* documents print (Option B) */
-@media print {
-  @page {
-    size: A4;
-    margin: 16mm;
-  }
-
-  body {
-    background: #fff;
-  }
-
-  /* hide app chrome */
-  header,
-  nav,
-  .adminTopBar,
-  .footerNav,
-  .docsNoPrint {
-    display: none !important;
-  }
-
-  /* show only doc content clean */
-  .docsPrintRoot {
-    box-shadow: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  .docPaper {
-    box-shadow: none !important;
-    border: none !important;
-  }
-}
-
-
-
-/* =========================
-   Pending Tasks - Stepper
-   (Dashboard only)
-   ========================= */
-
-.pendingStepsWrap {
+.dueSoonLeft {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding-top: 6px;
+  gap: 6px;
 }
 
-.pendingStep {
-  display: grid;
-  grid-template-columns: 22px 1fr;
-  gap: 12px;
-  align-items: flex-start;
-}
-
-.pendingStepLeft {
-  position: relative;
-  width: 22px;
-  display: flex;
-  justify-content: center;
-}
-
-.pendingStepDot {
-  width: 12px;
-  height: 12px;
-  border-radius: 999px;
-  background: var(--color-primary);
-  box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.18);
-  margin-top: 6px;
-}
-
-.pendingStepLine {
-  position: absolute;
-  top: 22px;
-  bottom: -16px;
-  width: 2px;
-  background: rgba(74, 144, 226, 0.25);
-  border-radius: 999px;
-}
-
-/* remove line for last step */
-.pendingStep:last-child .pendingStepLine {
-  display: none;
-}
-
-.pendingStepBody {
-  background: var(--color-card);
-  border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 14px;
-  padding: 12px 14px;
-  box-shadow: 0 6px 18px rgba(17, 24, 39, 0.06);
-}
-
-.pendingStepHeader {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-
-.pendingStepBadge {
+.dueSoonBadge {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   height: 24px;
   padding: 0 10px;
   border-radius: 999px;
-  background: rgba(74, 144, 226, 0.12);
-  color: var(--color-primary);
-  font-weight: 700;
+  background: rgba(242, 201, 76, 0.18);
+  color: #111;
+  font-weight: 900;
   font-size: 12px;
-  letter-spacing: 0.6px;
+  width: fit-content;
 }
 
-.pendingStepText {
-  color: var(--color-text);
-  font-size: 14px;
-  line-height: 1.45;
+.dueSoonName {
+  font-weight: 900;
+  color: #111;
 }
 
-@media (max-width: 520px) {
-  .pendingStepBody {
-    padding: 12px;
-  }
-  .pendingStepText {
-    font-size: 13px;
-  }
-}
-
-/*    Dashboard menu icons
-   (WideCard + QuickCard) */
-
-.wideCard {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.wideCardIcon {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(74, 144, 226, 0.12);
-  color: var(--color-primary);
-}
-
-/* QuickCard */
-.quickCard {
-  display: flex;
-  flex-direction: column;     
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  padding: 22px 16px;
-  text-align: center;
-}
-
-.quickCardIcon {
-  width: 64px;                
-  height: 64px;
-  border-radius: 18px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(74, 144, 226, 0.12);
-  color: var(--color-primary);
-}
-
-.quickCardIcon svg {
-  width: 30px;
-  height: 30px;
-}
-
-.quickCardTitle {
-  font-weight: 600;
-  font-size: 15px;
-  color: var(--color-text);
-}
-
-/* keep wideCard title aligned */
-.wideCardTitle {
-  display: flex;
-  align-items: center;
-}
-
-/* Profile Page (Admin)
-   Fix spacing + clean layout */
-
-.profileWrap {
-  display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 18px;
-  align-items: start;
-}
-
-.profileListCard,
-.profileDetailCard {
-  background: var(--color-card);
-  border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 18px;
-  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.06);
-}
-
-.profileListCard {
-  padding: 14px;
-  position: sticky;
-  top: 88px; 
-  height: fit-content;
-}
-
-.profileListTitle {
+.dueSoonNote {
+  color: var(--color-text-secondary);
   font-weight: 700;
-  color: var(--color-text);
-  margin-bottom: 10px;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
-.profileRowBtn {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 44px 1fr 18px;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 12px;
-  border-radius: 14px;
-  border: 1px solid transparent;
-  background: rgba(249, 250, 251, 0.7);
-  margin-bottom: 10px;
-  cursor: pointer;
+.dueSoonDate {
+  font-weight: 900;
+  color: #111;
+  font-size: 12px;
+  opacity: 0.9;
+  white-space: nowrap;
 }
 
-.profileRowBtn:hover {
-  border-color: rgba(74, 144, 226, 0.25);
-  background: rgba(74, 144, 226, 0.06);
+.dueSoonAuto {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--color-text-secondary);
 }
 
-.profileRowBtn.active {
-  border-color: rgba(74, 144, 226, 0.35);
-  background: rgba(74, 144, 226, 0.10);
+/* ===== Upcoming ===== */
+.upcomingHeader {
+  align-items: flex-start;
 }
 
-.profileRowName {
-  font-weight: 600;
-  color: var(--color-text);
-  text-align: left;
-}
-
-.profileAvatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(74, 144, 226, 0.12);
-  color: var(--color-primary);
-  font-size: 18px;
-}
-
-.profileDetailCard {
-  padding: 18px;
-}
-
-.profileHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 14px;
-  border-bottom: 1px solid rgba(17, 24, 39, 0.06);
-  margin-bottom: 14px;
-}
-
-.profileHeaderLeft {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.profileHeaderText {
+.upcomingHeadLeft {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.profileHeaderName {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--color-text);
-}
-
-.profileHeaderEmail {
-  font-size: 13px;
-  color: var(--color-text-muted);
-}
-
-/* Info rows: icon + label left, value right  */
-.profileInfoRow {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(17, 24, 39, 0.06);
-  background: rgba(249, 250, 251, 0.75);
-  margin-bottom: 10px;
-}
-
-.profileInfoLeft {
-  display: flex;
-  align-items: center;
-  gap: 10px; 
-  min-width: 0;
-}
-
-.profileInfoIcon {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(74, 144, 226, 0.12);
-  color: var(--color-primary);
-  flex: 0 0 auto;
-}
-
-.profileInfoLabel {
-  font-weight: 700;
-  color: var(--color-text);
-  font-size: 13px;
+.upcomingAddBtn {
   white-space: nowrap;
 }
 
-.profileInfoValue {
-  color: var(--color-text);
-  font-weight: 600;
-  font-size: 14px;
-  text-align: right;
-  max-width: 420px;
-  word-break: break-word;
+.upcomingRow {
+  gap: 12px;
 }
 
-/* Edit area */
-.profileEditCard {
-  margin-top: 14px;
-  border-radius: 18px;
-  border: 1px solid rgba(17, 24, 39, 0.08);
-  background: rgba(249, 250, 251, 0.7);
-  padding: 14px;
+.upcomingNoteText {
+  flex: 1;
+  text-align: left;
+  margin: 0 10px;
+  min-width: 180px;
 }
 
-/* Responsive: stack list on top */
-@media (max-width: 900px) {
-  .profileWrap {
-    grid-template-columns: 1fr;
+/* Quick add */
+.quickAddRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 0 6px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: 10px;
+}
+
+.quickAddLabel {
+  font-weight: 900;
+  color: #111;
+  font-size: 13px;
+}
+
+.quickAddBtns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.quickAddBtn {
+  border: 1px solid rgba(74, 144, 226, 0.35);
+  background: rgba(74, 144, 226, 0.06);
+  color: #111;
+  border-radius: 12px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.quickAddBtn:hover {
+  background: rgba(74, 144, 226, 0.12);
+}
+
+/* modal form spacing (calendar only) */
+.modalForm {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.modalErrorInline {
+  margin-top: 6px;
+}
+
+/* responsive */
+@media (max-width: 720px) {
+  .dueSoonRow {
+    flex-direction: column;
+    align-items: flex-start;
   }
-  .profileListCard {
-    position: static;
+
+  .dueSoonDate {
+    white-space: normal;
   }
-  .profileInfoRow {
-    grid-template-columns: 1fr;
+
+  .upcomingRow {
+    flex-direction: column;
+    align-items: flex-start;
   }
-  .profileInfoValue {
-    text-align: left;
+
+  .upcomingNoteText {
+    margin: 0;
+    min-width: 0;
+  }
+
+  .calendarActionGroup {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 }

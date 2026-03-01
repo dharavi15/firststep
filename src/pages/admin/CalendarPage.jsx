@@ -9,7 +9,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-// storage key for localStorage (manual events only)
+// storage key for localStorage  
 const STORAGE_KEY = "firststep_calendar_events";
 
 // create random id for new event
@@ -30,7 +30,7 @@ function toKey(dateObj) {
   return `${y}-${m}-${d}`;
 }
 
-// create month title like February 2026
+// create month title  
 function monthLabel(dateObj) {
   const m = dateObj.toLocaleString("en-US", { month: "long" });
   const y = dateObj.getFullYear();
@@ -146,6 +146,8 @@ const QUICK_TEMPLATES = [
   { key: "ori", title: "Orientation", note: "Campus visit" },
 ];
 
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 export default function CalendarPage() {
   // today reference
   const todayKey = useMemo(() => toKey(new Date()), []);
@@ -159,7 +161,7 @@ export default function CalendarPage() {
   // manual events (localStorage)
   const [manualEvents, setManualEvents] = useState([]);
 
-  // auto events (from enrollment/payments later)
+  // auto events  
   const [autoEvents, setAutoEvents] = useState([]);
 
   // loading state
@@ -193,12 +195,10 @@ export default function CalendarPage() {
     }
   }, []);
 
-  // (optional) auto events loader
-  // for now it does nothing but stays safe
+  // auto events loader 
   const loadAutoEvents = useCallback(async () => {
     try {
-      // later: fetch enrollments/payments from firestore
-      // now: keep empty, do not break UI
+       
       setAutoEvents([]);
     } catch {
       setError((prev) => prev || "Auto deadlines cannot load.");
@@ -221,7 +221,7 @@ export default function CalendarPage() {
 
   const selectedEvents = useMemo(() => {
     const list = eventMap.get(selected) || [];
-    // auto events first (optional)
+    // auto events first  
     return [...list].sort((a, b) => {
       const aa = a.isAuto ? 0 : 1;
       const bb = b.isAuto ? 0 : 1;
@@ -410,7 +410,7 @@ export default function CalendarPage() {
 
             <button
               type="button"
-              className="btnOutlinePrimary"
+              className="btnOutlinePrimary calendarTodayBtn"
               onClick={goToday}
               title="Go to today"
             >
@@ -419,10 +419,10 @@ export default function CalendarPage() {
           </div>
 
           <div className="calendarNav">
-            <button type="button" className="iconBtn" onClick={prevMonth}>
+            <button type="button" className="iconBtn calNavBtn" onClick={prevMonth}>
               <ChevronLeft size={20} />
             </button>
-            <button type="button" className="iconBtn" onClick={nextMonth}>
+            <button type="button" className="iconBtn calNavBtn" onClick={nextMonth}>
               <ChevronRight size={20} />
             </button>
           </div>
@@ -437,9 +437,17 @@ export default function CalendarPage() {
           </div>
         </div>
 
+        <div className="calendarWeekdays">
+          {WEEKDAYS.map((w) => (
+            <div key={w} className="weekdayCell">
+              {w}
+            </div>
+          ))}
+        </div>
+
         <div className="calendarGrid">
           {grid.map((dt, idx) => {
-            if (!dt) return <div key={idx} className="calCell" />;
+            if (!dt) return <div key={idx} className="calCell isEmpty" />;
 
             const key = toKey(dt);
             const isSelected = key === selected;
@@ -455,8 +463,10 @@ export default function CalendarPage() {
                 }`}
                 onClick={() => onPickDate(dt)}
               >
-                <div>{dt.getDate()}</div>
-                {hasEvents && <span className="calDot" />}
+                <div className="calDayNum">{dt.getDate()}</div>
+                <div className="calDotRow">
+                  {hasEvents && <span className="calDot" />}
+                </div>
               </button>
             );
           })}
@@ -500,12 +510,14 @@ export default function CalendarPage() {
       {/* Upcoming */}
       <div className="upcomingBlock">
         <div className="upcomingHeader">
-          <h3>Up Coming Event</h3>
-          <div>{selectedLabel}</div>
+          <div className="upcomingHeadLeft">
+            <h3 className="upcomingTitle">Up Coming Event</h3>
+            <div className="upcomingDate">{selectedLabel}</div>
+          </div>
 
           <button
             type="button"
-            className="btnOutlinePrimary btnWithIcon"
+            className="btnOutlinePrimary btnWithIcon upcomingAddBtn"
             onClick={openAddModal}
           >
             <Plus size={16} />
@@ -529,7 +541,7 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        {loading && <div>Loading...</div>}
+        {loading && <div className="calendarLoading">Loading...</div>}
 
         {!loading && selectedEvents.length === 0 && (
           <div className="empty-state">No events for this date.</div>
@@ -540,18 +552,18 @@ export default function CalendarPage() {
             <div key={ev.id} className="upcomingRow">
               <div className="upcomingLeft">
                 <CheckCircle2 size={16} />
-                <span>
+                <span className="upcomingTitleText">
                   {ev.title}{" "}
                   {ev.isAuto ? <span className="dueSoonAuto">(auto)</span> : null}
                 </span>
               </div>
 
-              <div>{ev.note}</div>
+              <div className="upcomingNoteText">{ev.note}</div>
 
               <div className="calendarActionGroup">
                 <button
                   type="button"
-                  className="btnOutlinePrimary btnWithIcon"
+                  className="btnOutlinePrimary btnWithIcon btnSm"
                   onClick={() => openEditModal(ev)}
                   disabled={!!ev.isAuto}
                   title={ev.isAuto ? "Auto event cannot edit" : "Edit"}
@@ -562,7 +574,7 @@ export default function CalendarPage() {
 
                 <button
                   type="button"
-                  className="btnOutlinePrimary btnWithIcon"
+                  className="btnOutlinePrimary btnWithIcon btnSm"
                   onClick={() => onDeleteEvent(ev.id)}
                   disabled={!!ev.isAuto}
                   title={ev.isAuto ? "Auto event cannot delete" : "Delete"}
@@ -581,42 +593,55 @@ export default function CalendarPage() {
       {isModalOpen && (
         <div className="modalOverlay">
           <div className="modalCard">
-            <button
-              type="button"
-              className="btnOutlinePrimary"
-              onClick={closeModal}
-            >
-              Close
-            </button>
+            <div className="modalTopRow">
+              <div className="modalTitle">{editId ? "Edit Event" : "Add Event"}</div>
+              <button
+                type="button"
+                className="btnOutlinePrimary btnSm"
+                onClick={closeModal}
+              >
+                Close
+              </button>
+            </div>
 
             <form onSubmit={onSubmitEvent} className="modalForm">
-              <label className="form-label">Date</label>
-              <input
-                className="text-input"
-                type="date"
-                value={formDate}
-                onChange={(e) => setFormDate(e.target.value)}
-              />
+              <div className="form-field">
+                <label className="form-label">Date</label>
+                <input
+                  className="text-input"
+                  type="date"
+                  value={formDate}
+                  onChange={(e) => setFormDate(e.target.value)}
+                />
+              </div>
 
-              <label className="form-label">Title</label>
-              <input
-                className="text-input"
-                value={formTitle}
-                onChange={(e) => setFormTitle(e.target.value)}
-                placeholder="Title"
-              />
+              <div className="form-field">
+                <label className="form-label">Title</label>
+                <input
+                  className="text-input"
+                  value={formTitle}
+                  onChange={(e) => setFormTitle(e.target.value)}
+                  placeholder="Title"
+                />
+              </div>
 
-              <label className="form-label">Note</label>
-              <input
-                className="text-input"
-                value={formNote}
-                onChange={(e) => setFormNote(e.target.value)}
-                placeholder="Note"
-              />
+              <div className="form-field">
+                <label className="form-label">Note</label>
+                <input
+                  className="text-input"
+                  value={formNote}
+                  onChange={(e) => setFormNote(e.target.value)}
+                  placeholder="Note"
+                />
+              </div>
 
-              <button type="submit" className="btnOutlinePrimary">
-                Save
-              </button>
+              <div className="modalActions">
+                <button type="submit" className="btnOutlinePrimary">
+                  Save
+                </button>
+              </div>
+
+              {error && <div className="error-text modalErrorInline">{error}</div>}
             </form>
           </div>
         </div>
