@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import {
   collection,
@@ -50,8 +50,10 @@ function StatusPill({ tone = "neutral", text }) {
 function mapOverallStatusToPill(overallStatus) {
   const s = String(overallStatus || "").trim().toLowerCase();
   if (s === "completed" || s === "done") return { text: "Completed", tone: "ok" };
-  if (s === "pending" || s === "overdue" || s === "late") return { text: "Pending", tone: "warn" };
-  if (s === "upcoming" || s === "inprogress" || s === "in progress") return { text: "Upcoming", tone: "neutral" };
+  if (s === "pending" || s === "overdue" || s === "late")
+    return { text: "Pending", tone: "warn" };
+  if (s === "upcoming" || s === "inprogress" || s === "in progress")
+    return { text: "Upcoming", tone: "neutral" };
   return { text: overallStatus ? overallStatus : "Pending", tone: "neutral" };
 }
 
@@ -101,15 +103,17 @@ export default function ChecklistPage() {
   // Selected student (detail view)
   const [selectedStudentId, setSelectedStudentId] = useState(null);
 
-  // This prevents re-render loops 
-
+  // Keep a snapshot to avoid re-render loops
   const [selectedStudentSnapshot, setSelectedStudentSnapshot] = useState(null);
 
   // Enrollment data (detail view)
   const [enrollment, setEnrollment] = useState(null);
   const [loadingEnrollment, setLoadingEnrollment] = useState(false);
 
-  // demo schoolId 
+  // Printable root (detail view only)
+  const printAreaRef = useRef(null);
+
+  // demo schoolId
   const targetSchoolId = "demo-school";
 
   // Load all students for this school
@@ -192,7 +196,6 @@ export default function ChecklistPage() {
   }
 
   // Open student detail view
-
   function onOpenStudent(studentRow) {
     setSelectedStudentId(studentRow.id);
     setSelectedStudentSnapshot(studentRow);
@@ -206,9 +209,84 @@ export default function ChecklistPage() {
     setEnrollment(null);
   }
 
-  // Print as PDF 
+  /**
+   * Copy styles to iframe so PDF looks like your UI.
+   * Then add a strong print override to prevent "blank page".
+   */
+  const copyAllStylesTo = (targetDoc) => {
+    const nodes = document.querySelectorAll('style, link[rel="stylesheet"]');
+    nodes.forEach((node) => {
+      targetDoc.head.appendChild(node.cloneNode(true));
+    });
+
+    // Strong print override (fix blank PDF)
+    const override = targetDoc.createElement("style");
+    override.innerHTML = `
+      @page { margin: 12mm; }
+      @media print {
+        html, body { background: #fff !important; }
+        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        body * { visibility: visible !important; }
+        body, body * { color: #111 !important; }
+      }
+    `;
+    targetDoc.head.appendChild(override);
+  };
+
+  /**
+   * Print / Save as PDF for CURRENT student checklist detail.
+   * We print from a hidden iframe to avoid main page print CSS issues.
+   */
   function onDownloadPdf() {
-    window.print();
+    if (!printAreaRef.current) return;
+
+    // Create hidden iframe
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    iframe.setAttribute("aria-hidden", "true");
+    document.body.appendChild(iframe);
+
+    const iwin = iframe.contentWindow;
+    const idoc = iframe.contentDocument || iwin.document;
+
+    // Build iframe page
+    idoc.open();
+    idoc.write(`
+      <!doctype html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <title>FirstStep - Checklist</title>
+        </head>
+        <body></body>
+      </html>
+    `);
+    idoc.close();
+
+    // Copy styles + print override
+    copyAllStylesTo(idoc);
+
+    // Copy ONLY the printable detail area into iframe
+    const wrapper = idoc.createElement("div");
+    wrapper.innerHTML = printAreaRef.current.outerHTML;
+    idoc.body.appendChild(wrapper);
+
+    // Wait and print
+    setTimeout(() => {
+      try {
+        iwin.focus();
+        iwin.print();
+      } finally {
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 400);
+      }
+    }, 250);
   }
 
   // Delete student
@@ -226,7 +304,6 @@ export default function ChecklistPage() {
   }
 
   // Ensure enrollment doc exists (doc id = studentId)
-
   async function ensureEnrollmentDoc(studentRow) {
     const enrRef = doc(db, "enrollments", studentRow.id);
     const snap = await getDoc(enrRef);
@@ -256,7 +333,6 @@ export default function ChecklistPage() {
   }
 
   // Load enrollment when selected student changes
-
   useEffect(() => {
     let alive = true;
 
@@ -276,10 +352,7 @@ export default function ChecklistPage() {
         if (!alive) return;
         setEnrollment(null);
       } finally {
-        // Do not "return" inside finally
-        if (alive) {
-          setLoadingEnrollment(false);
-        }
+        if (alive) setLoadingEnrollment(false);
       }
     }
 
@@ -326,9 +399,7 @@ export default function ChecklistPage() {
     }));
   }
 
-  /**
-   * Mark current step as done (increase completedSteps by 1)
-   */
+  // Mark current step as done
   async function onMarkStepDone() {
     const completed = Number(enrollment?.completedSteps ?? 0);
     const total = Number(enrollment?.totalSteps ?? STEP_TEMPLATE.length);
@@ -342,9 +413,7 @@ export default function ChecklistPage() {
     }
   }
 
-  /**
-   * Undo last step (decrease completedSteps by 1)
-   */
+  // Undo last step
   async function onUndoStep() {
     const completed = Number(enrollment?.completedSteps ?? 0);
     if (completed <= 0) return;
@@ -368,14 +437,16 @@ export default function ChecklistPage() {
         : calcPercent(completedCount, totalCount);
 
     const currentStepNo = Math.min(completedCount + 1, totalCount);
-    const nextDeadlineText = enrollment?.nextDeadline ?? getNextDeadlineText(completedCount, totalCount);
+    const nextDeadlineText =
+      enrollment?.nextDeadline ?? getNextDeadlineText(completedCount, totalCount);
     const pill = mapOverallStatusToPill(enrollment?.overallStatus);
 
     // Dynamic step rows
     const steps = buildStepsFromProgress(completedCount, totalCount);
 
     return (
-      <div className="ckDWrap ckPrintRoot">
+      // IMPORTANT: we print ONLY this root (ref)
+      <div className="ckDWrap ckPrintRoot" ref={printAreaRef}>
         <div className="ckDHeader">
           <AvatarEmoji name={selectedStudentSnapshot.name} className="ckDAvatar" />
 
@@ -605,7 +676,6 @@ export default function ChecklistPage() {
                 <div className="td">{row.parent}</div>
                 <div className="td">{row.classYear}</div>
 
-                {/* Simple list status (placeholder) */}
                 <div className="td tdStatus">
                   <StatusPill tone="neutral" text="Pending" />
                 </div>
@@ -644,7 +714,12 @@ export default function ChecklistPage() {
             <button type="button" className="pageBtn" onClick={goPrev} disabled={safePage <= 1}>
               ‹
             </button>
-            <button type="button" className="pageBtn" onClick={goNext} disabled={safePage >= pageCount}>
+            <button
+              type="button"
+              className="pageBtn"
+              onClick={goNext}
+              disabled={safePage >= pageCount}
+            >
               ›
             </button>
           </div>
