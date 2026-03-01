@@ -1,6 +1,6 @@
 // src/pages/home/SchoolLandingPage.jsx
 import { useNavigate } from "react-router-dom";
-import "./schoolLandingPage.css";
+import "./SchoolLandingPage.css";
 import logoImg from "../../assets/firststep-logo.jpg";
 
 export default function SchoolLandingPage() {
