@@ -332,6 +332,9 @@ a {
   background: #fff;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
   z-index: 1000;
+  background: #cfe0f5;
+  background: #cfe0f5;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
 }
 
 /* generic icon button */
@@ -3658,4 +3661,198 @@ a {
     border: none !important;
     background: #ffffff !important;
   }
+}
+
+/* =========================================
+   DASHBOARD (OVERRIDES - scoped to dashWrap only)
+   Paste at END of main.css
+   ========================================= */
+
+.dashWrap .sectionTitle {
+  margin: 10px 0 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #111;
+}
+
+/* top shortcut cards */
+.dashWrap .wideCard {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  padding: 14px 14px;
+  gap: 12px;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+.dashWrap .wideCard:hover {
+  filter: brightness(0.995);
+  transform: translateY(-1px);
+}
+
+.dashWrap .wideCardIcon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: rgba(74, 144, 226, 0.12);
+  color: #111;
+}
+
+.dashWrap .wideCardTitle {
+  font-size: 14px;
+  font-weight: 800;
+  color: #111;
+}
+
+/* give each top card its own icon color like the mock */
+.dashWrap .dashTopGrid .wideCard:nth-child(1) .wideCardIcon {
+  background: rgba(74, 144, 226, 0.14);
+}
+.dashWrap .dashTopGrid .wideCard:nth-child(2) .wideCardIcon {
+  background: rgba(111, 207, 151, 0.18);
+}
+
+/* left panel */
+.dashWrap .panelCard {
+  border-radius: 16px;
+  padding: 14px;
+}
+
+/* panel title row */
+.dashWrap .panelTitle {
+  font-weight: 900;
+  color: #111;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+/* stepper blocks look softer */
+.dashWrap .pendingStepBody {
+  border-radius: 14px;
+  background: #fff;
+}
+
+.dashWrap .pendingStepBadge {
+  background: rgba(74, 144, 226, 0.12);
+  color: #111;
+}
+
+/* Quick actions grid */
+.dashWrap .quickCard {
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  padding: 22px 16px;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+.dashWrap .quickCard:hover {
+  filter: brightness(0.995);
+  transform: translateY(-1px);
+}
+
+/* icon bubble */
+.dashWrap .quickCardIcon {
+  width: 66px;
+  height: 66px;
+  border-radius: 18px;
+  color: #111;
+}
+
+/* match the screenshot-like pastel cards (by order) */
+.dashWrap .quickGrid .quickCard:nth-child(1) {
+  background: rgba(242, 201, 76, 0.22); /* Contact - warm */
+}
+.dashWrap .quickGrid .quickCard:nth-child(1) .quickCardIcon {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.dashWrap .quickGrid .quickCard:nth-child(2) {
+  background: rgba(74, 144, 226, 0.14); /* Tuition - blue */
+}
+.dashWrap .quickGrid .quickCard:nth-child(2) .quickCardIcon {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.dashWrap .quickGrid .quickCard:nth-child(3) {
+  background: rgba(160, 160, 255, 0.18); /* Documents - purple tint */
+}
+.dashWrap .quickGrid .quickCard:nth-child(3) .quickCardIcon {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.dashWrap .quickGrid .quickCard:nth-child(4) {
+  background: rgba(111, 207, 151, 0.18); /* News - green */
+}
+.dashWrap .quickGrid .quickCard:nth-child(4) .quickCardIcon {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.dashWrap .quickCardTitle {
+  font-weight: 800;
+  font-size: 15px;
+  color: #111;
+}
+
+/* mobile spacing tweaks */
+@media (max-width: 520px) {
+  .dashWrap .dashTopGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashWrap .quickGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dashWrap .quickCard {
+    padding: 18px 14px;
+    gap: 12px;
+  }
+
+  .dashWrap .quickCardIcon {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* ===== Dashboard: remove stepper pins (scoped only) ===== */
+.dashWrap .pendingStepLeft {
+  display: none; /* hides the pin + line */
+}
+
+.dashWrap .pendingStep {
+  grid-template-columns: 1fr; /* content full width */
+  gap: 0;
+}
+
+/* make each step card look cleaner */
+.dashWrap .pendingStepBody {
+  border-radius: 16px;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.06);
+  padding: 14px 16px;
+}
+
+/* badge nicer */
+.dashWrap .pendingStepBadge {
+  background: rgba(74, 144, 226, 0.12);
+  color: #111;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+}
+
+/* text spacing */
+.dashWrap .pendingStepText {
+  margin-top: 6px;
+}
+
+/* dashboard (extra style) */
+.dashWrap .panelCard,
+.dashWrap .wideCard,
+.dashWrap .quickCard {
+  background: #ffffff;
+  box-shadow: 0 14px 30px rgba(0,0,0,0.08);
+}
+.dashWrap .pendingStepBadge {
+  background: rgba(74,144,226,0.2);
+  color: #1f2937;
 }

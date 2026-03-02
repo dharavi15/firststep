@@ -84,11 +84,11 @@ export default function DashboardPage() {
     if (view === "documents") return "Documents";
     if (view === "news") return "News & Events";
     if (view === "contact") return "Contact";
-    if (view === "checklist") return "Onboarding Checklist";
+    if (view === "checklist") return "Student Onboarding Process";
     return "Dashboard";
   }, [view]);
 
-  // Admin view 
+  // Admin view
   const onboardingSteps = useMemo(
     () => [
       "Step 1: Providing Information to Prospective Parents",
@@ -142,7 +142,7 @@ export default function DashboardPage() {
   const renderChecklist = () => (
     <div className="pagePad">
       <div className="eventDetailBlock">
-        <div className="eventDetailTitle">Onboarding Checklist</div>
+        <div className="eventDetailTitle">Student Onboarding Process</div>
         <div className="eventDetailDesc">Admin view (text only)</div>
 
         <div className="tableBody tableBodySpaced">
@@ -168,7 +168,7 @@ export default function DashboardPage() {
     return null;
   };
 
-  // Dashboard home 
+  // Dashboard home
   const renderDashboardHome = () => (
     <div className="dashWrap">
       <div className="dashTopGrid">
@@ -186,10 +186,10 @@ export default function DashboardPage() {
 
       <div className="dashMainGrid">
         <section className="panel">
-          <h3 className="sectionTitle">Onboarding Checklist</h3>
+          <h3 className="sectionTitle">Student Onboarding Process</h3>
 
           <div className="panelCard">
-            <div className="panelTitle">Pending Tasks</div>
+            <div className="panelTitle">Application Progress</div>
 
             <div className="pendingStepsWrap">
               {onboardingSteps.map((step, idx) => (
@@ -203,10 +203,26 @@ export default function DashboardPage() {
           <h3 className="sectionTitle">Quick Actions</h3>
 
           <div className="quickGrid">
-            <QuickCard title="Contact" icon={PhoneCall} onClick={() => openView("contact")} />
-            <QuickCard title="Tuition Fees" icon={Coins} onClick={() => openView("tuition")} />
-            <QuickCard title="Documents" icon={FileText} onClick={() => openView("documents")} />
-            <QuickCard title="News & Events" icon={Newspaper} onClick={() => openView("news")} />
+            <QuickCard
+              title="Contact"
+              icon={PhoneCall}
+              onClick={() => openView("contact")}
+            />
+            <QuickCard
+              title="Tuition Fees"
+              icon={Coins}
+              onClick={() => openView("tuition")}
+            />
+            <QuickCard
+              title="Documents"
+              icon={FileText}
+              onClick={() => openView("documents")}
+            />
+            <QuickCard
+              title="News & Events"
+              icon={Newspaper}
+              onClick={() => openView("news")}
+            />
           </div>
         </section>
       </div>
