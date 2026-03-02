@@ -1,10 +1,47 @@
 // src/pages/home/SchoolLandingPage.jsx
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./SchoolLandingPage.css";
+
 import logoImg from "../../assets/firststep-logo.jpg";
+import heroImg from "../../assets/landing-hero.png";
+import step1Img from "../../assets/step1.png";
+import step2Img from "../../assets/step2.png";
+import step3Img from "../../assets/step3.png";
+import staffBanner from "../../assets/for school staff.png";
+import parentsBanner from "../../assets/for parents.png";
 
 export default function SchoolLandingPage() {
   const navigate = useNavigate();
+
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (!open) return;
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+
+    function handleEsc(e) {
+      if (e.key === "Escape") setOpen(false);
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEsc);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEsc);
+    };
+  }, [open]);
+
+  const go = (path) => {
+    setOpen(false);
+    navigate(path);
+  };
 
   return (
     <div className="landing">
@@ -16,24 +53,62 @@ export default function SchoolLandingPage() {
             onClick={() => navigate("/")}
             role="button"
             tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") navigate("/");
+            }}
           >
             <img src={logoImg} alt="FirstStep Logo" className="brandLogo" />
             <span className="brandText">FirstStep</span>
           </div>
 
-          <nav className="landingLinks">
-            <a href="#home">Home</a>
-            <a href="#how">How it Works</a>
-            <a href="#for">About Us</a>
-          </nav>
+          {/* Right side group */}
+          <div className="navRight">
+            <nav className="landingLinks">
+              {/* ✅ Features scrolls to anchor above cards so hero stays visible */}
+              <a href="#features">Features</a>
+              <a href="#how">How it Works</a>
+              <a href="#for">About Us</a>
+            </nav>
 
-          <div className="landingActions">
-            <button className="btnGhost" onClick={() => navigate("/login")}>
-              Admin Login
-            </button>
-            <button className="btnPrimary" onClick={() => navigate("/signup")}>
-              Get Started
-            </button>
+            {/* Login dropdown */}
+            <div className="landingActions" ref={dropdownRef}>
+              <button
+                className="btnPrimary btnDropdown"
+                aria-haspopup="menu"
+                aria-expanded={open}
+                onClick={() => setOpen((v) => !v)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setOpen((v) => !v);
+                  }
+                }}
+                type="button"
+              >
+                Login <span className={`chev ${open ? "up" : ""}`}>▾</span>
+              </button>
+
+              {open && (
+                <div className="dropdownMenu" role="menu">
+                  <button
+                    className="dropdownItem"
+                    role="menuitem"
+                    type="button"
+                    onClick={() => go("/login?role=parent")}
+                  >
+                    Parent Login
+                  </button>
+                  <button
+                    className="dropdownItem"
+                    role="menuitem"
+                    type="button"
+                    onClick={() => go("/login?role=admin")}
+                  >
+                    Admin Login
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -53,29 +128,22 @@ export default function SchoolLandingPage() {
                 A simple way to guide parents and students through onboarding
                 steps, deadlines, uploads, and progress tracking.
               </p>
-
-              <div className="heroBtns">
-                <button className="btnPrimary" onClick={() => navigate("/signup")}>
-                  Get started for School
-                </button>
-
-                <button
-                  className="btnGreen"
-                  onClick={() => alert("Parent module coming soon")}
-                >
-                  Parent Sign In
-                </button>
-              </div>
             </div>
 
-            {/* ✅ Simple blank illustration box */}
             <div className="heroRight">
               <div className="heroImageBox">
-                Illustration Image Here
+                <img
+                  src={heroImg}
+                  alt="FirstStep onboarding illustration"
+                  className="heroImg"
+                />
               </div>
             </div>
           </div>
         </section>
+
+        {/* ✅ Anchor ABOVE feature cards (so hero still visible like your Image 2) */}
+        <div id="features" className="featuresAnchor" />
 
         {/* Feature Strip */}
         <section className="featureStrip">
@@ -112,44 +180,46 @@ export default function SchoolLandingPage() {
 
           <div className="howGrid">
             <div className="howItem">
-              <h4>1. Create Onboarding Flow</h4>
-              <div className="howPlaceholder">Step 1 Image</div>
-              <p>Schools set up custom steps</p>
+              <img
+                src={step1Img}
+                alt="Create onboarding flow"
+                className="howImg"
+              />
             </div>
 
             <div className="howItem">
-              <h4>2. Parents Follow the Steps</h4>
-              <div className="howPlaceholder">Step 2 Image</div>
-              <p>Parents complete tasks one by one</p>
+              <img
+                src={step2Img}
+                alt="Parents follow steps"
+                className="howImg"
+              />
             </div>
 
             <div className="howItem">
-              <h4>3. Track & Complete</h4>
-              <div className="howPlaceholder">Step 3 Image</div>
-              <p>Monitor progress easily</p>
+              <img src={step3Img} alt="Track progress" className="howImg" />
             </div>
           </div>
         </section>
 
         {/* About Us */}
         <section className="for" id="for">
-          <div className="forGrid">
-            <div className="forCard">
-              <h3>For School Staff</h3>
-              <ul>
-                <li>Design onboarding journeys</li>
-                <li>Manage forms & payments</li>
-                <li>Monitor parent progress</li>
-              </ul>
-            </div>
+          <div className="forInner">
+            <div className="forGrid">
+              <div className="forCardImg">
+                <img
+                  src={staffBanner}
+                  alt="For School Staff"
+                  className="forBanner"
+                />
+              </div>
 
-            <div className="forCard">
-              <h3>For Parents</h3>
-              <ul>
-                <li>View your to-do list</li>
-                <li>Upload documents</li>
-                <li>Stay informed</li>
-              </ul>
+              <div className="forCardImg">
+                <img
+                  src={parentsBanner}
+                  alt="For Parents"
+                  className="forBanner"
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -158,7 +228,7 @@ export default function SchoolLandingPage() {
         <section className="cta">
           <h2>Get Started with FirstStep Today!</h2>
           <button className="btnGreen big" onClick={() => navigate("/signup")}>
-            Get Started Now
+            Enroll Now
           </button>
         </section>
       </main>
