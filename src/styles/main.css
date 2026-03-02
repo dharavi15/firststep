@@ -3123,22 +3123,26 @@ a {
    GLOBAL BUTTONS (FINAL)
    ========================= */
 
+/* =========================
+   GLOBAL BUTTONS (FINAL)
+   ========================= */
+
 .btnPrimary {
-  background: var(--color-primary);
+  background: #1f3a6d;            /* dark navy */
+  border: 1px solid #1f3a6d;
   color: #fff;
-  border: 1px solid var(--color-primary);
   padding: 10px 14px;
   border-radius: 10px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 10px 22px rgba(31, 58, 109, 0.35);
+  transition: 0.2s ease;
 }
 
 .btnPrimary:hover {
-  filter: brightness(0.97);
-}
-
-.btnPrimary:active {
-  transform: translateY(1px);
+  background: #162c52;
+  border-color: #162c52;
+  transform: translateY(-2px);
 }
 
 /* =========================
