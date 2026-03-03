@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, ListChecks, CalendarDays, User } from "lucide-react";
+import { Home, Users, CalendarDays, User } from "lucide-react";
 
 export default function AdminBottomNav() {
   return (
@@ -13,11 +13,11 @@ export default function AdminBottomNav() {
       </NavLink>
 
       <NavLink
-        to="/admin/checklist"
+        to="/admin/students"
         className={({ isActive }) => `navItem ${isActive ? "active" : ""}`}
       >
-        <ListChecks size={22} />
-        <span>Checklist</span>
+        <Users size={22} />
+        <span>Students</span>
       </NavLink>
 
       <NavLink

@@ -16,14 +16,12 @@
   padding: 24px 16px 40px;
 }
 
-/* ✅ Controls where "Features" scroll lands (so hero stays visible) */
+/* Controls where "Features" scroll lands */
 .featuresAnchor {
   height: 1px;
-  /* increase this if you want MORE hero visible, decrease if less */
   scroll-margin-top: 320px;
 }
 
-/* ✅ Sticky navbar offset for other sections */
 #how,
 #for {
   scroll-margin-top: 90px;
@@ -59,7 +57,7 @@
 
 .brandText {
   font-size: 28px;
-  font-weight: 1000;
+  font-weight: 900;
   color: #162c52;
 }
 
@@ -100,7 +98,6 @@
 .landingActions {
   display: flex;
   gap: 10px;
-  flex-wrap: wrap;
 }
 
 /* =========================
@@ -121,7 +118,6 @@
   background-color: #1f3a6d;
   color: #ffffff;
   box-shadow: 0 10px 22px rgba(31, 58, 109, 0.35);
-  transition: all 0.2s ease;
 }
 
 .btnPrimary:hover {
@@ -130,22 +126,21 @@
   box-shadow: 0 14px 28px rgba(31, 58, 109, 0.45);
 }
 
-.btnGhost {
-  background: transparent;
-  border: 1px solid rgba(0, 0, 0, 0.14);
+/*.btnGreen {
+  background: rgb(237, 237, 34);
+  color: #1f3a6d;
+  box-shadow: 0 10px 22px rgba(46, 155, 79, 0.25);
 }
 
-.btnGreen {
-  background: #2e9b4f;
-  color: #fff;
-  box-shadow: 0 10px 22px rgba(46, 155, 79, 0.25);
+.btnGreen:hover {
+  background-color: #ffffff;
 }
 
 .btnGreen.big {
   padding: 12px 20px;
   border-radius: 12px;
   font-size: 16px;
-}
+}*/
 
 /* =========================
    HERO
@@ -194,7 +189,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
 
 /* =========================
@@ -283,7 +277,6 @@
   object-fit: cover;
   border-radius: 16px;
   margin-bottom: 14px;
-  display: block;
 }
 
 /* =========================
@@ -313,34 +306,50 @@
 
 .forBanner {
   width: 100%;
-  height: auto;
-  display: block;
   border-radius: 14px;
-}
-
-@media (max-width: 768px) {
-  .forGrid {
-    flex-direction: column;
-  }
 }
 
 /* =========================
    CTA
 ========================= */
 .cta {
-  margin-top: 40px;
+  margin-top: 24px;
   text-align: center;
-  padding: 30px 16px;
-  border-radius: 18px;
+  padding: 16px 16px;   /* smaller vertical padding */
+  border-radius: 14px;
   background: rgba(74, 144, 226, 0.07);
   border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
+/* Remove default heading spacing */
 .cta h2 {
-  margin: 0 0 18px;
+  margin: 8px 0 6px;
+  font-size: 24px;
+  font-weight: 900;
   color: #1f3a6d;
+  line-height: 1.2;
 }
 
+.ctaBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(74, 144, 226, 0.15);
+  color: #1f3a6d;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.comingSoonText {
+  margin: 4px auto 0;
+  max-width: 520px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #6b7280;
+  font-weight: 600;
+}
 /* =========================
    FOOTER
 ========================= */
@@ -354,68 +363,9 @@
   margin: 0 auto;
   padding: 14px 16px;
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 10px;
   color: #6b7280;
   font-weight: 600;
-}
-
-.footerDot {
-  opacity: 0.5;
-}
-
-/* =========================
-   LOGIN DROPDOWN
-========================= */
-.btnDropdown {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  position: relative;
-}
-
-.chev {
-  font-size: 14px;
-  transition: transform 0.2s ease;
-}
-
-.chev.up {
-  transform: rotate(180deg);
-}
-
-.dropdownMenu {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  min-width: 180px;
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 14px;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
-  padding: 8px;
-  z-index: 80;
-}
-
-.dropdownItem {
-  width: 100%;
-  text-align: left;
-  border: none;
-  background: transparent;
-  padding: 10px 12px;
-  border-radius: 10px;
-  font-weight: 700;
-  color: #1f2937;
-  cursor: pointer;
-  transition: 0.15s ease;
-}
-
-.dropdownItem:hover {
-  background: rgba(74, 144, 226, 0.12);
-}
-
-.dropdownItem:active {
-  transform: translateY(1px);
 }
 
 /* =========================
@@ -458,10 +408,6 @@
     width: 100%;
     margin-left: 0;
     justify-content: space-between;
-  }
-
-  .landingActions {
-    width: auto;
   }
 
   .heroLeft h1 {

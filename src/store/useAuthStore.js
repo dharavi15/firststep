@@ -1,77 +1,65 @@
 import { create } from "zustand";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase/firebase";
 
 const useAuthStore = create((set, get) => ({
-  // user session
   user: null,
-
-  // for route guard (wait firebase restore)
   authReady: false,
 
-  // legacy fields for LoginPage (keep API stable)
   loading: false,
   error: "",
 
-  // internal unsubscribe
   _unsub: null,
 
-  // legacy setters used by LoginPage.jsx
-  setUser: (user) => {
-    set({ user: user || null });
-  },
+  setUser: (user) => set({ user: user || null }),
+  setLoading: (isLoading) => set({ loading: Boolean(isLoading) }),
+  setError: (msg) => set({ error: msg || "" }),
+  setStoreError: (msg) => set({ error: msg || "" }),
+  clearStoreError: () => set({ error: "" }),
+  setAuthReady: (ready) => set({ authReady: Boolean(ready) }),
 
-  setLoading: (isLoading) => {
-    set({ loading: Boolean(isLoading) });
-  },
-
-  setError: (msg) => {
-    set({ error: msg || "" });
-  },
-
-  // also support newer naming 
-  setStoreError: (msg) => {
-    set({ error: msg || "" });
-  },
-
-  clearStoreError: () => {
-    set({ error: "" });
-  },
-
-  // start firebase auth listener once
   startAuthListener: () => {
     const oldUnsub = get()._unsub;
     if (oldUnsub) return;
 
     const unsub = onAuthStateChanged(auth, async (fbUser) => {
+      // IMPORTANT: mark as not ready while we resolve profile
+      set({ authReady: false });
+
+      // not logged in
       if (!fbUser) {
         set({ user: null, authReady: true });
         return;
       }
 
       try {
-        // users/{uid} 
+        // read Firestore profile
         const ref = doc(db, "users", fbUser.uid);
         const snap = await getDoc(ref);
-        const profile = snap.exists() ? snap.data() : {};
+        const profile = snap.exists() ? snap.data() : null;
+
+        // admin-only guard at source
+        if (!profile || profile.role !== "admin" || profile.isActive === false) {
+          // if someone logs in but isn't admin, sign them out
+          await signOut(auth);
+          set({ user: null, authReady: true });
+          return;
+        }
 
         set({
           user: {
             uid: fbUser.uid,
-            email: fbUser.email,
+            email: fbUser.email || "",
             ...profile,
+            role: "admin", // enforce
           },
           authReady: true,
         });
-      } catch {
-        set({
-          user: {
-            uid: fbUser.uid,
-            email: fbUser.email,
-          },
-          authReady: true,
-        });
+      } catch (e) {
+        console.log("AUTH LISTENER ERROR:", e);
+        // if profile fetch fails, treat as logged out (safer for admin-only app)
+        set({ user: null, authReady: true });
       }
     });
 

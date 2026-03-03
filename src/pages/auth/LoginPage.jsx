@@ -1,10 +1,14 @@
+// src/pages/auth/LoginPage.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
+import { signOut } from "firebase/auth";
+import { Mail, Lock } from "lucide-react";
 
 import { loginWithEmailPassword } from "../../firebase/auth";
 import { getUserProfile } from "../../firebase/userProfile";
 import useAuthStore from "../../store/useAuthStore";
+import { auth } from "../../firebase/firebase";
 
 import Logo from "../../components/ui/Logo";
 import Card from "../../components/ui/Card";
@@ -13,11 +17,7 @@ import Button from "../../components/ui/Button";
 import TextLink from "../../components/ui/TextLink";
 
 const loginSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .min(1, "Email is required")
-    .email("Enter a valid email"),
+  email: z.string().trim().min(1, "Email is required").email("Enter a valid email"),
   password: z
     .string()
     .min(1, "Password is required")
@@ -68,39 +68,41 @@ export default function LoginPage() {
 
       const authUser = await loginWithEmailPassword(cleanEmail, cleanPassword);
 
-      // users docId = UID
       const profile = await getUserProfile(authUser.uid);
 
       if (!profile) {
-        setLocalError("User profile not found in Firestore (users).");
+        const msg = "User profile not found in Firestore (users).";
+        setLocalError(msg);
+        setStoreError(msg);
+        await signOut(auth);
         return;
       }
 
       if (profile.isActive === false) {
-        setLocalError("This account is inactive.");
+        const msg = "This account is inactive.";
+        setLocalError(msg);
+        setStoreError(msg);
+        await signOut(auth);
         return;
       }
 
-      const role = profile.role;
-      if (role !== "admin" && role !== "parent") {
-        setLocalError("Invalid role in user profile.");
+      if (profile.role !== "admin") {
+        const msg = "Access denied. Only admin accounts can log in.";
+        setLocalError(msg);
+        setStoreError(msg);
+        await signOut(auth);
         return;
       }
 
       setUser({
         uid: authUser.uid,
-        email: authUser.email,
-        role,
-        fullName: profile.fullName || "",
+        email: authUser.email || cleanEmail,
+        role: "admin",
+        fullName: profile.fullName || profile.name || "",
         schoolId: profile.schoolId || "",
       });
 
-      if (role === "admin") {
-        navigate("/admin/dashboard");
-        return;
-      }
-
-      navigate("/parent/dashboard");
+      navigate("/admin/dashboard");
     } catch (err) {
       console.log("FIREBASE LOGIN ERROR:", err?.code, err?.message);
 
@@ -133,27 +135,39 @@ export default function LoginPage() {
             <Logo />
           </div>
 
-          <h2 className="authTitle">Login</h2>
+          <h2 className="authTitle">Admin Login</h2>
 
           {localError && <div className="statusSuccess">{localError}</div>}
 
           <form className="authForm" onSubmit={handleSubmit}>
             <InputField
+              icon={Mail}
               type="email"
-              placeholder="Username"
+              name="email"
+              autoComplete="username"
+              placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
 
             <InputField
+              icon={Lock}
               type="password"
+              name="password"
+              autoComplete="current-password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
 
             <div className="authRowRight">
-              <TextLink text="Forgot password?" onClick={(e) => e.preventDefault()} />
+              <TextLink
+                text="Forgot password?"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/forgot-password");
+                }}
+              />
             </div>
 
             <Button
@@ -162,10 +176,6 @@ export default function LoginPage() {
               type="submit"
               disabled={loading}
             />
-
-            <div className="rowCenter">
-              <TextLink text="Sign up" onClick={(e) => e.preventDefault()} />
-            </div>
           </form>
         </Card>
       </div>

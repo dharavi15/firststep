@@ -39,10 +39,10 @@ export default function ForgotPasswordPage() {
 
     try {
       setLoading(true);
-      await requestPasswordReset(result.data.email);
+      await requestPasswordReset(result.data.email.trim().toLowerCase());
       setStatus("Password reset email sent. Please check your inbox.");
     } catch (err) {
-      console.log("RESET ERROR:", err.code, err.message);
+      console.log("RESET ERROR:", err?.code, err?.message);
       setFieldError("Could not send reset email. Please try again.");
     } finally {
       setLoading(false);
@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-   <div className="pageCenter authPage">
+    <div className="pageCenter authPage">
       <div className="stack">
         <Logo />
 
@@ -71,12 +71,18 @@ export default function ForgotPasswordPage() {
             <InputField
               icon={Mail}
               type="email"
+              name="email"
+              autoComplete="email"
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
 
-            <Button text={loading ? "Sending..." : "Send reset link"} type="submit" disabled={!canSubmit} />
+            <Button
+              text={loading ? "Sending..." : "Send reset link"}
+              type="submit"
+              disabled={!canSubmit}
+            />
 
             <p className="centerText" style={{ marginTop: 10 }}>
               Back to{" "}
@@ -84,7 +90,7 @@ export default function ForgotPasswordPage() {
                 text="Login"
                 onClick={(e) => {
                   e.preventDefault();
-                  navigate("/");
+                  navigate("/login");
                 }}
               />
             </p>

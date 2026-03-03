@@ -10,4 +10,7 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
-setPersistence(auth, browserLocalPersistence);
+
+setPersistence(auth, browserLocalPersistence).catch((err) => {
+  console.warn("Auth persistence error:", err?.code, err?.message);
+});

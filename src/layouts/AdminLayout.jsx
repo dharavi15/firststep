@@ -10,10 +10,11 @@ import { auth } from "../firebase/firebase";
 import { getUserProfile } from "../firebase/userProfile";
 
 function getTitle(pathname) {
-  if (pathname.includes("/admin/checklist")) return "Checklist";
+  if (pathname.includes("/admin/students")) return "Students";
+if (pathname.includes("/admin/checklist")) return "Students";
+
   if (pathname.includes("/admin/calendar")) return "Calendar";
   if (pathname.includes("/admin/profile")) return "Profile";
-  if (pathname.includes("/admin/students")) return "Students";
   return "Dashboard";
 }
 

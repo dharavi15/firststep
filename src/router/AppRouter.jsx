@@ -1,13 +1,12 @@
+// src/router/AppRouter.jsx
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import LoginPage from "../pages/auth/LoginPage";
-import SignupPage from "../pages/auth/SignupPage";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import SchoolLandingPage from "../pages/home/SchoolLandingPage";
 import ProtectedRoute from "./ProtectedRoute";
 
 import AdminLayout from "../layouts/AdminLayout";
-import ParentLayout from "../layouts/ParentLayout";
 
 // admin pages
 import DashboardPage from "../pages/admin/DashboardPage";
@@ -17,57 +16,46 @@ import CalendarPage from "../pages/admin/CalendarPage";
 import ProfilePage from "../pages/admin/ProfilePage";
 import AddStudentPage from "../pages/admin/AddStudentPage";
 
-// parent pages
-import ParentDashboard from "../pages/parent/Dashboard";
-import ParentChecklist from "../pages/parent/Checklist";
-import ParentCalendar from "../pages/parent/Calendar";
-import ParentProfile from "../pages/parent/Profile";
-
 export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-       {/* public home */}
-<Route path="/" element={<SchoolLandingPage />} />
+        {/* public home */}
+        <Route path="/" element={<SchoolLandingPage />} />
 
-{/* auth */}
-<Route path="/login" element={<LoginPage />} />
-<Route path="/signup" element={<SignupPage />} />
-<Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        {/* auth */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
+        {/* block removed areas */}
+        <Route path="/signup" element={<Navigate to="/login" replace />} />
+        <Route path="/parent/*" element={<Navigate to="/login" replace />} />
+
         {/* admin */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute allowRole="admin">
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="checklist" element={<ChecklistPage />} />
-          <Route path="checklist/:studentId" element={<ChecklistStudentPage />} />
-          <Route path="students/new" element={<AddStudentPage mode="create" />} />
-          <Route path="students/:studentId/edit" element={<AddStudentPage mode="edit" />} />
-          <Route path="calendar" element={<CalendarPage />} />
-          <Route path="profile" element={<ProfilePage />} />
-        </Route>
+<Route
+  path="/admin"
+  element={
+    <ProtectedRoute allowRole="admin">
+      <AdminLayout />
+    </ProtectedRoute>
+  }
+>
+  <Route index element={<Navigate to="/admin/dashboard" replace />} />
+  <Route path="dashboard" element={<DashboardPage />} />
 
-        {/* parent */}
-        <Route
-          path="/parent"
-          element={
-            <ProtectedRoute allowRole="parent">
-              <ParentLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Navigate to="/parent/dashboard" replace />} />
-          <Route path="dashboard" element={<ParentDashboard />} />
-          <Route path="checklist" element={<ParentChecklist />} />
-          <Route path="calendar" element={<ParentCalendar />} />
-          <Route path="profile" element={<ParentProfile />} />
-        </Route>
+  {/* ✅ NEW: Students page route */}
+  <Route path="students" element={<ChecklistPage />} />
+
+  {/* ✅ Keep old URLs working (optional but recommended) */}
+  <Route path="checklist" element={<Navigate to="/admin/students" replace />} />
+  <Route path="checklist/:studentId" element={<ChecklistStudentPage />} />
+
+  <Route path="students/new" element={<AddStudentPage mode="create" />} />
+  <Route path="students/:studentId/edit" element={<AddStudentPage mode="edit" />} />
+
+  <Route path="calendar" element={<CalendarPage />} />
+  <Route path="profile" element={<ProfilePage />} />
+</Route>
 
         {/* fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

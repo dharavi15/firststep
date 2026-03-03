@@ -18,7 +18,7 @@ export default function AdminTopBar({ title = "Dashboard", userName = "Miss ABC"
   const items = useMemo(() => {
     return [
       { label: "Dashboard", path: "/admin/dashboard", icon: Home },
-      { label: "Checklist", path: "/admin/checklist", icon: ListChecks },
+      { label: "Student ", path: "/admin/checklist", icon: ListChecks },
       { label: "Calendar", path: "/admin/calendar", icon: Calendar },
       { label: "Profile", path: "/admin/profile", icon: User },
     ];

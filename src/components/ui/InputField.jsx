@@ -1,35 +1,4 @@
-/*export default function InputField({
-  icon: Icon,
-  type = "text",
-  placeholder,
-  value,
-  onChange,
-  name,
-  id,
-  autoComplete,
-  inputMode,
-  required = false,
-}) {
-  return (
-    <div className="field">
-      {Icon ? <Icon className="fieldIcon" /> : null}
-
-      <input
-        className="inputField input"
-        type={type}
-        name={name}
-        id={id}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        autoComplete={autoComplete}
-        inputMode={inputMode}
-        required={required}
-      />
-    </div>
-  );
-}*/
-
+// src/components/ui/InputField.jsx
 export default function InputField({
   icon: Icon,
   type = "text",
@@ -38,19 +7,26 @@ export default function InputField({
   onChange,
   name,
   autoComplete,
+  required = true,
+  disabled = false,
 }) {
+  const aria = placeholder || name || "input";
+
   return (
-    <div className="field">
-      {Icon ? <Icon className="fieldIcon" /> : null}
+    <div className="field" role="group" aria-label={aria}>
+      {Icon ? <Icon className="fieldIcon" aria-hidden="true" /> : null}
 
       <input
-        className="inputField"
+        className="input"
         type={type}
         name={name}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
         autoComplete={autoComplete}
+        required={required}
+        disabled={disabled}
+        aria-label={aria}
       />
     </div>
   );

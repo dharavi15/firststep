@@ -1,3 +1,4 @@
+// src/pages/admin/ChecklistPage.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import {
@@ -90,6 +91,24 @@ function getNextDeadlineText(completedSteps, totalSteps) {
 
 export default function ChecklistPage() {
   const navigate = useNavigate();
+
+  // ✅ Toast (success/error message)
+  const [toast, setToast] = useState({ type: "", text: "" });
+  const toastTimerRef = useRef(null);
+
+  const showToast = (type, text) => {
+    setToast({ type, text });
+    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = window.setTimeout(() => {
+      setToast({ type: "", text: "" });
+    }, 2500);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
+    };
+  }, []);
 
   // Search + pagination (list view)
   const [qText, setQText] = useState("");
@@ -289,17 +308,15 @@ export default function ChecklistPage() {
     }, 250);
   }
 
-  // Delete student
+  // ✅ Delete student (NO browser confirm dialog)
   async function onDeleteStudent(studentId, studentName) {
-    const ok = window.confirm(`Delete "${studentName}"?\nThis cannot be undone.`);
-    if (!ok) return;
-
     try {
       await deleteDoc(doc(db, "students", studentId));
       await loadStudents();
+      showToast("success", `✅ "${studentName}" deleted successfully.`);
     } catch (e) {
       console.error("Delete failed:", e);
-      alert("Delete failed. Check console + Firestore rules.");
+      showToast("error", "❌ Delete failed. Check Firestore rules / console.");
     }
   }
 
@@ -409,7 +426,7 @@ export default function ChecklistPage() {
       await updateEnrollmentProgress(completed + 1);
     } catch (e) {
       console.error("Mark step done failed:", e);
-      alert("Update failed. Check console + Firestore rules.");
+      showToast("error", "❌ Update failed. Check Firestore rules / console.");
     }
   }
 
@@ -422,7 +439,7 @@ export default function ChecklistPage() {
       await updateEnrollmentProgress(completed - 1);
     } catch (e) {
       console.error("Undo failed:", e);
-      alert("Update failed. Check console + Firestore rules.");
+      showToast("error", "❌ Update failed. Check Firestore rules / console.");
     }
   }
 
@@ -445,7 +462,6 @@ export default function ChecklistPage() {
     const steps = buildStepsFromProgress(completedCount, totalCount);
 
     return (
-      // IMPORTANT: we print ONLY this root (ref)
       <div className="ckDWrap ckPrintRoot" ref={printAreaRef}>
         <div className="ckDHeader">
           <AvatarEmoji name={selectedStudentSnapshot.name} className="ckDAvatar" />
@@ -616,6 +632,13 @@ export default function ChecklistPage() {
   // LIST VIEW
   return (
     <div className="checklistWrap">
+      {/* ✅ Toast UI */}
+      {toast.text && (
+        <div className={`toast ${toast.type}`}>
+          {toast.text}
+        </div>
+      )}
+
       <div className="checklistTopBar">
         <button
           type="button"
@@ -664,9 +687,7 @@ export default function ChecklistPage() {
                   if (e.key === "Enter" || e.key === " ") onOpenStudent(row);
                 }}
               >
-               <div className="td tdCheck">
-              
-                </div> 
+                <div className="td tdCheck"></div>
 
                 <div className="td tdName checklistNameCell">
                   <AvatarEmoji name={row.name} />
