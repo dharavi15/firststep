@@ -4153,3 +4153,192 @@ a {
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================
+   Contact: Hero mini contact list
+   ========================= */
+.contactHeroMiniList {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.contactMiniRow {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 8px;
+  align-items: start;
+}
+
+.contactMiniIcon {
+  opacity: 0.9;
+}
+
+.contactMiniValue {
+  color: var(--text, #333);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* =========================
+   Student edit button
+   ========================= */
+.studentEditBtn {
+  margin-left: auto;
+  border: 1px solid rgba(74, 144, 226, 0.35);
+  background: rgba(74, 144, 226, 0.12);
+  color: var(--primary, #4a90e2);
+  font-weight: 800;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+}
+
+.studentEditBtn:hover {
+  background: rgba(74, 144, 226, 0.18);
+}
+
+.studentEditBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* keep top layout nice */
+.studentMeta {
+  min-width: 0;
+}
+
+/* =========================
+   contact page - Modal
+   ========================= */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  z-index: 9999;
+}
+
+.modalCard {
+  width: min(720px, 100%);
+  background: var(--card, #fff);
+  border-radius: 18px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.modalTitle {
+  font-weight: 900;
+  color: var(--text, #333);
+}
+
+.modalCloseBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+}
+
+.modalBody {
+  padding: 14px 16px;
+}
+
+.modalGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.modalField {
+  display: grid;
+  gap: 6px;
+}
+
+.modalFieldFull {
+  grid-column: 1 / -1;
+}
+
+.modalLabel {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--muted, #6b7280);
+}
+
+.modalInput {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  padding: 10px 12px;
+  outline: none;
+  background: #fff;
+}
+
+.modalInput:focus {
+  border-color: rgba(74, 144, 226, 0.55);
+  box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.14);
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.modalBtn {
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 900;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+}
+
+.modalBtn.ghost {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.modalBtn.primary {
+  border: 1px solid rgba(74, 144, 226, 0.35);
+  background: rgba(74, 144, 226, 0.14);
+  color: var(--primary, #4a90e2);
+}
+
+.modalBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 820px) {
+  .modalGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================
+   Contact: Hero text align fix
+   ========================= */
+.contactHeroText {
+  text-align: left;
+}
+
+.contactHeroMiniList {
+  text-align: left;
+}
+
+.contactMiniRow {
+  justify-content: start;
+}
