@@ -4056,3 +4056,100 @@ a {
   outline: 3px solid rgba(74, 144, 226, 0.4);
   outline-offset: 2px;
 }
+
+/* =========================
+   Contact: Students section
+   ========================= */
+.contactSection {
+  margin-top: 18px;
+}
+
+.contactSectionTitle {
+  font-weight: 800;
+  color: var(--text, #333);
+  margin: 6px 0 12px;
+}
+
+.contactHint {
+  color: var(--muted, #6b7280);
+  font-size: 14px;
+  padding: 8px 0;
+}
+
+.contactError {
+  color: var(--error, #eb5757);
+  font-size: 14px;
+  padding: 8px 0;
+}
+
+.studentContactGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.studentContactCard {
+  background: var(--card, #fff);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+}
+
+.studentContactTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.studentEmoji {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(74, 144, 226, 0.12);
+  border: 1px solid rgba(74, 144, 226, 0.22);
+  font-size: 20px;
+}
+
+.studentName {
+  font-weight: 800;
+  color: var(--text, #333);
+  line-height: 1.1;
+}
+
+.studentSub {
+  color: var(--muted, #6b7280);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.studentContactRows {
+  display: grid;
+  gap: 8px;
+}
+
+.studentRow {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 8px;
+  align-items: start;
+}
+
+.studentRowIcon {
+  opacity: 0.9;
+}
+
+.studentRowValue {
+  color: var(--text, #333);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 820px) {
+  .studentContactGrid {
+    grid-template-columns: 1fr;
+  }
+}
