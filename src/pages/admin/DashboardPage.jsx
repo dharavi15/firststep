@@ -76,16 +76,10 @@ export default function DashboardPage() {
     setView(nextView);
   };
 
-  // Title for each view
+  // Title for each view 
   const viewTitle = useMemo(() => {
-    if (view === "enrollment") return "Enrollment Overview";
-    if (view === "payments") return "Payments Overview";
-    if (view === "tuition") return "Tuition Fees";
-    if (view === "documents") return "Documents";
-    if (view === "news") return "News & Events";
-    if (view === "contact") return "Contact";
-    if (view === "checklist") return "Student Onboarding Process";
-    return "Dashboard";
+    if (view === "dashboard") return "Dashboard";
+    return "";
   }, [view]);
 
   // Admin view
