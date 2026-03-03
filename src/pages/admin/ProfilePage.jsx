@@ -1,320 +1,420 @@
+// src/pages/admin/ProfilePage.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CheckCircle2, ChevronRight, Mail, MapPin, Phone, User } from "lucide-react";
-import { collection, doc, onSnapshot, updateDoc } from "firebase/firestore";
-import { db, auth } from "../../firebase/firebase";
+import { Eye, EyeOff, Lock, Mail, MapPin, Phone, User, Pencil } from "lucide-react";
+import {
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+} from "firebase/auth";
+import { doc, updateDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-/* emoji options */
-const EMOJI_OPTIONS = ["👧", "👦", "🧒", "👩‍🎓", "👨‍🎓"];
+import { auth, db, storage } from "../../firebase/firebase";
+import { getUserProfile } from "../../firebase/userProfile";
+import useAuthStore from "../../store/useAuthStore";
 
-/* avatar circle */
-function AvatarCircle({ emoji }) {
-  return <div className="profileAvatar">{emoji || "🧒"}</div>;
-}
-
-/* info row */
-function InfoRow({ icon, label, value }) {
-  return (
-    <div className="profileInfoRow">
-      <div className="profileInfoLeft">
-        <span className="profileInfoIcon">{icon}</span>
-        <span className="profileInfoLabel">{label}</span>
-      </div>
-      <div className="profileInfoValue">{value || "-"}</div>
-    </div>
-  );
-}
-
-function normalizeYear(value) {
-  const v = String(value ?? "").trim();
-  if (!v) return ""; // keep empty as empty
-  // if user typed only digits -> save as number (helps with rules/type checks)
-  if (/^\d+$/.test(v)) return Number(v);
-  return v; // allow non-number year labels if you want
-}
+import adminAvatar from "../../assets/admin.png";
 
 export default function ProfilePage() {
-  const [students, setStudents] = useState([]);
-  const [selectedId, setSelectedId] = useState("");
+  const storeUser = useAuthStore((s) => s.user);
 
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [formError, setFormError] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
+  const uid = storeUser?.uid || auth.currentUser?.uid || "";
+  const email = storeUser?.email || auth.currentUser?.email || "";
 
-  const editRef = useRef(null);
+  const fileInputRef = useRef(null);
 
-  /* form fields */
-  const [formEmoji, setFormEmoji] = useState(EMOJI_OPTIONS[0]);
-  const [formStudentName, setFormStudentName] = useState("");
-  const [formPhone, setFormPhone] = useState("");
-  const [formAddress, setFormAddress] = useState("");
-  const [formParentName, setFormParentName] = useState("");
-  const [formParentEmail, setFormParentEmail] = useState("");
-  const [formYear, setFormYear] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
-  /* support multiple possible name fields */
-  function getStudentName(stu) {
-    return stu?.studentName || stu?.fullName || stu?.name || "Unnamed";
-  }
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  /* realtime fetch students */
+  // Profile fields (Firestore: users/{uid})
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [photoURL, setPhotoURL] = useState("");
+
+  // Password fields (optional)
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+
+  // Snapshot for Cancel
+  const [initial, setInitial] = useState({
+    fullName: "",
+    phone: "",
+    address: "",
+    photoURL: "",
+  });
+
+  const canUsePage = useMemo(() => {
+    // Admin only (if store role not ready yet, allow when uid exists)
+    if (!uid) return false;
+    if (!storeUser?.role) return true;
+    return storeUser.role === "admin";
+  }, [uid, storeUser?.role]);
+
+  // Load profile from Firestore
   useEffect(() => {
-    const unsub = onSnapshot(
-      collection(db, "students"),
-      (snapshot) => {
-        const list = snapshot.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        }));
+    let alive = true;
 
-        setStudents(list);
+    async function loadProfile() {
+      setLoading(true);
+      setError("");
+      setSuccess("");
 
-        setSelectedId((prev) => {
-          if (prev) return prev;
-          return list[0]?.id || "";
-        });
-      },
-      (err) => {
-        console.error("onSnapshot(students) error:", err);
-        setFormError(err?.message || "Failed to load students.");
+      try {
+        if (!uid) {
+          setError("No user session found. Please login again.");
+          return;
+        }
+
+        const profile = await getUserProfile(uid);
+        if (!alive) return;
+
+        const next = {
+          fullName: profile?.fullName || storeUser?.fullName || "",
+          phone: profile?.phone || "",
+          address: profile?.address || "",
+          photoURL: profile?.photoURL || "",
+        };
+
+        setFullName(next.fullName);
+        setPhone(next.phone);
+        setAddress(next.address);
+        setPhotoURL(next.photoURL);
+        setInitial(next);
+      } catch (err) {
+        console.error("Load profile error:", err);
+        setError("Failed to load profile.");
+      } finally {
+        if (alive) setLoading(false);
       }
-    );
-
-    return () => unsub();
-  }, []);
-
-  /* selected student */
-  const selectedStudent = useMemo(() => {
-    return students.find((s) => s.id === selectedId) || null;
-  }, [students, selectedId]);
-
-  /* fill form */
-  function fillForm(stu) {
-    setFormEmoji(stu?.avatarEmoji || EMOJI_OPTIONS[0]);
-    setFormStudentName(getStudentName(stu));
-    setFormPhone(stu?.phone || "");
-    setFormAddress(stu?.address || "");
-    setFormParentName(stu?.parentName || "");
-    setFormParentEmail(stu?.parentEmail || "");
-    setFormYear(stu?.year ?? ""); // keep original type; input will show it as string anyway
-  }
-
-  function onSelectStudent(id) {
-    setSelectedId(id);
-    setFormError("");
-
-    if (isEditOpen) {
-      const nextStudent = students.find((s) => s.id === id) || null;
-      fillForm(nextStudent);
     }
+
+    loadProfile();
+    return () => {
+      alive = false;
+    };
+  }, [uid, storeUser?.fullName]);
+
+  // Open file picker
+  function onEditImageClick() {
+    setError("");
+    setSuccess("");
+    fileInputRef.current?.click();
   }
 
-  function openEdit() {
-    if (!selectedStudent) return;
-    fillForm(selectedStudent);
-    setFormError("");
-    setIsEditOpen(true);
-  }
+  // Upload image -> Storage -> Save photoURL to Firestore
+  async function onImageSelected(e) {
+    const file = e.target.files?.[0];
 
-  function closeEdit() {
-    setIsEditOpen(false);
-    setFormError("");
-  }
+    // Reset input so user can pick same file again
+    e.target.value = "";
 
-  async function onSaveProfile(e) {
-    e.preventDefault();
-    if (!selectedStudent) return;
-    if (isSaving) return;
+    if (!file || !uid) return;
 
-    const studentName = formStudentName.trim();
-    const parentEmail = formParentEmail.trim();
-
-    if (!studentName || !parentEmail) {
-      setFormError("Student Name and Parent Email are required.");
+    // Basic file check
+    if (!file.type.startsWith("image/")) {
+      setError("Please select an image file.");
       return;
     }
 
-    setIsSaving(true);
-    setFormError("");
+    // Optional size limit (5MB)
+    const maxBytes = 5 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      setError("Image is too large (max 5MB).");
+      return;
+    }
 
     try {
-      // Helpful debug
-      console.log("Saving student:", selectedStudent.id);
-      console.log("Auth user:", auth.currentUser?.uid, auth.currentUser?.email);
+      setUploading(true);
+      setError("");
+      setSuccess("");
 
-      const payload = {
-        avatarEmoji: formEmoji,
-        studentName,
-        phone: formPhone.trim(),
-        address: formAddress.trim(),
-        parentName: formParentName.trim(),
-        parentEmail,
-        year: normalizeYear(formYear),
-      };
+      // Use a stable path, file extension not required
+      const imageRef = ref(storage, `adminProfiles/${uid}`);
 
-      await updateDoc(doc(db, "students", selectedStudent.id), payload);
+      await uploadBytes(imageRef, file);
+      const url = await getDownloadURL(imageRef);
 
-      setIsEditOpen(false);
-      setFormError("");
+      await updateDoc(doc(db, "users", uid), { photoURL: url });
+
+      setPhotoURL(url);
+      setInitial((prev) => ({ ...prev, photoURL: url }));
+      setSuccess("Profile image updated.");
     } catch (err) {
-      console.error("updateDoc(students) error:", err);
-
-      // Show real reason (permission-denied / unavailable / etc.)
+      console.error("Upload image error:", err);
       const code = err?.code ? `(${err.code}) ` : "";
-      const msg = err?.message || "Failed to update profile.";
-      setFormError(`${code}${msg}`);
+      setError(`${code}${err?.message || "Image upload failed."}`);
     } finally {
-      setIsSaving(false);
+      setUploading(false);
     }
   }
 
-  useEffect(() => {
-    if (!isEditOpen) return;
-    if (!editRef.current) return;
-    editRef.current.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  }, [isEditOpen]);
+  function onCancel() {
+    setError("");
+    setSuccess("");
+
+    setFullName(initial.fullName);
+    setPhone(initial.phone);
+    setAddress(initial.address);
+    setPhotoURL(initial.photoURL);
+
+    setOldPassword("");
+    setNewPassword("");
+    setShowOld(false);
+    setShowNew(false);
+  }
+
+  async function onSave(e) {
+    e.preventDefault();
+    if (!uid) return;
+    if (saving) return;
+
+    setSaving(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const nameClean = fullName.trim();
+      if (!nameClean) {
+        setError("Name is required.");
+        return;
+      }
+
+      // Update profile info
+      await updateDoc(doc(db, "users", uid), {
+        fullName: nameClean,
+        phone: phone.trim(),
+        address: address.trim(),
+      });
+
+      // Change password only if both fields are filled
+      const wantChangePassword = oldPassword.trim() && newPassword.trim();
+      if (wantChangePassword) {
+        if (newPassword.trim().length < 6) {
+          setError("New Password must be at least 6 characters.");
+          return;
+        }
+
+        if (!auth.currentUser?.email) {
+          setError("Missing auth email. Please login again.");
+          return;
+        }
+
+        const cred = EmailAuthProvider.credential(auth.currentUser.email, oldPassword.trim());
+        await reauthenticateWithCredential(auth.currentUser, cred);
+        await updatePassword(auth.currentUser, newPassword.trim());
+
+        setOldPassword("");
+        setNewPassword("");
+        setShowOld(false);
+        setShowNew(false);
+      }
+
+      // Update snapshot for Cancel
+      setInitial((prev) => ({
+        ...prev,
+        fullName: nameClean,
+        phone: phone.trim(),
+        address: address.trim(),
+      }));
+
+      setSuccess(wantChangePassword ? "Profile and password updated." : "Profile updated.");
+    } catch (err) {
+      console.error("Save profile error:", err);
+      const code = err?.code ? `(${err.code}) ` : "";
+      setError(`${code}${err?.message || "Update failed."}`);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!canUsePage) {
+    return (
+      <div className="adminProfileWrap">
+        <div className="adminProfileCard">
+          <div className="adminProfileTopBar">
+            <div className="adminProfileTitle">Edit Profile</div>
+          </div>
+          <div className="adminProfileForm">
+            <div className="adminProfileMsg error">Access denied. Admin only.</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="profileWrap">
-      {/* left list */}
-      <div className="profileListCard">
-        <div className="profileListTitle">Students</div>
+    <div className="adminProfileWrap">
+      <div className="adminProfileCard">
+        <div className="adminProfileTopBar">
+          <div className="adminProfileTitle">Edit Profile</div>
+        </div>
 
-        {students.length === 0 ? (
-          <div className="emptyState">No students found.</div>
-        ) : (
-          students.map((s) => (
+        {/* Avatar */}
+        <div className="adminProfileAvatarRow">
+          <div className="adminProfileAvatarRing">
+            <img
+              className="adminProfileAvatarImg"
+              src={photoURL || adminAvatar}
+              alt="Admin"
+            />
+
             <button
-              key={s.id}
               type="button"
-              className={`profileRowBtn ${s.id === selectedId ? "active" : ""}`}
-              onClick={() => onSelectStudent(s.id)}
+              className="adminProfileAvatarEdit"
+              onClick={onEditImageClick}
+              disabled={uploading}
+              aria-label="Edit profile image"
+              title="Edit"
             >
-              <AvatarCircle emoji={s.avatarEmoji} />
-              <span className="profileRowName">{getStudentName(s)}</span>
-              <ChevronRight size={16} />
+              <Pencil size={14} />
             </button>
-          ))
-        )}
-      </div>
 
-      {/* right detail */}
-      {selectedStudent && (
-        <div className="profileDetailCard">
-          <div className="profileHeader">
-            <div className="profileHeaderLeft">
-              <AvatarCircle emoji={selectedStudent.avatarEmoji} />
-              <div className="profileHeaderText">
-                <div className="profileHeaderName">{getStudentName(selectedStudent)}</div>
-                <div className="profileHeaderEmail">{selectedStudent.parentEmail || "-"}</div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={onImageSelected}
+              style={{ display: "none" }}
+            />
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="adminProfileForm">
+            <div className="adminProfileHint">Loading...</div>
+          </div>
+        ) : (
+          <form className="adminProfileForm" onSubmit={onSave}>
+            {error && <div className="adminProfileMsg error">{error}</div>}
+            {success && <div className="adminProfileMsg success">{success}</div>}
+
+            <div className="adminProfileField">
+              <div className="adminProfileLabel">
+                <User size={16} /> Name
+              </div>
+              <input
+                className="adminProfileInput"
+                value={fullName}
+                onChange={(ev) => setFullName(ev.target.value)}
+                placeholder="Full name"
+              />
+            </div>
+
+            <div className="adminProfileField">
+              <div className="adminProfileLabel">
+                <Mail size={16} /> Email
+              </div>
+              <input className="adminProfileInput" value={email || "-"} disabled />
+            </div>
+
+            <div className="adminProfileField">
+              <div className="adminProfileLabel">
+                <Phone size={16} /> Phone
+              </div>
+              <input
+                className="adminProfileInput"
+                value={phone}
+                onChange={(ev) => setPhone(ev.target.value)}
+                placeholder="Phone number"
+              />
+            </div>
+
+            <div className="adminProfileField">
+              <div className="adminProfileLabel">
+                <MapPin size={16} /> Address
+              </div>
+              <input
+                className="adminProfileInput"
+                value={address}
+                onChange={(ev) => setAddress(ev.target.value)}
+                placeholder="Address"
+              />
+            </div>
+
+            <div className="adminProfileDivider" />
+
+            {/* Old password */}
+            <div className="adminProfileField">
+              <div className="adminProfileLabel">
+                <Lock size={16} /> Old Password
+              </div>
+              <div className="adminProfilePwdRow">
+                <input
+                  className="adminProfileInput"
+                  type={showOld ? "text" : "password"}
+                  value={oldPassword}
+                  onChange={(ev) => setOldPassword(ev.target.value)}
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  className="adminProfileEyeBtn"
+                  onClick={() => setShowOld((v) => !v)}
+                  aria-label="Toggle old password"
+                  title="Show/Hide"
+                >
+                  {showOld ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
-          </div>
 
-          <InfoRow icon={<Phone size={16} />} label="Phone" value={selectedStudent.phone} />
-          <InfoRow icon={<MapPin size={16} />} label="Address" value={selectedStudent.address} />
-          <InfoRow icon={<User size={16} />} label="Parent" value={selectedStudent.parentName} />
-          <InfoRow icon={<Mail size={16} />} label="Parent Email" value={selectedStudent.parentEmail} />
-          <InfoRow icon={<CheckCircle2 size={16} />} label="Class" value={selectedStudent.year} />
+            {/* New password */}
+            <div className="adminProfileField">
+              <div className="adminProfileLabel">
+                <Lock size={16} /> New Password
+              </div>
+              <div className="adminProfilePwdRow">
+                <input
+                  className="adminProfileInput"
+                  type={showNew ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(ev) => setNewPassword(ev.target.value)}
+                  placeholder="New password"
+                />
+                <button
+                  type="button"
+                  className="adminProfileEyeBtn"
+                  onClick={() => setShowNew((v) => !v)}
+                  aria-label="Toggle new password"
+                  title="Show/Hide"
+                >
+                  {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
 
-          {!isEditOpen && (
-            <button type="button" className="btnOutlinePrimary" onClick={openEdit}>
-              Edit Profile
-            </button>
-          )}
-
-          {isEditOpen && (
-            <div ref={editRef} className="profileEditCard">
-              <h3 className="modalTitle">Edit Profile</h3>
-
-              {formError && <div className="modalError">{formError}</div>}
-
-              <form className="modalForm" onSubmit={onSaveProfile}>
-                <label className="modalLabel">
-                  Profile Emoji
-                  <select
-                    className="modalInput"
-                    value={formEmoji}
-                    onChange={(e) => setFormEmoji(e.target.value)}
-                  >
-                    {EMOJI_OPTIONS.map((em) => (
-                      <option key={em} value={em}>
-                        {em}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="modalLabel">
-                  Student Name
-                  <input
-                    className="modalInput"
-                    value={formStudentName}
-                    onChange={(e) => setFormStudentName(e.target.value)}
-                  />
-                </label>
-
-                <label className="modalLabel">
-                  Phone
-                  <input
-                    className="modalInput"
-                    value={formPhone}
-                    onChange={(e) => setFormPhone(e.target.value)}
-                  />
-                </label>
-
-                <label className="modalLabel">
-                  Address
-                  <input
-                    className="modalInput"
-                    value={formAddress}
-                    onChange={(e) => setFormAddress(e.target.value)}
-                  />
-                </label>
-
-                <label className="modalLabel">
-                  Parent Name
-                  <input
-                    className="modalInput"
-                    value={formParentName}
-                    onChange={(e) => setFormParentName(e.target.value)}
-                  />
-                </label>
-
-                <label className="modalLabel">
-                  Parent Email
-                  <input
-                    className="modalInput"
-                    value={formParentEmail}
-                    onChange={(e) => setFormParentEmail(e.target.value)}
-                  />
-                </label>
-
-                <label className="modalLabel">
-                  Class
-                  <input
-                    className="modalInput"
-                    value={String(formYear ?? "")}
-                    onChange={(e) => setFormYear(e.target.value)}
-                  />
-                </label>
-
-                <div className="modalActions">
-                  <button type="button" className="btnOutlinePrimary" onClick={closeEdit}>
-                    Cancel
-                  </button>
-
-                  <button type="submit" className="btnPrimary" disabled={isSaving}>
-                    {isSaving ? "Saving..." : "Save"}
-                  </button>
-                </div>
-              </form>
+              <div className="adminProfileHint">
+                * If you do not enter Old/New Password, only the profile information will be updated.
+              </div>
             </div>
-          )}
-        </div>
-      )}
+
+            <div className="adminProfileActions">
+              <button
+                type="button"
+                className="adminProfileBtn cancel"
+                onClick={onCancel}
+                disabled={saving || uploading}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                className="adminProfileBtn save"
+                disabled={saving || uploading}
+              >
+                {saving ? "Saving..." : uploading ? "Uploading..." : "Save Update"}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
     </div>
   );
 }
