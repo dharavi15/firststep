@@ -4,7 +4,11 @@ import { signOut } from "firebase/auth";
 import { auth } from "../../firebase/firebase";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-export default function AdminTopBar({ title = "Dashboard", userName = "Miss ABC" }) {
+import useAuthStore from "../../store/useAuthStore";
+import { getUserProfile } from "../../firebase/userProfile";
+import adminAvatar from "../../assets/admin.png";
+
+export default function AdminTopBar({ title = "Dashboard" }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -13,6 +17,14 @@ export default function AdminTopBar({ title = "Dashboard", userName = "Miss ABC"
 
   // ref for click outside
   const wrapRef = useRef(null);
+
+  // auth store
+  const storeUser = useAuthStore((s) => s.user);
+  const uid = storeUser?.uid || auth.currentUser?.uid || "";
+
+  // user display (name + photo)
+  const [displayName, setDisplayName] = useState(storeUser?.fullName || "Miss ABC");
+  const [photoURL, setPhotoURL] = useState(storeUser?.photoURL || "");
 
   // menu items for dropdown
   const items = useMemo(() => {
@@ -66,6 +78,40 @@ export default function AdminTopBar({ title = "Dashboard", userName = "Miss ABC"
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  // load profile (same owner as ProfilePage) to get photoURL + fullName
+  useEffect(() => {
+    let alive = true;
+
+    async function loadTopbarProfile() {
+      try {
+        if (!uid) return;
+
+        // 1) quick set from store (if any)
+        if (storeUser?.fullName) setDisplayName(storeUser.fullName);
+        if (storeUser?.photoURL) setPhotoURL(storeUser.photoURL);
+
+        // 2) fetch from Firestore via existing helper
+        const profile = await getUserProfile(uid);
+        if (!alive) return;
+
+        const nextName = profile?.fullName || storeUser?.fullName || "Miss ABC";
+        const nextPhoto = profile?.photoURL || storeUser?.photoURL || "";
+
+        setDisplayName(nextName);
+        setPhotoURL(nextPhoto);
+      } catch (err) {
+        console.error("AdminTopBar load profile error:", err);
+      }
+    }
+
+    loadTopbarProfile();
+    return () => {
+      alive = false;
+    };
+  }, [uid, storeUser?.fullName, storeUser?.photoURL]);
+
+  const avatarSrc = photoURL || adminAvatar;
+
   return (
     <header className="adminTopBar">
       <div className="adminMenuWrap" ref={wrapRef}>
@@ -106,9 +152,10 @@ export default function AdminTopBar({ title = "Dashboard", userName = "Miss ABC"
       <h1 className="adminTopTitle">{title}</h1>
 
       <div className="adminUser">
-        <span className="adminUserName">{userName}</span>
+        <img className="adminUserAvatar" src={avatarSrc} alt="User avatar" />
+        <span className="adminUserName">{displayName}</span>
 
-        <button className="logoutBtn" type="button" onClick={handleLogout}>
+        <button className="adminLogoutBtn" type="button" onClick={handleLogout}>
           Logout
         </button>
       </div>

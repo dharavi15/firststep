@@ -4003,3 +4003,56 @@ a {
   text-overflow: ellipsis;
   max-width: 140px;
 }
+
+/* ===== AdminTopBar: user + logout ===== */
+.adminUser {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.adminUserAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  object-fit: cover;
+  background: var(--card, #fff);
+  border: 2px solid rgba(74, 144, 226, 0.25);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+.adminUserName {
+  font-weight: 700;
+  color: var(--text, #333);
+  white-space: nowrap;
+}
+
+/* LOGOUT STYLE */
+.adminLogoutBtn {
+  background: #ffffff;
+  color: #4A90E2;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+  transition: all 0.18s ease;
+}
+
+.adminLogoutBtn:hover {
+  background: #4A90E2;
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(74, 144, 226, 0.35);
+  transform: translateY(-2px);
+}
+
+.adminLogoutBtn:active {
+  transform: translateY(0px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.adminLogoutBtn:focus-visible {
+  outline: 3px solid rgba(74, 144, 226, 0.4);
+  outline-offset: 2px;
+}
