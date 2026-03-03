@@ -9,7 +9,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-// storage key for localStorage  
+// storage key for localStorage
 const STORAGE_KEY = "firststep_calendar_events";
 
 // create random id for new event
@@ -30,7 +30,7 @@ function toKey(dateObj) {
   return `${y}-${m}-${d}`;
 }
 
-// create month title  
+// create month title
 function monthLabel(dateObj) {
   const m = dateObj.toLocaleString("en-US", { month: "long" });
   const y = dateObj.getFullYear();
@@ -114,7 +114,7 @@ function saveManualEventsToStorage(events) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
 }
 
-// helper: clamp to start of day (local time)
+// local time
 function startOfDay(dt) {
   return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
 }
@@ -161,7 +161,7 @@ export default function CalendarPage() {
   // manual events (localStorage)
   const [manualEvents, setManualEvents] = useState([]);
 
-  // auto events  
+  // auto events
   const [autoEvents, setAutoEvents] = useState([]);
 
   // loading state
@@ -195,10 +195,9 @@ export default function CalendarPage() {
     }
   }, []);
 
-  // auto events loader 
+  // auto events loader
   const loadAutoEvents = useCallback(async () => {
     try {
-       
       setAutoEvents([]);
     } catch {
       setError((prev) => prev || "Auto deadlines cannot load.");
@@ -221,7 +220,7 @@ export default function CalendarPage() {
 
   const selectedEvents = useMemo(() => {
     const list = eventMap.get(selected) || [];
-    // auto events first  
+    // auto events first
     return [...list].sort((a, b) => {
       const aa = a.isAuto ? 0 : 1;
       const bb = b.isAuto ? 0 : 1;
@@ -248,9 +247,7 @@ export default function CalendarPage() {
       if (dayNum < 1 || dayNum > total) {
         cells.push(null);
       } else {
-        cells.push(
-          new Date(viewDate.getFullYear(), viewDate.getMonth(), dayNum)
-        );
+        cells.push(new Date(viewDate.getFullYear(), viewDate.getMonth(), dayNum));
       }
     }
 
@@ -263,12 +260,6 @@ export default function CalendarPage() {
 
   function nextMonth() {
     setViewDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
-  }
-
-  function goToday() {
-    const now = new Date();
-    setViewDate(startOfMonth(now));
-    setSelected(toKey(now));
   }
 
   function onPickDate(dt) {
@@ -377,7 +368,6 @@ export default function CalendarPage() {
     const dt = new Date(y, m - 1, d);
 
     return dt.toLocaleString("en-US", {
-      weekday: "long",
       month: "long",
       day: "numeric",
       year: "numeric",
@@ -389,12 +379,29 @@ export default function CalendarPage() {
     const dt = new Date(y, m - 1, d);
 
     return dt.toLocaleString("en-US", {
-      weekday: "long",
       month: "long",
       day: "numeric",
       year: "numeric",
     });
   }, [todayKey]);
+
+  // text summary for each day (show first title + count)
+  function dayEventSummary(dateKey) {
+    const list = eventMap.get(dateKey) || [];
+    if (!list.length) return "";
+
+    const sorted = [...list].sort((a, b) => {
+      const aa = a.isAuto ? 0 : 1;
+      const bb = b.isAuto ? 0 : 1;
+      return aa - bb || String(a.title).localeCompare(String(b.title));
+    });
+
+    const first = sorted[0]?.title || "";
+    const more = sorted.length - 1;
+
+    if (!first) return more > 0 ? `+${sorted.length} events` : "";
+    return more > 0 ? `${first} +${more}` : first;
+  }
 
   return (
     <div className="calendarWrap">
@@ -408,14 +415,6 @@ export default function CalendarPage() {
               <span className="notifBadge">{notifCount}</span>
             </div>
 
-            <button
-              type="button"
-              className="btnOutlinePrimary calendarTodayBtn"
-              onClick={goToday}
-              title="Go to today"
-            >
-              Today
-            </button>
           </div>
 
           <div className="calendarNav">
@@ -430,7 +429,8 @@ export default function CalendarPage() {
 
         <div className="calendarHintRow">
           <div>
-            <span className="calendarHintLabel">Today:</span> {todayLabel}
+            <span className="calendarHintLabel">Today:</span> {todayLabel}{" "}
+            <span className="calInlineTag calInlineTagToday">Today</span>
           </div>
           <div>
             <span className="calendarHintLabel">Selected:</span> {selectedLabel}
@@ -452,7 +452,10 @@ export default function CalendarPage() {
             const key = toKey(dt);
             const isSelected = key === selected;
             const isToday = key === todayKey;
-            const hasEvents = (eventMap.get(key) || []).length > 0;
+
+            const list = eventMap.get(key) || [];
+            const hasEvents = list.length > 0;
+            const summary = hasEvents ? dayEventSummary(key) : "";
 
             return (
               <button
@@ -463,9 +466,26 @@ export default function CalendarPage() {
                 }`}
                 onClick={() => onPickDate(dt)}
               >
-                <div className="calDayNum">{dt.getDate()}</div>
+                <div className="calDayTop">
+                  <div className="calDayNum">{dt.getDate()}</div>
+
+                  {/* add Selected label inside selected cell */}
+                  {isSelected ? (
+                    <span className="calDayTag calDayTagSelected">Selected</span>
+                  ) : null}
+
+                  {/* keep today styling via class */}
+                </div>
+
                 <div className="calDotRow">
-                  {hasEvents && <span className="calDot" />}
+                  {hasEvents ? (
+                    <>
+                      <span className="calDot" aria-hidden="true" />
+                      <span className="calEventText" title={summary}>
+                        {summary}
+                      </span>
+                    </>
+                  ) : null}
                 </div>
               </button>
             );

@@ -3943,3 +3943,63 @@ a {
 }
 
 @media (max-width: 520px) { .adminProfileActions { grid-template-columns: 1fr; } }
+
+/* ================================
+   Calendar - event text + tags 
+=================================== */
+
+.calDayTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calDayTag {
+  font-size: 11px;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(74, 144, 226, 0.25);
+  background: rgba(74, 144, 226, 0.10);
+  color: #4A90E2;
+  font-weight: 600;
+}
+
+.calDayTagSelected {
+  border-color: rgba(74, 144, 226, 0.35);
+  background: rgba(74, 144, 226, 0.14);
+}
+
+.calInlineTag {
+  font-size: 12px;
+  line-height: 1;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(74, 144, 226, 0.22);
+  background: rgba(74, 144, 226, 0.10);
+  color: #4A90E2;
+  font-weight: 600;
+}
+
+.calInlineTagToday {
+  margin-left: 6px;
+}
+
+.calDotRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calEventText {
+  font-size: 12px;
+  color: #6B7280;
+  font-weight: 600;
+  text-align: left;
+
+  /* keep it neat in calendar cell */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
