@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+/*import { NavLink } from "react-router-dom";
 import { Home, ListChecks, CalendarDays, User } from "lucide-react";
 
 export default function ParentBottomNav() {
@@ -25,4 +25,4 @@ export default function ParentBottomNav() {
       </NavLink>
     </nav>
   );
-}
+}*/

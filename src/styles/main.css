@@ -3068,13 +3068,15 @@ a {
 
 .checklistHeaderGrid {
   display: grid;
-  grid-template-columns: 40px 1.5fr 1.5fr 1fr 1fr auto;
+  /* ✅ Removed Status column */
+  grid-template-columns: 40px 1.5fr 1.5fr 1fr auto;
   align-items: center;
 }
 
 .checklistRowGrid {
   display: grid;
-  grid-template-columns: 40px 1.5fr 1.5fr 1fr 1fr auto;
+  /* ✅ Removed Status column */
+  grid-template-columns: 40px 1.5fr 1.5fr 1fr auto;
   align-items: center;
   cursor: pointer;
 }
@@ -4341,4 +4343,99 @@ a {
 
 .contactMiniRow {
   justify-content: start;
+}
+
+/* =========================================================
+   ✅ CHECKLIST LIST — MOBILE RESPONSIVE FIX (PASTE AT END)
+   ========================================================= */
+
+/* 1) REQUIRED: make header + row actually use CSS grid
+   (your media queries were not working because these were not grid) */
+.tableHeader {
+  display: grid;
+}
+
+.tableRow {
+  display: grid;
+}
+
+/* 2) Desktop grid (keeps your current layout consistent) */
+.tableHeader.checklistHeaderGrid,
+.tableRow.checklistRowGrid {
+  grid-template-columns: 40px 1.5fr 1.5fr 1fr 1fr auto;
+  align-items: center;
+}
+
+/* 3) Tablet: slightly tighter columns */
+@media (max-width: 820px) {
+  .tableHeader.checklistHeaderGrid,
+  .tableRow.checklistRowGrid {
+    grid-template-columns: 40px 1.4fr 1.2fr 0.9fr 1fr auto;
+  }
+}
+
+/* 4) Mobile: convert rows into clean “cards” */
+@media (max-width: 600px) {
+  /* hide header */
+  .tableHeader.checklistHeaderGrid {
+    display: none;
+  }
+
+  /* row becomes a card layout */
+  .tableRow.checklistRowGrid {
+    grid-template-columns: 40px 1fr;
+    gap: 10px 12px;
+    align-items: start;
+    padding: 14px 14px 12px;
+  }
+
+  /* name stays on top */
+  .tableRow.checklistRowGrid .tdName {
+    grid-column: 2 / 3;
+  }
+
+  /* Parent, Class, Status stacked below name */
+  .tableRow.checklistRowGrid .td:nth-child(3),
+  .tableRow.checklistRowGrid .td:nth-child(4),
+  .tableRow.checklistRowGrid .tdStatus {
+    grid-column: 2 / 3;
+  }
+
+  /* actions full width at bottom */
+  .tableRow.checklistRowGrid .checklistActionsCell {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  /* buttons resize nicely */
+  .tableRow.checklistRowGrid .checklistActionsCell .btnSm {
+    flex: 1;
+    min-width: 0;
+    height: 40px;
+  }
+
+  /* smaller avatar on mobile */
+  .studentAvatar {
+    width: 30px;
+    height: 30px;
+  }
+
+  .studentName {
+    font-size: 14px;
+  }
+}
+
+/* 5) Extra small phones: stack buttons vertically */
+@media (max-width: 420px) {
+  .tableRow.checklistRowGrid .checklistActionsCell {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tableRow.checklistRowGrid .checklistActionsCell .btnSm {
+    width: 100%;
+  }
 }

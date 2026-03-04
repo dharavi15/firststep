@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+/*import { useMemo, useState } from "react";
 import {
   ClipboardList,
   CheckCircle2,
@@ -180,4 +180,4 @@ export default function ParentDashboard() {
       {view === "checklist" && renderSimplePage("Onboarding Checklist", "Mock page for now")}
     </div>
   );
-}
+}*/

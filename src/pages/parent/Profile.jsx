@@ -1,4 +1,4 @@
-export default function ParentProfile() {
+/*export default function ParentProfile() {
   return (
     <div className="pagePad">
       <div className="eventDetailBlock">
@@ -8,4 +8,4 @@ export default function ParentProfile() {
       </div>
     </div>
   );
-}
+}*/

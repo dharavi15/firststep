@@ -36,7 +36,7 @@ function AvatarEmoji({ name, className = "studentAvatar" }) {
   return <span className={className}>{emoji}</span>;
 }
 
-// Pill UI
+// Pill UI (used in DETAIL view)
 function StatusPill({ tone = "neutral", text }) {
   const cls =
     tone === "ok"
@@ -47,7 +47,6 @@ function StatusPill({ tone = "neutral", text }) {
   return <span className={cls}>{text}</span>;
 }
 
-// Map overallStatus to UI pill
 function mapOverallStatusToPill(overallStatus) {
   const s = String(overallStatus || "").trim().toLowerCase();
   if (s === "completed" || s === "done") return { text: "Completed", tone: "ok" };
@@ -58,7 +57,6 @@ function mapOverallStatusToPill(overallStatus) {
   return { text: overallStatus ? overallStatus : "Pending", tone: "neutral" };
 }
 
-// Build step rows from progress (completedSteps)
 function buildStepsFromProgress(completedSteps, totalSteps) {
   const completed = Number.isFinite(completedSteps) ? completedSteps : 0;
   const total = Number.isFinite(totalSteps) ? totalSteps : STEP_TEMPLATE.length;
@@ -72,7 +70,6 @@ function buildStepsFromProgress(completedSteps, totalSteps) {
   });
 }
 
-// Calculate progress percent safely
 function calcPercent(completed, total) {
   const c = Number.isFinite(completed) ? completed : 0;
   const t = Number.isFinite(total) ? total : STEP_TEMPLATE.length;
@@ -80,7 +77,6 @@ function calcPercent(completed, total) {
   return Math.max(0, Math.min(100, Math.round((c / t) * 100)));
 }
 
-// Decide next deadline text from "current step"
 function getNextDeadlineText(completedSteps, totalSteps) {
   const completed = Number.isFinite(completedSteps) ? completedSteps : 0;
   const total = Number.isFinite(totalSteps) ? totalSteps : STEP_TEMPLATE.length;
@@ -92,7 +88,7 @@ function getNextDeadlineText(completedSteps, totalSteps) {
 export default function ChecklistPage() {
   const navigate = useNavigate();
 
-  // ✅ Toast (success/error message)
+  // Toast
   const [toast, setToast] = useState({ type: "", text: "" });
   const toastTimerRef = useRef(null);
 
@@ -110,7 +106,7 @@ export default function ChecklistPage() {
     };
   }, []);
 
-  // Search + pagination (list view)
+  // Search + pagination
   const [qText, setQText] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 8;
@@ -121,11 +117,9 @@ export default function ChecklistPage() {
 
   // Selected student (detail view)
   const [selectedStudentId, setSelectedStudentId] = useState(null);
-
-  // Keep a snapshot to avoid re-render loops
   const [selectedStudentSnapshot, setSelectedStudentSnapshot] = useState(null);
 
-  // Enrollment data (detail view)
+  // Enrollment (detail view)
   const [enrollment, setEnrollment] = useState(null);
   const [loadingEnrollment, setLoadingEnrollment] = useState(false);
 
@@ -135,7 +129,6 @@ export default function ChecklistPage() {
   // demo schoolId
   const targetSchoolId = "demo-school";
 
-  // Load all students for this school
   async function loadStudents() {
     try {
       setLoadingStudents(true);
@@ -178,12 +171,10 @@ export default function ChecklistPage() {
     }
   }
 
-  // Load students once
   useEffect(() => {
     loadStudents();
   }, []);
 
-  // Filter list by search
   const filtered = useMemo(() => {
     const t = qText.trim().toLowerCase();
     if (!t) return students;
@@ -214,31 +205,24 @@ export default function ChecklistPage() {
     setPage((p) => Math.min(pageCount, p + 1));
   }
 
-  // Open student detail view
   function onOpenStudent(studentRow) {
     setSelectedStudentId(studentRow.id);
     setSelectedStudentSnapshot(studentRow);
     setEnrollment(null);
   }
 
-  // Back to list
   function onBackToList() {
     setSelectedStudentId(null);
     setSelectedStudentSnapshot(null);
     setEnrollment(null);
   }
 
-  /**
-   * Copy styles to iframe so PDF looks like your UI.
-   * Then add a strong print override to prevent "blank page".
-   */
   const copyAllStylesTo = (targetDoc) => {
     const nodes = document.querySelectorAll('style, link[rel="stylesheet"]');
     nodes.forEach((node) => {
       targetDoc.head.appendChild(node.cloneNode(true));
     });
 
-    // Strong print override (fix blank PDF)
     const override = targetDoc.createElement("style");
     override.innerHTML = `
       @page { margin: 12mm; }
@@ -252,14 +236,9 @@ export default function ChecklistPage() {
     targetDoc.head.appendChild(override);
   };
 
-  /**
-   * Print / Save as PDF for CURRENT student checklist detail.
-   * We print from a hidden iframe to avoid main page print CSS issues.
-   */
   function onDownloadPdf() {
     if (!printAreaRef.current) return;
 
-    // Create hidden iframe
     const iframe = document.createElement("iframe");
     iframe.style.position = "fixed";
     iframe.style.right = "0";
@@ -273,7 +252,6 @@ export default function ChecklistPage() {
     const iwin = iframe.contentWindow;
     const idoc = iframe.contentDocument || iwin.document;
 
-    // Build iframe page
     idoc.open();
     idoc.write(`
       <!doctype html>
@@ -287,15 +265,12 @@ export default function ChecklistPage() {
     `);
     idoc.close();
 
-    // Copy styles + print override
     copyAllStylesTo(idoc);
 
-    // Copy ONLY the printable detail area into iframe
     const wrapper = idoc.createElement("div");
     wrapper.innerHTML = printAreaRef.current.outerHTML;
     idoc.body.appendChild(wrapper);
 
-    // Wait and print
     setTimeout(() => {
       try {
         iwin.focus();
@@ -308,7 +283,6 @@ export default function ChecklistPage() {
     }, 250);
   }
 
-  // ✅ Delete student (NO browser confirm dialog)
   async function onDeleteStudent(studentId, studentName) {
     try {
       await deleteDoc(doc(db, "students", studentId));
@@ -320,16 +294,12 @@ export default function ChecklistPage() {
     }
   }
 
-  // Ensure enrollment doc exists (doc id = studentId)
   async function ensureEnrollmentDoc(studentRow) {
     const enrRef = doc(db, "enrollments", studentRow.id);
     const snap = await getDoc(enrRef);
 
-    if (snap.exists()) {
-      return { id: snap.id, ...snap.data() };
-    }
+    if (snap.exists()) return { id: snap.id, ...snap.data() };
 
-    // Create default enrollment doc
     const seed = {
       schoolId: studentRow.schoolId,
       studentId: studentRow.id,
@@ -349,7 +319,6 @@ export default function ChecklistPage() {
     return { id: studentRow.id, ...seed };
   }
 
-  // Load enrollment when selected student changes
   useEffect(() => {
     let alive = true;
 
@@ -362,7 +331,6 @@ export default function ChecklistPage() {
 
         const data = await ensureEnrollmentDoc(selectedStudentSnapshot);
         if (!alive) return;
-
         setEnrollment(data);
       } catch (err) {
         console.error("Failed to load enrollment:", err);
@@ -374,13 +342,11 @@ export default function ChecklistPage() {
     }
 
     loadEnrollment();
-
     return () => {
       alive = false;
     };
   }, [selectedStudentId, selectedStudentSnapshot]);
 
-  // Update enrollment progress in Firestore
   async function updateEnrollmentProgress(nextCompletedSteps) {
     if (!selectedStudentId) return;
 
@@ -388,15 +354,11 @@ export default function ChecklistPage() {
     const completed = Math.max(0, Math.min(total, Number(nextCompletedSteps || 0)));
     const nextPercent = calcPercent(completed, total);
 
-    // Simple status logic
     const nextStatus = completed >= total ? "completed" : "pending";
-
-    // Next deadline text (UI friendly)
     const nextDeadline = completed >= total ? "Done" : getNextDeadlineText(completed, total);
 
     const enrRef = doc(db, "enrollments", selectedStudentId);
 
-    // Update Firestore
     await updateDoc(enrRef, {
       completedSteps: completed,
       progressPercent: nextPercent,
@@ -405,7 +367,6 @@ export default function ChecklistPage() {
       updatedAt: serverTimestamp(),
     });
 
-    // Update local state (fast UI)
     setEnrollment((prev) => ({
       ...(prev || {}),
       id: selectedStudentId,
@@ -416,7 +377,6 @@ export default function ChecklistPage() {
     }));
   }
 
-  // Mark current step as done
   async function onMarkStepDone() {
     const completed = Number(enrollment?.completedSteps ?? 0);
     const total = Number(enrollment?.totalSteps ?? STEP_TEMPLATE.length);
@@ -430,7 +390,6 @@ export default function ChecklistPage() {
     }
   }
 
-  // Undo last step
   async function onUndoStep() {
     const completed = Number(enrollment?.completedSteps ?? 0);
     if (completed <= 0) return;
@@ -443,7 +402,7 @@ export default function ChecklistPage() {
     }
   }
 
-  // DETAIL VIEW
+  // ✅ DETAIL VIEW (unchanged)
   if (selectedStudentId && selectedStudentSnapshot) {
     const totalCount = Number(enrollment?.totalSteps ?? STEP_TEMPLATE.length);
     const completedCount = Number(enrollment?.completedSteps ?? 0);
@@ -457,8 +416,6 @@ export default function ChecklistPage() {
     const nextDeadlineText =
       enrollment?.nextDeadline ?? getNextDeadlineText(completedCount, totalCount);
     const pill = mapOverallStatusToPill(enrollment?.overallStatus);
-
-    // Dynamic step rows
     const steps = buildStepsFromProgress(completedCount, totalCount);
 
     return (
@@ -523,7 +480,6 @@ export default function ChecklistPage() {
             </div>
           </div>
 
-          {/* Action buttons (admin) */}
           <div className="ckDActions ckNoPrint">
             <div className="ckDCurrentStepText">
               <span className="ckDMuted">Current Step:</span> <b>Step {currentStepNo}</b>
@@ -606,38 +562,15 @@ export default function ChecklistPage() {
               </div>
             ))}
           </div>
-
-          <div className="ckDBottomBar ckNoPrint">
-            <div className="ckDLegend">
-              <span className="ckDLegendItem">
-                <span className="ckDMuted">Status:</span> <b>On Track</b>
-              </span>
-
-              <span className="ckDLegendItem">
-                <span className="ckDDot ckDDotWarn" />
-                <span className="ckDMuted">Pending</span>
-              </span>
-
-              <span className="ckDLegendItem">
-                <span className="ckDDot ckDDotUp" />
-                <span className="ckDMuted">Upcoming</span>
-              </span>
-            </div>
-          </div>
         </div>
       </div>
     );
   }
 
-  // LIST VIEW
+  // ✅ LIST VIEW (Status removed from Students table)
   return (
     <div className="checklistWrap">
-      {/* ✅ Toast UI */}
-      {toast.text && (
-        <div className={`toast ${toast.type}`}>
-          {toast.text}
-        </div>
-      )}
+      {toast.text && <div className={`toast ${toast.type}`}>{toast.text}</div>}
 
       <div className="checklistTopBar">
         <button
@@ -663,12 +596,12 @@ export default function ChecklistPage() {
       </div>
 
       <div className="tableCard">
+        {/* HEADER (no Status) */}
         <div className="tableHeader checklistHeaderGrid">
           <div className="th thCheck" />
           <div className="th thName">Name</div>
           <div className="th">Parent</div>
           <div className="th">Class</div>
-          <div className="th thStatus">Status</div>
           <div className="th thActions">Actions</div>
         </div>
 
@@ -696,10 +629,6 @@ export default function ChecklistPage() {
 
                 <div className="td">{row.parent}</div>
                 <div className="td">{row.classYear}</div>
-
-                <div className="td tdStatus">
-                  <StatusPill tone="neutral" text="Pending" />
-                </div>
 
                 <div className="td checklistActionsCell" onClick={(e) => e.stopPropagation()}>
                   <button
@@ -735,6 +664,7 @@ export default function ChecklistPage() {
             <button type="button" className="pageBtn" onClick={goPrev} disabled={safePage <= 1}>
               ‹
             </button>
+
             <button
               type="button"
               className="pageBtn"
