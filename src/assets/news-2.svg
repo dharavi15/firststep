@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+  <!-- background -->
+  <rect width="1200" height="700" fill="#F9FAFB"></rect>
+
+  <!-- card -->
+  <rect x="80" y="80" width="1040" height="540" rx="40" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2"></rect>
+
+  <!-- image placeholder -->
+  <rect x="140" y="140" width="420" height="300" rx="32" fill="#EEF4FB"></rect>
+
+  <!-- title -->
+  <text x="620" y="320" font-size="80" font-weight="700" fill="#333333" font-family="Inter, Arial, sans-serif">
+    Campus
+  </text>
+
+  <text x="620" y="410" font-size="80" font-weight="700" fill="#333333" font-family="Inter, Arial, sans-serif">
+    Open House
+  </text>
+
+  <!-- footer -->
+  <text x="140" y="580" font-size="20" fill="#9CA3AF" font-family="Inter, Arial, sans-serif">
+    FirstStep • News &amp; Events
+  </text>
+</svg>
