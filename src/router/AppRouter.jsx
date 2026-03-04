@@ -1,5 +1,4 @@
-// src/router/AppRouter.jsx
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import LoginPage from "../pages/auth/LoginPage";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
@@ -18,7 +17,7 @@ import AddStudentPage from "../pages/admin/AddStudentPage";
 
 export default function AppRouter() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         {/* public home */}
         <Route path="/" element={<SchoolLandingPage />} />
@@ -27,39 +26,36 @@ export default function AppRouter() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-        {/* block removed areas */}
+        {/* blocked areas */}
         <Route path="/signup" element={<Navigate to="/login" replace />} />
         <Route path="/parent/*" element={<Navigate to="/login" replace />} />
 
         {/* admin */}
-<Route
-  path="/admin"
-  element={
-    <ProtectedRoute allowRole="admin">
-      <AdminLayout />
-    </ProtectedRoute>
-  }
->
-  <Route index element={<Navigate to="/admin/dashboard" replace />} />
-  <Route path="dashboard" element={<DashboardPage />} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowRole="admin">
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardPage />} />
 
-  {/* ✅ NEW: Students page route */}
-  <Route path="students" element={<ChecklistPage />} />
+          <Route path="students" element={<ChecklistPage />} />
+          <Route path="checklist" element={<Navigate to="/admin/students" replace />} />
+          <Route path="checklist/:studentId" element={<ChecklistStudentPage />} />
 
-  {/* ✅ Keep old URLs working (optional but recommended) */}
-  <Route path="checklist" element={<Navigate to="/admin/students" replace />} />
-  <Route path="checklist/:studentId" element={<ChecklistStudentPage />} />
+          <Route path="students/new" element={<AddStudentPage mode="create" />} />
+          <Route path="students/:studentId/edit" element={<AddStudentPage mode="edit" />} />
 
-  <Route path="students/new" element={<AddStudentPage mode="create" />} />
-  <Route path="students/:studentId/edit" element={<AddStudentPage mode="edit" />} />
-
-  <Route path="calendar" element={<CalendarPage />} />
-  <Route path="profile" element={<ProfilePage />} />
-</Route>
+          <Route path="calendar" element={<CalendarPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+        </Route>
 
         {/* fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
