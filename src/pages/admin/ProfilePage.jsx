@@ -120,7 +120,7 @@ export default function ProfilePage() {
     // Keep size small because we store base64 in localStorage
     const maxBytes = 2 * 1024 * 1024;
     if (file.size > maxBytes) {
-      setError("Image is too large (max 2MB for emergency mode).");
+      setError("Image is too large (max 2MB).");
       return;
     }
 
@@ -133,7 +133,7 @@ export default function ProfilePage() {
       setPhotoURL(base64);
       localStorage.setItem(`profilePhoto_${uid}`, base64);
       setInitial((prev) => ({ ...prev, photoURL: base64 }));
-      setSuccess("Profile image updated (emergency local mode).");
+      setSuccess("Profile image updated.");
     };
     reader.onerror = () => setError("Failed to read image.");
     reader.readAsDataURL(file);
@@ -312,7 +312,7 @@ export default function ProfilePage() {
             <div className={`adminProfileSlide ${editMode ? "open" : ""}`}>
               <form className="adminProfileForm" onSubmit={onSave}>
                 <div className="adminProfileHint">
-                  * Image update is in emergency mode (saved locally only).
+                  
                 </div>
 
                 <div className="adminProfileField">
