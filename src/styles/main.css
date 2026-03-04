@@ -4329,7 +4329,7 @@ a {
 }
 
 /* =========================
-   Contact: Hero text align fix
+   Contact: text align
    ========================= */
 .contactHeroText {
   text-align: left;
@@ -4342,3 +4342,4 @@ a {
 .contactMiniRow {
   justify-content: start;
 }
+

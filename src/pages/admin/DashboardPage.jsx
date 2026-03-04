@@ -183,7 +183,7 @@ export default function DashboardPage() {
           <h3 className="sectionTitle">Student Onboarding Process</h3>
 
           <div className="panelCard">
-            <div className="panelTitle">Application Progress</div>
+            <div className="panelTitle">Application Process</div>
 
             <div className="pendingStepsWrap">
               {onboardingSteps.map((step, idx) => (
