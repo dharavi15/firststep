@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { Printer } from "lucide-react";
 
 // Signature block (print-friendly)
 function SignatureBlock() {
@@ -293,8 +294,8 @@ export default function Documents() {
     return docs.find((d) => d.id === activeId) || null;
   }, [activeId, docs]);
 
- // Print / Save as PDF using a clean iframe.
-  const downloadPdf = () => {
+  // Print / Save as PDF using a clean iframe.
+  const printPdf = () => {
     if (!printAreaRef.current || !activeDoc) return;
 
     // Create hidden iframe
@@ -315,9 +316,7 @@ export default function Documents() {
     const pdfCss = `
       @page { margin: 14mm; }
 
-      html, body {
-        background: #fff;
-      }
+      html, body { background: #fff; }
 
       body {
         font-family: Arial, sans-serif;
@@ -326,9 +325,7 @@ export default function Documents() {
         line-height: 1.5;
       }
 
-      .docPaper {
-        width: 100%;
-      }
+      .docPaper { width: 100%; }
 
       .docHeader {
         margin-bottom: 12px;
@@ -353,17 +350,11 @@ export default function Documents() {
         margin: 14px 0 6px;
       }
 
-      .docText {
-        margin: 0 0 10px 0;
-      }
+      .docText { margin: 0 0 10px 0; }
 
-      .docList {
-        margin: 0 0 10px 18px;
-      }
+      .docList { margin: 0 0 10px 18px; }
 
-      .docBox {
-        margin-bottom: 12px;
-      }
+      .docBox { margin-bottom: 12px; }
 
       .docGrid {
         display: grid;
@@ -471,8 +462,10 @@ export default function Documents() {
             Back to Documents
           </button>
 
-          <button type="button" className="btnPrimary" onClick={downloadPdf}>
-            Download PDF
+          {/* Print PDF button */}
+          <button type="button" className="btnPrintPdf" onClick={printPdf}>
+            <Printer size={18} aria-hidden="true" />
+            Print PDF
           </button>
         </div>
 

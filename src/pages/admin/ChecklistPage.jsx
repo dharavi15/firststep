@@ -556,7 +556,7 @@ export default function ChecklistPage() {
                 onClick={onDownloadPdf}
                 title="Print / Save as PDF"
               >
-                Download Current Step PDF
+                Print PDF
               </button>
             </div>
           </div>
