@@ -1,10 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Eye, EyeOff, Lock, Mail, MapPin, Phone, User, Pencil } from "lucide-react";
-import {
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  updatePassword,
-} from "firebase/auth";
+import { Mail, MapPin, Phone, User, Pencil } from "lucide-react";
 import { doc, updateDoc } from "firebase/firestore";
 
 import { auth, db } from "../../firebase/firebase";
@@ -27,7 +22,7 @@ export default function ProfilePage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // View/Edit mode
+  // This controls view/edit mode
   const [editMode, setEditMode] = useState(false);
 
   // Profile fields (Firestore: users/{uid})
@@ -35,14 +30,8 @@ export default function ProfilePage() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
 
-  // Photo (Emergency: local preview only)
+  // Photo 
   const [photoURL, setPhotoURL] = useState("");
-
-  // Password fields (optional)
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [showOld, setShowOld] = useState(false);
-  const [showNew, setShowNew] = useState(false);
 
   // Snapshot for Cancel
   const [initial, setInitial] = useState({
@@ -77,7 +66,7 @@ export default function ProfilePage() {
         const profile = await getUserProfile(uid);
         if (!alive) return;
 
-        // Emergency local photo (keeps photo after refresh on the same device)
+        // Local photo keeps image after refresh on the same device
         const localPhoto = localStorage.getItem(`profilePhoto_${uid}`) || "";
 
         const next = {
@@ -107,7 +96,7 @@ export default function ProfilePage() {
     };
   }, [uid, storeUser?.fullName]);
 
-  // Open file picker (only in edit mode)
+  // Open file picker 
   function onEditImageClick() {
     setError("");
     setSuccess("");
@@ -123,13 +112,12 @@ export default function ProfilePage() {
 
     if (!file || !uid) return;
 
-    // Basic file check
     if (!file.type.startsWith("image/")) {
       setError("Please select an image file.");
       return;
     }
 
-    // Optional size limit (2MB for local base64)
+    // Keep size small because we store base64 in localStorage
     const maxBytes = 2 * 1024 * 1024;
     if (file.size > maxBytes) {
       setError("Image is too large (max 2MB for emergency mode).");
@@ -139,17 +127,22 @@ export default function ProfilePage() {
     setError("");
     setSuccess("");
 
-    // Convert to base64 so it can survive refresh (same device)
     const reader = new FileReader();
     reader.onload = () => {
       const base64 = String(reader.result || "");
       setPhotoURL(base64);
       localStorage.setItem(`profilePhoto_${uid}`, base64);
       setInitial((prev) => ({ ...prev, photoURL: base64 }));
-      setSuccess("Profile image updated.");
+      setSuccess("Profile image updated (emergency local mode).");
     };
     reader.onerror = () => setError("Failed to read image.");
     reader.readAsDataURL(file);
+  }
+
+  function onStartEdit() {
+    setError("");
+    setSuccess("");
+    setEditMode(true);
   }
 
   function onCancel() {
@@ -161,19 +154,8 @@ export default function ProfilePage() {
     setAddress(initial.address);
     setPhotoURL(initial.photoURL);
 
-    setOldPassword("");
-    setNewPassword("");
-    setShowOld(false);
-    setShowNew(false);
-
     // Back to view mode
     setEditMode(false);
-  }
-
-  function onStartEdit() {
-    setError("");
-    setSuccess("");
-    setEditMode(true);
   }
 
   async function onSave(e) {
@@ -192,39 +174,12 @@ export default function ProfilePage() {
         return;
       }
 
-      // Update profile info (keep this in Firestore)
+      // Save profile info to Firestore
       await updateDoc(doc(db, "users", uid), {
         fullName: nameClean,
         phone: phone.trim(),
         address: address.trim(),
-        // Note: photoURL is NOT saved to Firestore in emergency mode
       });
-
-      // Change password only if both fields are filled
-      const wantChangePassword = oldPassword.trim() && newPassword.trim();
-      if (wantChangePassword) {
-        if (newPassword.trim().length < 6) {
-          setError("New Password must be at least 6 characters.");
-          return;
-        }
-
-        if (!auth.currentUser?.email) {
-          setError("Missing auth email. Please login again.");
-          return;
-        }
-
-        const cred = EmailAuthProvider.credential(
-          auth.currentUser.email,
-          oldPassword.trim()
-        );
-        await reauthenticateWithCredential(auth.currentUser, cred);
-        await updatePassword(auth.currentUser, newPassword.trim());
-
-        setOldPassword("");
-        setNewPassword("");
-        setShowOld(false);
-        setShowNew(false);
-      }
 
       // Update snapshot for Cancel
       setInitial((prev) => ({
@@ -235,9 +190,7 @@ export default function ProfilePage() {
         photoURL: photoURL || prev.photoURL,
       }));
 
-      setSuccess(wantChangePassword ? "Profile and password updated." : "Profile updated.");
-
-      // Back to view mode after save
+      setSuccess("Profile updated.");
       setEditMode(false);
     } catch (err) {
       console.error("Save profile error:", err);
@@ -281,7 +234,7 @@ export default function ProfilePage() {
               alt="Admin"
             />
 
-            {/* Show edit image button only in edit mode */}
+            {/* Show pencil only in edit mode */}
             {editMode && (
               <button
                 type="button"
@@ -310,7 +263,7 @@ export default function ProfilePage() {
           </div>
         ) : (
           <>
-            {/* View mode summary */}
+            {/* View mode: show profile info only */}
             <div className="adminProfileForm adminProfileView">
               {error && <div className="adminProfileMsg error">{error}</div>}
               {success && <div className="adminProfileMsg success">{success}</div>}
@@ -343,7 +296,7 @@ export default function ProfilePage() {
                 <input className="adminProfileInput" value={address} disabled />
               </div>
 
-              {/* Edit button only */}
+              {/* Edit button */}
               <div className="adminProfileActions single">
                 <button
                   type="button"
@@ -355,12 +308,11 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Slide-down edit menu (no popup) */}
+            {/* Slide-down edit menu */}
             <div className={`adminProfileSlide ${editMode ? "open" : ""}`}>
               <form className="adminProfileForm" onSubmit={onSave}>
-                {/* image */}
                 <div className="adminProfileHint">
-                  * Image update.
+                  * Image update is in emergency mode (saved locally only).
                 </div>
 
                 <div className="adminProfileField">
@@ -407,66 +359,6 @@ export default function ProfilePage() {
                     placeholder="Address"
                     disabled={readOnly}
                   />
-                </div>
-
-                <div className="adminProfileDivider" />
-
-                {/* Old password */}
-                <div className="adminProfileField">
-                  <div className="adminProfileLabel">
-                    <Lock size={16} /> Old Password
-                  </div>
-                  <div className="adminProfilePwdRow">
-                    <input
-                      className="adminProfileInput"
-                      type={showOld ? "text" : "password"}
-                      value={oldPassword}
-                      onChange={(ev) => setOldPassword(ev.target.value)}
-                      placeholder="••••••••"
-                      disabled={readOnly}
-                    />
-                    <button
-                      type="button"
-                      className="adminProfileEyeBtn"
-                      onClick={() => setShowOld((v) => !v)}
-                      aria-label="Toggle old password"
-                      title="Show/Hide"
-                      disabled={readOnly}
-                    >
-                      {showOld ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* New password */}
-                <div className="adminProfileField">
-                  <div className="adminProfileLabel">
-                    <Lock size={16} /> New Password
-                  </div>
-                  <div className="adminProfilePwdRow">
-                    <input
-                      className="adminProfileInput"
-                      type={showNew ? "text" : "password"}
-                      value={newPassword}
-                      onChange={(ev) => setNewPassword(ev.target.value)}
-                      placeholder="New password"
-                      disabled={readOnly}
-                    />
-                    <button
-                      type="button"
-                      className="adminProfileEyeBtn"
-                      onClick={() => setShowNew((v) => !v)}
-                      aria-label="Toggle new password"
-                      title="Show/Hide"
-                      disabled={readOnly}
-                    >
-                      {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-
-                  <div className="adminProfileHint">
-                    * If you do not enter Old/New Password, only the profile information will be updated.
-                  </div>
                 </div>
 
                 <div className="adminProfileActions">
