@@ -9,14 +9,16 @@ const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 3000;
 
-// serve built frontend
-app.use(express.static(path.join(__dirname, "dist")));
+const distPath = path.join(__dirname, "dist");
 
-// React router support
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "dist", "index.html"));
+// Serve static files
+app.use(express.static(distPath));
+
+// ✅ Express 5 safe SPA fallback (DO NOT use app.get("*"))
+app.use((req, res) => {
+  res.sendFile(path.join(distPath, "index.html"));
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`✅ Web service running on port ${PORT}`);
 });
