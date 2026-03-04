@@ -4349,3 +4349,44 @@ a {
   justify-content: center;
   font-size: 16px;
 }
+
+/* =========================
+   Contact: Search bar
+   ========================= */
+.contactSearchWrap {
+  margin: 10px 0 14px;
+}
+
+.contactSearchBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  background: var(--card, #fff);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 12px 14px;
+
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+}
+
+.contactSearchIcon {
+  width: 18px;
+  height: 18px;
+  color: var(--muted, #6b7280);
+  flex: 0 0 auto;
+}
+
+.contactSearchInput {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+
+  font-size: 16px;
+  color: var(--text, #333);
+}
+
+.contactSearchInput::placeholder {
+  color: var(--muted, #6b7280);
+}

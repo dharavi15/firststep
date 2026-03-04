@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { collection, doc, getDocs, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
+import { Search } from "lucide-react";
 
 import LogoImg from "../../assets/img_-_logo.jpg";
 
@@ -8,6 +9,9 @@ export default function Contact() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+
+  // NEW: search state
+  const [search, setSearch] = useState("");
 
   // edit modal state
   const [openEdit, setOpenEdit] = useState(false);
@@ -54,6 +58,30 @@ export default function Contact() {
     );
     return copy;
   }, [students]);
+
+  // NEW: filter after sort
+  const filteredStudents = useMemo(() => {
+    const q = String(search || "").trim().toLowerCase();
+    if (!q) return sortedStudents;
+
+    return sortedStudents.filter((s) => {
+      const studentName = String(s.studentName || "").toLowerCase();
+      const parentName = String(s.parentName || "").toLowerCase();
+      const parentEmail = String(s.parentEmail || "").toLowerCase();
+      const phone = String(s.phone || "").toLowerCase();
+      const address = String(s.address || "").toLowerCase();
+      const year = String(s.year ?? "").toLowerCase();
+
+      return (
+        studentName.includes(q) ||
+        parentName.includes(q) ||
+        parentEmail.includes(q) ||
+        phone.includes(q) ||
+        address.includes(q) ||
+        year.includes(q)
+      );
+    });
+  }, [sortedStudents, search]);
 
   function openEditModal(student) {
     setEditId(student.id);
@@ -162,15 +190,29 @@ export default function Contact() {
         <div className="contactSection">
           <div className="contactSectionTitle">Student Contacts</div>
 
+          {/* NEW: Search bar */}
+          <div className="contactSearchWrap">
+            <div className="contactSearchBox">
+              <Search className="contactSearchIcon" aria-hidden="true" />
+              <input
+                className="contactSearchInput"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search"
+                aria-label="Search students"
+              />
+            </div>
+          </div>
+
           {loading && <div className="contactHint">Loading students...</div>}
           {!loading && err && <div className="contactError">{err}</div>}
-          {!loading && !err && sortedStudents.length === 0 && (
+          {!loading && !err && filteredStudents.length === 0 && (
             <div className="contactHint">No students found.</div>
           )}
 
-          {!loading && !err && sortedStudents.length > 0 && (
+          {!loading && !err && filteredStudents.length > 0 && (
             <div className="studentContactGrid">
-              {sortedStudents.map((s) => (
+              {filteredStudents.map((s) => (
                 <div className="studentContactCard" key={s.id}>
                   <div className="studentContactTop">
                     <div className="studentEmoji">{s.avatarEmoji || "🧒"}</div>
