@@ -1486,17 +1486,6 @@ a {
   color: var(--color-text-secondary);
 }
 
-@media (max-width: 520px) {
-  .calCell {
-    height: 48px;
-  }
-
-  .upcomingHeader {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
 /* Calendar action group */
 .calendarActionGroup {
   display: flex;
@@ -1626,6 +1615,98 @@ a {
   color: var(--color-text-secondary);
   font-weight: 700;
   line-height: 1.4;
+}
+
+/* ===============================
+   Calendar mobile fix
+   Only affects calendar on phone
+   =============================== */
+@media (max-width: 420px) {
+
+  .calendarGrid {
+    gap: 2px;
+  }
+
+  .calCell {
+    height: 42px;
+    padding: 4px;
+  }
+
+  .calDayNum {
+    font-size: 12px;
+  }
+
+  /* hide long event text on small screens */
+  .calEventText {
+    display: none;
+  }
+
+  /* keep only dots */
+  .calDot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .calDotRow {
+    gap: 3px;
+  }
+
+  /* Today / Selected tag smaller */
+  .calDayTag,
+  .calInlineTag {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+
+  .calendarWeekdays {
+    font-size: 11px;
+  }
+
+}
+
+/* ===============================
+   Calendar responsive FIX
+   =============================== */
+@media (max-width: 420px) {
+
+  /* prevent horizontal scroll */
+  .calendarCard {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .calendarGrid {
+    width: 100%;
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  .calCell {
+    height: 40px;
+    padding: 3px;
+  }
+
+  .calDayNum {
+    font-size: 12px;
+  }
+
+  /* hide event text on small screens */
+  .calEventText {
+    display: none;
+  }
+
+  .calDot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .calDotRow {
+    gap: 3px;
+  }
+
+  .calendarWeekdays {
+    font-size: 11px;
+  }
+
 }
 
 /* =========================
