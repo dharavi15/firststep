@@ -649,7 +649,7 @@ export default function AddStudentPage({ mode = "create" }) {
         {/* Enrollment ID */}
         <div style={{ background: "white", borderRadius: 14, padding: 16, border: "1px solid #eee" }}>
           <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>
-            Enrollment ID *(auto-generated)
+            Enrollment ID (auto-generated)
           </label>
           <input
             value={form.enrollmentId}
