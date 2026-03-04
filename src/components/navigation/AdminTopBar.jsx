@@ -1,7 +1,7 @@
+// src/components/nav/AdminTopBar.jsx
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Menu, Home, Users, CalendarDays, User } from "lucide-react";
-import { signOut } from "firebase/auth";
 
 import { auth } from "../../firebase/firebase";
 import useAuthStore from "../../store/useAuthStore";
@@ -12,6 +12,7 @@ export default function AdminTopBar({ title = "Dashboard", onLogout }) {
   const navigate = useNavigate();
 
   const storeUser = useAuthStore((s) => s.user);
+  const logoutFromStore = useAuthStore((s) => s.logout);
 
   const uid = storeUser?.uid || auth.currentUser?.uid || "";
   const nameFromStore =
@@ -42,25 +43,29 @@ export default function AdminTopBar({ title = "Dashboard", onLogout }) {
     try {
       setOpen(false);
 
-      // if parent passes onLogout, use it
+      // If parent passes a custom onLogout, use it (and still go landing)
       if (typeof onLogout === "function") {
         await onLogout();
+        navigate("/", { replace: true });
         return;
       }
 
-      // fallback logout (works even if onLogout not provided)
-      await signOut(auth);
+      // ✅ One source of truth for logout
+      if (typeof logoutFromStore === "function") {
+        await logoutFromStore();
+      } else {
+        // fallback if store logout is missing for any reason
+        const st = useAuthStore.getState?.();
+        if (st?.logout) await st.logout();
+        else if (st?.setUser) st.setUser(null);
+      }
 
-      // clear store if your zustand store has setter (safe guard)
-      const st = useAuthStore.getState?.();
-      if (st?.setUser) st.setUser(null);
-      if (st?.logout) st.logout();
-
-      navigate("/login", { replace: true });
+      // ✅ Go back to SchoolLandingPage after logout
+      navigate("/", { replace: true });
     } catch (err) {
       console.error("Logout error:", err);
-      // even if error, still try to go login to avoid stuck UI
-      navigate("/login", { replace: true });
+      // Even if error, go to landing so user isn't stuck
+      navigate("/", { replace: true });
     }
   }
 
@@ -93,7 +98,6 @@ export default function AdminTopBar({ title = "Dashboard", onLogout }) {
               <span className="adminHamburgerLabel">Dashboard</span>
             </NavLink>
 
-            {/* Student icon = Users */}
             <NavLink
               to="/admin/students"
               className={({ isActive }) =>
