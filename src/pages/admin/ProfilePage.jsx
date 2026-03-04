@@ -146,7 +146,7 @@ export default function ProfilePage() {
       setPhotoURL(base64);
       localStorage.setItem(`profilePhoto_${uid}`, base64);
       setInitial((prev) => ({ ...prev, photoURL: base64 }));
-      setSuccess("Profile image updated (emergency local mode).");
+      setSuccess("Profile image updated.");
     };
     reader.onerror = () => setError("Failed to read image.");
     reader.readAsDataURL(file);
