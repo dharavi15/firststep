@@ -19,6 +19,23 @@ const useAuthStore = create((set, get) => ({
   clearStoreError: () => set({ error: "" }),
   setAuthReady: (ready) => set({ authReady: Boolean(ready) }),
 
+  // ✅ NEW: one consistent logout function
+  logout: async () => {
+    try {
+      set({ loading: true, error: "" });
+
+      await signOut(auth);
+
+      // clear local state immediately (listener will also do it)
+      set({ user: null, authReady: true });
+    } catch (e) {
+      console.log("LOGOUT ERROR:", e);
+      set({ error: "Logout failed. Please try again." });
+    } finally {
+      set({ loading: false });
+    }
+  },
+
   startAuthListener: () => {
     const oldUnsub = get()._unsub;
     if (oldUnsub) return;
