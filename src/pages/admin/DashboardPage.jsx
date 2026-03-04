@@ -85,14 +85,14 @@ export default function DashboardPage() {
   // Admin view
   const onboardingSteps = useMemo(
     () => [
-      "Step 1: Providing Information to Prospective Parents",
-      "Step 2: Making Your Application",
-      "Step 3: Submission of application and time frame",
-      "Step 4: Admission Interview",
-      "Step 5: Offer of Entry and Acceptance",
-      "Step 6: Registration",
-      "Step 7: Information to registered students and parents",
-      "Step 8: Orientation",
+      "Step 1: Providing information to prospective parents",
+      "Step 2: Receiving and reviewing student applications",
+      "Step 3: Accepting approved applications",
+      "Step 4: Conducting admission interviews",
+      "Step 5:Issuing offers of admission",
+      "Step 6: Registering accepted students",
+      "Step 7:Providing information to registered students and parents",
+      "Step 8: Organizing student orientation",
     ],
     []
   );
@@ -183,7 +183,7 @@ export default function DashboardPage() {
           <h3 className="sectionTitle">Student Onboarding Process</h3>
 
           <div className="panelCard">
-            <div className="panelTitle">Application Progress</div>
+            <div className="panelTitle">Application Process</div>
 
             <div className="pendingStepsWrap">
               {onboardingSteps.map((step, idx) => (
