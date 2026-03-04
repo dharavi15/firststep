@@ -1,4 +1,3 @@
-// src/pages/admin/ProfilePage.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Eye, EyeOff, Lock, Mail, MapPin, Phone, User, Pencil } from "lucide-react";
 import {
@@ -7,9 +6,8 @@ import {
   updatePassword,
 } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-import { auth, db, storage } from "../../firebase/firebase";
+import { auth, db } from "../../firebase/firebase";
 import { getUserProfile } from "../../firebase/userProfile";
 import useAuthStore from "../../store/useAuthStore";
 
@@ -25,15 +23,19 @@ export default function ProfilePage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // View/Edit mode
+  const [editMode, setEditMode] = useState(false);
 
   // Profile fields (Firestore: users/{uid})
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+
+  // Photo (Emergency: local preview only)
   const [photoURL, setPhotoURL] = useState("");
 
   // Password fields (optional)
@@ -57,7 +59,7 @@ export default function ProfilePage() {
     return storeUser.role === "admin";
   }, [uid, storeUser?.role]);
 
-  // Load profile from Firestore
+  // Load profile from Firestore + load local photo fallback
   useEffect(() => {
     let alive = true;
 
@@ -75,11 +77,15 @@ export default function ProfilePage() {
         const profile = await getUserProfile(uid);
         if (!alive) return;
 
+        // Emergency local photo (keeps photo after refresh on the same device)
+        const localPhoto = localStorage.getItem(`profilePhoto_${uid}`) || "";
+
         const next = {
           fullName: profile?.fullName || storeUser?.fullName || "",
           phone: profile?.phone || "",
           address: profile?.address || "",
-          photoURL: profile?.photoURL || "",
+          // Prefer local photo first, then Firestore photoURL, then empty
+          photoURL: localPhoto || profile?.photoURL || "",
         };
 
         setFullName(next.fullName);
@@ -101,15 +107,15 @@ export default function ProfilePage() {
     };
   }, [uid, storeUser?.fullName]);
 
-  // Open file picker
+  // Open file picker (only in edit mode)
   function onEditImageClick() {
     setError("");
     setSuccess("");
     fileInputRef.current?.click();
   }
 
-  // Upload image -> Storage -> Save photoURL to Firestore
-  async function onImageSelected(e) {
+  // image update: local preview + localStorage 
+  function onImageSelected(e) {
     const file = e.target.files?.[0];
 
     // Reset input so user can pick same file again
@@ -123,36 +129,27 @@ export default function ProfilePage() {
       return;
     }
 
-    // Optional size limit (5MB)
-    const maxBytes = 5 * 1024 * 1024;
+    // Optional size limit (2MB for local base64)
+    const maxBytes = 2 * 1024 * 1024;
     if (file.size > maxBytes) {
-      setError("Image is too large (max 5MB).");
+      setError("Image is too large (max 2MB for emergency mode).");
       return;
     }
 
-    try {
-      setUploading(true);
-      setError("");
-      setSuccess("");
+    setError("");
+    setSuccess("");
 
-      // Use a stable path, file extension not required
-      const imageRef = ref(storage, `adminProfiles/${uid}`);
-
-      await uploadBytes(imageRef, file);
-      const url = await getDownloadURL(imageRef);
-
-      await updateDoc(doc(db, "users", uid), { photoURL: url });
-
-      setPhotoURL(url);
-      setInitial((prev) => ({ ...prev, photoURL: url }));
-      setSuccess("Profile image updated.");
-    } catch (err) {
-      console.error("Upload image error:", err);
-      const code = err?.code ? `(${err.code}) ` : "";
-      setError(`${code}${err?.message || "Image upload failed."}`);
-    } finally {
-      setUploading(false);
-    }
+    // Convert to base64 so it can survive refresh (same device)
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = String(reader.result || "");
+      setPhotoURL(base64);
+      localStorage.setItem(`profilePhoto_${uid}`, base64);
+      setInitial((prev) => ({ ...prev, photoURL: base64 }));
+      setSuccess("Profile image updated (emergency local mode).");
+    };
+    reader.onerror = () => setError("Failed to read image.");
+    reader.readAsDataURL(file);
   }
 
   function onCancel() {
@@ -168,6 +165,15 @@ export default function ProfilePage() {
     setNewPassword("");
     setShowOld(false);
     setShowNew(false);
+
+    // Back to view mode
+    setEditMode(false);
+  }
+
+  function onStartEdit() {
+    setError("");
+    setSuccess("");
+    setEditMode(true);
   }
 
   async function onSave(e) {
@@ -186,11 +192,12 @@ export default function ProfilePage() {
         return;
       }
 
-      // Update profile info
+      // Update profile info (keep this in Firestore)
       await updateDoc(doc(db, "users", uid), {
         fullName: nameClean,
         phone: phone.trim(),
         address: address.trim(),
+        // Note: photoURL is NOT saved to Firestore in emergency mode
       });
 
       // Change password only if both fields are filled
@@ -206,7 +213,10 @@ export default function ProfilePage() {
           return;
         }
 
-        const cred = EmailAuthProvider.credential(auth.currentUser.email, oldPassword.trim());
+        const cred = EmailAuthProvider.credential(
+          auth.currentUser.email,
+          oldPassword.trim()
+        );
         await reauthenticateWithCredential(auth.currentUser, cred);
         await updatePassword(auth.currentUser, newPassword.trim());
 
@@ -222,9 +232,13 @@ export default function ProfilePage() {
         fullName: nameClean,
         phone: phone.trim(),
         address: address.trim(),
+        photoURL: photoURL || prev.photoURL,
       }));
 
       setSuccess(wantChangePassword ? "Profile and password updated." : "Profile updated.");
+
+      // Back to view mode after save
+      setEditMode(false);
     } catch (err) {
       console.error("Save profile error:", err);
       const code = err?.code ? `(${err.code}) ` : "";
@@ -239,7 +253,7 @@ export default function ProfilePage() {
       <div className="adminProfileWrap">
         <div className="adminProfileCard">
           <div className="adminProfileTopBar">
-            <div className="adminProfileTitle">Edit Profile</div>
+            <div className="adminProfileTitle">Your Profile</div>
           </div>
           <div className="adminProfileForm">
             <div className="adminProfileMsg error">Access denied. Admin only.</div>
@@ -249,11 +263,13 @@ export default function ProfilePage() {
     );
   }
 
+  const readOnly = !editMode;
+
   return (
     <div className="adminProfileWrap">
       <div className="adminProfileCard">
         <div className="adminProfileTopBar">
-          <div className="adminProfileTitle">Edit Profile</div>
+          <div className="adminProfileTitle">Your Profile</div>
         </div>
 
         {/* Avatar */}
@@ -265,16 +281,18 @@ export default function ProfilePage() {
               alt="Admin"
             />
 
-            <button
-              type="button"
-              className="adminProfileAvatarEdit"
-              onClick={onEditImageClick}
-              disabled={uploading}
-              aria-label="Edit profile image"
-              title="Edit"
-            >
-              <Pencil size={14} />
-            </button>
+            {/* Show edit image button only in edit mode */}
+            {editMode && (
+              <button
+                type="button"
+                className="adminProfileAvatarEdit"
+                onClick={onEditImageClick}
+                aria-label="Edit profile image"
+                title="Edit"
+              >
+                <Pencil size={14} />
+              </button>
+            )}
 
             <input
               ref={fileInputRef}
@@ -291,128 +309,187 @@ export default function ProfilePage() {
             <div className="adminProfileHint">Loading...</div>
           </div>
         ) : (
-          <form className="adminProfileForm" onSubmit={onSave}>
-            {error && <div className="adminProfileMsg error">{error}</div>}
-            {success && <div className="adminProfileMsg success">{success}</div>}
+          <>
+            {/* View mode summary */}
+            <div className="adminProfileForm adminProfileView">
+              {error && <div className="adminProfileMsg error">{error}</div>}
+              {success && <div className="adminProfileMsg success">{success}</div>}
 
-            <div className="adminProfileField">
-              <div className="adminProfileLabel">
-                <User size={16} /> Name
+              <div className="adminProfileField">
+                <div className="adminProfileLabel">
+                  <User size={16} /> Name
+                </div>
+                <input className="adminProfileInput" value={fullName} disabled />
               </div>
-              <input
-                className="adminProfileInput"
-                value={fullName}
-                onChange={(ev) => setFullName(ev.target.value)}
-                placeholder="Full name"
-              />
-            </div>
 
-            <div className="adminProfileField">
-              <div className="adminProfileLabel">
-                <Mail size={16} /> Email
+              <div className="adminProfileField">
+                <div className="adminProfileLabel">
+                  <Mail size={16} /> Email
+                </div>
+                <input className="adminProfileInput" value={email || "-"} disabled />
               </div>
-              <input className="adminProfileInput" value={email || "-"} disabled />
-            </div>
 
-            <div className="adminProfileField">
-              <div className="adminProfileLabel">
-                <Phone size={16} /> Phone
+              <div className="adminProfileField">
+                <div className="adminProfileLabel">
+                  <Phone size={16} /> Phone
+                </div>
+                <input className="adminProfileInput" value={phone} disabled />
               </div>
-              <input
-                className="adminProfileInput"
-                value={phone}
-                onChange={(ev) => setPhone(ev.target.value)}
-                placeholder="Phone number"
-              />
-            </div>
 
-            <div className="adminProfileField">
-              <div className="adminProfileLabel">
-                <MapPin size={16} /> Address
+              <div className="adminProfileField">
+                <div className="adminProfileLabel">
+                  <MapPin size={16} /> Address
+                </div>
+                <input className="adminProfileInput" value={address} disabled />
               </div>
-              <input
-                className="adminProfileInput"
-                value={address}
-                onChange={(ev) => setAddress(ev.target.value)}
-                placeholder="Address"
-              />
-            </div>
 
-            <div className="adminProfileDivider" />
-
-            {/* Old password */}
-            <div className="adminProfileField">
-              <div className="adminProfileLabel">
-                <Lock size={16} /> Old Password
-              </div>
-              <div className="adminProfilePwdRow">
-                <input
-                  className="adminProfileInput"
-                  type={showOld ? "text" : "password"}
-                  value={oldPassword}
-                  onChange={(ev) => setOldPassword(ev.target.value)}
-                  placeholder="••••••••"
-                />
+              {/* Edit button only */}
+              <div className="adminProfileActions single">
                 <button
                   type="button"
-                  className="adminProfileEyeBtn"
-                  onClick={() => setShowOld((v) => !v)}
-                  aria-label="Toggle old password"
-                  title="Show/Hide"
+                  className="adminProfileBtn edit"
+                  onClick={onStartEdit}
                 >
-                  {showOld ? <EyeOff size={18} /> : <Eye size={18} />}
+                  Edit Profile
                 </button>
               </div>
             </div>
 
-            {/* New password */}
-            <div className="adminProfileField">
-              <div className="adminProfileLabel">
-                <Lock size={16} /> New Password
-              </div>
-              <div className="adminProfilePwdRow">
-                <input
-                  className="adminProfileInput"
-                  type={showNew ? "text" : "password"}
-                  value={newPassword}
-                  onChange={(ev) => setNewPassword(ev.target.value)}
-                  placeholder="New password"
-                />
-                <button
-                  type="button"
-                  className="adminProfileEyeBtn"
-                  onClick={() => setShowNew((v) => !v)}
-                  aria-label="Toggle new password"
-                  title="Show/Hide"
-                >
-                  {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
+            {/* Slide-down edit menu (no popup) */}
+            <div className={`adminProfileSlide ${editMode ? "open" : ""}`}>
+              <form className="adminProfileForm" onSubmit={onSave}>
+                {/* image */}
+                <div className="adminProfileHint">
+                  * Image update.
+                </div>
 
-              <div className="adminProfileHint">
-                * If you do not enter Old/New Password, only the profile information will be updated.
-              </div>
+                <div className="adminProfileField">
+                  <div className="adminProfileLabel">
+                    <User size={16} /> Name
+                  </div>
+                  <input
+                    className="adminProfileInput"
+                    value={fullName}
+                    onChange={(ev) => setFullName(ev.target.value)}
+                    placeholder="Full name"
+                    disabled={readOnly}
+                  />
+                </div>
+
+                <div className="adminProfileField">
+                  <div className="adminProfileLabel">
+                    <Mail size={16} /> Email
+                  </div>
+                  <input className="adminProfileInput" value={email || "-"} disabled />
+                </div>
+
+                <div className="adminProfileField">
+                  <div className="adminProfileLabel">
+                    <Phone size={16} /> Phone
+                  </div>
+                  <input
+                    className="adminProfileInput"
+                    value={phone}
+                    onChange={(ev) => setPhone(ev.target.value)}
+                    placeholder="Phone number"
+                    disabled={readOnly}
+                  />
+                </div>
+
+                <div className="adminProfileField">
+                  <div className="adminProfileLabel">
+                    <MapPin size={16} /> Address
+                  </div>
+                  <input
+                    className="adminProfileInput"
+                    value={address}
+                    onChange={(ev) => setAddress(ev.target.value)}
+                    placeholder="Address"
+                    disabled={readOnly}
+                  />
+                </div>
+
+                <div className="adminProfileDivider" />
+
+                {/* Old password */}
+                <div className="adminProfileField">
+                  <div className="adminProfileLabel">
+                    <Lock size={16} /> Old Password
+                  </div>
+                  <div className="adminProfilePwdRow">
+                    <input
+                      className="adminProfileInput"
+                      type={showOld ? "text" : "password"}
+                      value={oldPassword}
+                      onChange={(ev) => setOldPassword(ev.target.value)}
+                      placeholder="••••••••"
+                      disabled={readOnly}
+                    />
+                    <button
+                      type="button"
+                      className="adminProfileEyeBtn"
+                      onClick={() => setShowOld((v) => !v)}
+                      aria-label="Toggle old password"
+                      title="Show/Hide"
+                      disabled={readOnly}
+                    >
+                      {showOld ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* New password */}
+                <div className="adminProfileField">
+                  <div className="adminProfileLabel">
+                    <Lock size={16} /> New Password
+                  </div>
+                  <div className="adminProfilePwdRow">
+                    <input
+                      className="adminProfileInput"
+                      type={showNew ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(ev) => setNewPassword(ev.target.value)}
+                      placeholder="New password"
+                      disabled={readOnly}
+                    />
+                    <button
+                      type="button"
+                      className="adminProfileEyeBtn"
+                      onClick={() => setShowNew((v) => !v)}
+                      aria-label="Toggle new password"
+                      title="Show/Hide"
+                      disabled={readOnly}
+                    >
+                      {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+
+                  <div className="adminProfileHint">
+                    * If you do not enter Old/New Password, only the profile information will be updated.
+                  </div>
+                </div>
+
+                <div className="adminProfileActions">
+                  <button
+                    type="button"
+                    className="adminProfileBtn cancel"
+                    onClick={onCancel}
+                    disabled={saving}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="adminProfileBtn save"
+                    disabled={saving}
+                  >
+                    {saving ? "Saving..." : "Save Update"}
+                  </button>
+                </div>
+              </form>
             </div>
-
-            <div className="adminProfileActions">
-              <button
-                type="button"
-                className="adminProfileBtn cancel"
-                onClick={onCancel}
-                disabled={saving || uploading}
-              >
-                Cancel
-              </button>
-
-              <button
-                type="submit"
-                className="adminProfileBtn save"
-                disabled={saving || uploading}
-              >
-                {saving ? "Saving..." : uploading ? "Uploading..." : "Save Update"}
-              </button>
-            </div>
-          </form>
+          </>
         )}
       </div>
     </div>
