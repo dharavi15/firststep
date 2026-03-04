@@ -649,7 +649,7 @@ export default function AddStudentPage({ mode = "create" }) {
         {/* Enrollment ID */}
         <div style={{ background: "white", borderRadius: 14, padding: 16, border: "1px solid #eee" }}>
           <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>
-            Enrollment ID *
+            Enrollment ID (auto-generated)
           </label>
           <input
             value={form.enrollmentId}
@@ -660,9 +660,7 @@ export default function AddStudentPage({ mode = "create" }) {
             placeholder="enr_ethan_parker"
             style={{ width: "100%", padding: 12, borderRadius: 12, border: "1px solid #ddd" }}
           />
-          <div style={{ marginTop: 8, fontSize: 13, color: "#666" }}>
-            Auto-generated from student name, but you can edit it.
-          </div>
+          
           {errors.enrollmentId && (
             <div style={{ color: "crimson", marginTop: 8, fontSize: 13 }}>{errors.enrollmentId}</div>
           )}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+/*import { useMemo, useState } from "react";
 import ParentTopBar from "../../components/navigation/ParentTopBar";
 import ParentBottomNav from "../../components/navigation/ParentBottomNav";
 
@@ -181,4 +181,4 @@ export default function ParentChecklist() {
       <ParentBottomNav />
     </div>
   );
-}
+}*/

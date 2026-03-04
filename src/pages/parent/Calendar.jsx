@@ -1,4 +1,4 @@
-export default function ParentCalendar() {
+/*export default function ParentCalendar() {
   return (
     <div className="pagePad">
       <div className="eventDetailBlock">
@@ -8,4 +8,4 @@ export default function ParentCalendar() {
       </div>
     </div>
   );
-}
+}*/
