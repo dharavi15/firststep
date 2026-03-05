@@ -3,13 +3,17 @@ import { useMemo, useState } from "react";
 export default function NewsEvents() {
   const [selectedId, setSelectedId] = useState("");
 
+  // ✅ Works on localhost and GitHub Pages because BASE_URL becomes "/firststep/"
+  const base = import.meta.env.BASE_URL; // e.g. "/" in dev, "/firststep/" in GH pages
+  const img = (file) => `${base}news/${file}`;
+
   const newsItems = useMemo(
     () => [
       {
         id: "news-1",
         date: "FEBRUARY 26, 2026",
         title: "School Partnership Day: Learning Beyond the Classroom",
-        image: "/src/assets/news/news-1.svg",
+        image: img("news-1.svg"),
         excerpt:
           "A special event focused on real-world learning opportunities and community partnerships.",
         body: [
@@ -22,7 +26,7 @@ export default function NewsEvents() {
         id: "news-2",
         date: "FEBRUARY 24, 2026",
         title: "Campus Open House: Meet Our Teachers and Teams",
-        image: "/src/assets/news/news-2.svg",
+        image: img("news-2.svg"),
         excerpt:
           "Parents and students visited our campus to learn about programmes, facilities, and daily routines.",
         body: [
@@ -35,7 +39,7 @@ export default function NewsEvents() {
         id: "news-3",
         date: "JANUARY 18, 2026",
         title: "Student Showcase: Creativity, Confidence, and Collaboration",
-        image: "/src/assets/news/news-3.svg",
+        image: img("news-3.svg"),
         excerpt:
           "A student showcase highlighting teamwork, creativity, and presentation skills.",
         body: [
@@ -48,7 +52,7 @@ export default function NewsEvents() {
         id: "news-4",
         date: "DECEMBER 12, 2025",
         title: "Community Day: School Spirit and Family Activities",
-        image: "/src/assets/news/news-4.svg",
+        image: img("news-4.svg"),
         excerpt:
           "A day for families to enjoy activities together and strengthen our school community.",
         body: [
@@ -61,7 +65,7 @@ export default function NewsEvents() {
         id: "news-5",
         date: "NOVEMBER 06, 2025",
         title: "Health & Safety Update for Families",
-        image: "/src/assets/news/news-5.svg",
+        image: img("news-5.svg"),
         excerpt:
           "Important reminders on health routines, on-campus safety, and communication channels.",
         body: [
@@ -74,7 +78,7 @@ export default function NewsEvents() {
         id: "news-6",
         date: "OCTOBER 01, 2025",
         title: "Term Dates and Key Events Announcement",
-        image: "/src/assets/news/news-6.svg",
+        image: img("news-6.svg"),
         excerpt:
           "A summary of term dates, key school events, and important family reminders.",
         body: [
